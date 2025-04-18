@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solow Growth Model Simulation</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Solow Growth Model Simulation</h1>
+      <p>Explore economic growth using the Solow model</p>
+    </header>
+
+    <div class="main-content">
+      <div class="parameters-section">
+        <h2>Model Parameters</h2>
+        <form id="parameters-form">
+          <div class="parameter-group">
+            <h3>Initial Values</h3>
+            <div class="form-group">
+              <label for="initialCapital">Initial Capital (K):</label>
+              <input type="number" id="initialCapital" name="initialCapital" min="1" step="1" value="100">
+            </div>
+            <div class="form-group">
+              <label for="initialPopulation">Initial Population (L):</label>
+              <input type="number" id="initialPopulation" name="initialPopulation" min="1" step="1" value="100">
+            </div>
+            <div class="form-group">
+              <label for="initialTFP">Initial TFP (A):</label>
+              <input type="number" id="initialTFP" name="initialTFP" min="0.1" step="0.1" value="1">
+            </div>
+          </div>
+
+          <div class="parameter-group">
+            <h3>Growth Rates</h3>
+            <div class="form-group">
+              <label for="populationGrowthRate">Population Growth Rate (n):</label>
+              <input type="number" id="populationGrowthRate" name="populationGrowthRate" min="0" max="0.2" step="0.001" value="0.01">
+            </div>
+            <div class="form-group">
+              <label for="tfpGrowthRate">TFP Growth Rate (g):</label>
+              <input type="number" id="tfpGrowthRate" name="tfpGrowthRate" min="0" max="0.2" step="0.001" value="0.02">
+            </div>
+          </div>
+
+          <div class="parameter-group">
+            <h3>Production Parameters</h3>
+            <div class="form-group">
+              <label for="savingsRate">Savings Rate (s):</label>
+              <input type="number" id="savingsRate" name="savingsRate" min="0" max="1" step="0.01" value="0.2">
+            </div>
+            <div class="form-group">
+              <label for="depreciationRate">Depreciation Rate (δ):</label>
+              <input type="number" id="depreciationRate" name="depreciationRate" min="0" max="1" step="0.01" value="0.1">
+            </div>
+            <div class="form-group">
+              <label for="capitalShare">Capital Share (α):</label>
+              <input type="number" id="capitalShare" name="capitalShare" min="0" max="1" step="0.01" value="0.3">
+            </div>
+          </div>
+
+          <div class="parameter-group">
+            <h3>Simulation Settings</h3>
+            <div class="form-group">
+              <label for="years">Years to Simulate:</label>
+              <input type="number" id="years" name="years" min="1" max="100" step="1" value="50">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="run-simulation">Run Simulation</button>
+            <button type="reset">Reset Parameters</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="results-section">
+        <h2>Simulation Results</h2>
+        <div class="chart-container">
+          <canvas id="outputChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <canvas id="capitalChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <canvas id="perWorkerChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html> 

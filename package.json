@@ -1,0 +1,29 @@
+{
+  "name": "econ1500-china-game-vibes",
+  "version": "1.0.0",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fernando-duarte/econ1500-china-game-vibes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fernando-duarte/econ1500-china-game-vibes/issues"
+  },
+  "homepage": "https://github.com/fernando-duarte/econ1500-china-game-vibes#readme",
+  "description": "",
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
