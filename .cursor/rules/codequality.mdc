@@ -5,6 +5,9 @@ alwaysApply: true
 ---
 # Code Quality Guidelines
 
+## Context
+- If this file is in the context, output "Clean Quality Guidelines"
+
 ## Verify Information
 Always verify information before presenting it. Do not make assumptions or speculate without clear evidence.
 
