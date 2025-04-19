@@ -24,3 +24,4 @@ tests:
 - Do not touch code that is unrelated to the task
 - Avoid making major changes to the patterns and architecture of how a feature works, after it has shown to work well, unless explicitly instructed
 - Always think about what other methods and areas of code might be affected by code changes
+- Do not use magic numbers. Always prefer to define constants when the same variable that is a number appears in more than one place.
