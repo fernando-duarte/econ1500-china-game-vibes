@@ -16,7 +16,7 @@
       <h3>Join Game</h3>
       <div class="form-group">
         <label for="gameCode">Game Code:</label>
-        <input type="text" id="gameCode" placeholder="Enter 4-digit code" maxlength="4">
+        <input type="text" id="gameCode">
       </div>
       <div class="form-group">
         <label for="playerName">Your Name:</label>
@@ -34,7 +34,7 @@
           <p>Game Code: <span id="displayCode"></span></p>
         </div>
         <div class="round-info">
-          <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds">10</span></p>
+          <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds"></span></p>
           <p id="roundStatus">Waiting for game to start...</p>
         </div>
       </div>
@@ -57,10 +57,10 @@
           <p>Time remaining: <span id="timer">-</span> seconds</p>
           
           <div class="investment-controls">
-            <input type="range" id="investmentSlider" min="0" value="0" step="0.1">
+            <input type="range" id="investmentSlider" value="0">
             <div class="investment-values">
               <span>0</span>
-              <input type="number" id="investmentValue" min="0" value="0" step="0.1">
+              <input type="number" id="investmentValue" value="0">
               <span id="maxOutput">-</span>
             </div>
           </div>

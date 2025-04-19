@@ -38,6 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
   investmentSlider.step = CONSTANTS.INVESTMENT_STEP;
   investmentValue.step = CONSTANTS.INVESTMENT_STEP;
   timer.textContent = CONSTANTS.ROUND_DURATION_SECONDS;
+  // Input constraints from constants
+  gameCode.maxLength = CONSTANTS.GAME_CODE_LENGTH;
+  investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
+  investmentValue.min = CONSTANTS.INVESTMENT_MIN;
 });
 
 // Game state
@@ -146,7 +150,7 @@ socket.on('round_start', (data) => {
   roundStatus.textContent = 'Round in progress';
   
   // Reset investment UI
-  investmentSlider.min = 0;
+  investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
   investmentSlider.max = data.output;
   investmentSlider.value = 0;
   investmentValue.value = 0;
