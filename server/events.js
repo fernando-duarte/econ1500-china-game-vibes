@@ -8,6 +8,8 @@ const {
   playerDisconnect
 } = require('./gameLogic');
 
+const CONSTANTS = require('../shared/constants');
+
 /**
  * Set up Socket.IO event handlers
  */
@@ -102,7 +104,7 @@ function setupSocketEvents(io) {
           console.log(`Player reconnected: ${playerName} in game ${gameCode}`);
           
           // Send current game state to the player
-          if (result.isGameRunning && result.round > 0) {
+          if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
             socket.emit('state_snapshot', {
               roundNumber: result.round,
               capital: result.capital,

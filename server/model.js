@@ -25,8 +25,8 @@ function validateInvestment(investment, currentOutput) {
   investment = Number(investment);
   currentOutput = Number(currentOutput);
   
-  if (isNaN(investment) || investment < 0) {
-    return 0;
+  if (isNaN(investment) || investment < CONSTANTS.INVESTMENT_MIN) {
+    return CONSTANTS.INVESTMENT_MIN;
   }
   
   if (investment > currentOutput) {
@@ -36,13 +36,9 @@ function validateInvestment(investment, currentOutput) {
   return investment;
 }
 
-// Export the same interface for backward compatibility
+// Export methods and reference constants directly from shared constants
 module.exports = {
-  ALPHA: CONSTANTS.ALPHA,
-  DEPRECIATION_RATE: CONSTANTS.DEPRECIATION_RATE,
-  INITIAL_CAPITAL: CONSTANTS.INITIAL_CAPITAL,
-  ROUNDS: CONSTANTS.ROUNDS,
-  ROUND_DURATION_SECONDS: CONSTANTS.ROUND_DURATION_SECONDS,
+  ...CONSTANTS,
   calculateOutput,
   calculateNewCapital,
   validateInvestment
