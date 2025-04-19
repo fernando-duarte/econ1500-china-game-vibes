@@ -13,6 +13,7 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const { setupSocketEvents } = require('./events');
+const CONSTANTS = require('../shared/constants');
 
 // Create Express app
 const app = express();
@@ -27,6 +28,15 @@ app.use(express.urlencoded({ extended: false }));
 
 // Serve static files from the client directory
 app.use(express.static(path.join(__dirname, '../client')));
+
+// Serve shared directory for constants
+app.use('/shared', express.static(path.join(__dirname, '../shared')));
+
+// Serve constants to client
+app.get('/constants.js', (req, res) => {
+  res.set('Content-Type', 'application/javascript');
+  res.send(`const CONSTANTS = ${JSON.stringify(CONSTANTS)};`);
+});
 
 // Serve student page
 app.get('/', (req, res) => {

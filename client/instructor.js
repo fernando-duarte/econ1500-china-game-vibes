@@ -1,6 +1,10 @@
 // Connect to Socket.IO server
 const socket = io();
 
+// Display related constants
+const DISPLAY_INDEX_OFFSET = 1;
+const FIRST_ROUND_NUMBER = 1;
+
 // DOM Elements
 const createGameButton = document.getElementById('createGameButton');
 const gameCodeDisplay = document.getElementById('gameCodeDisplay');
@@ -11,6 +15,7 @@ const gameControls = document.getElementById('gameControls');
 const playerListSection = document.getElementById('playerListSection');
 const playerList = document.getElementById('playerList');
 const roundNumber = document.getElementById('roundNumber');
+const totalRounds = document.getElementById('totalRounds');
 const roundStatus = document.getElementById('roundStatus');
 const roundResultsSection = document.getElementById('roundResultsSection');
 const roundResultsBody = document.getElementById('roundResultsBody');
@@ -18,6 +23,11 @@ const gameOverSection = document.getElementById('gameOverSection');
 const winnerName = document.getElementById('winnerName');
 const finalResultsBody = document.getElementById('finalResultsBody');
 const resetGameButton = document.getElementById('resetGameButton');
+
+// Initialize values from constants
+document.addEventListener('DOMContentLoaded', () => {
+  totalRounds.textContent = CONSTANTS.ROUNDS;
+});
 
 // Game state
 let currentGameCode = '';
@@ -99,7 +109,7 @@ socket.on('round_start', (data) => {
   updatePlayerList();
   
   // Show round results section if it's not the first round
-  if (data.roundNumber > 1) {
+  if (data.roundNumber > FIRST_ROUND_NUMBER) {
     roundResultsSection.classList.remove('hidden');
   }
 });
@@ -154,7 +164,7 @@ socket.on('game_over', (data) => {
   data.finalResults.forEach((result, index) => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${index + 1}</td>
+      <td>${index + DISPLAY_INDEX_OFFSET}</td>
       <td>${result.playerName}</td>
       <td>${result.finalOutput}</td>
     `;
