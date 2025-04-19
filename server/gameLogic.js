@@ -1,17 +1,10 @@
 const { 
-  INITIAL_CAPITAL, 
-  ROUNDS, 
-  ROUND_DURATION_SECONDS,
   calculateOutput, 
   calculateNewCapital, 
   validateInvestment 
 } = require('./model');
 
 const CONSTANTS = require('../shared/constants');
-
-// Game code constants
-const MIN_GAME_CODE = 1000;
-const MAX_GAME_CODE_RANGE = 9000;
 
 // In-memory game state
 const games = {};
@@ -68,7 +61,7 @@ function addPlayer(gameCode, playerName, socketId) {
   }
   
   // Add the player to the game
-  const initialCapital = INITIAL_CAPITAL;
+  const initialCapital = CONSTANTS.INITIAL_CAPITAL;
   const initialOutput = calculateOutput(initialCapital);
   
   game.players[playerName] = {
@@ -103,7 +96,7 @@ function startGame(gameCode) {
   
   // Start the game
   game.isGameRunning = true;
-  game.round = 1;
+  game.round = CONSTANTS.FIRST_ROUND_NUMBER;
   
   return { success: true };
 }
@@ -130,7 +123,7 @@ function startRound(gameCode, io) {
         roundNumber: game.round,
         capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-        timeRemaining: ROUND_DURATION_SECONDS
+        timeRemaining: CONSTANTS.ROUND_DURATION_SECONDS
       });
     }
   });
@@ -138,7 +131,7 @@ function startRound(gameCode, io) {
   // Start the round timer
   game.roundTimer = setTimeout(() => {
     endRound(gameCode, io);
-  }, ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
+  }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
   
   return { success: true };
 }
@@ -154,7 +147,7 @@ function submitInvestment(gameCode, playerName, investment) {
   const game = games[gameCode];
   
   // Check if the game is running and in an active round
-  if (!game.isGameRunning || game.round < 1) {
+  if (!game.isGameRunning || game.round < CONSTANTS.FIRST_ROUND_NUMBER) {
     return { success: false, error: 'Game not running' };
   }
   
@@ -240,7 +233,7 @@ function endRound(gameCode, io) {
   }
   
   // Check if the game is over
-  if (game.round >= ROUNDS) {
+  if (game.round >= CONSTANTS.ROUNDS) {
     endGame(gameCode, io);
     return { success: true, gameOver: true };
   }
