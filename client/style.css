@@ -1,3 +1,44 @@
+/* CSS Variables */
+:root {
+  /* Colors */
+  --color-primary: #2c6ecb;
+  --color-primary-dark: #1f5bab;
+  --color-primary-light: #b4c8e8;
+  --color-primary-lightest: #e8f0fe;
+  --color-text: #333;
+  --color-text-light: #455a74;
+  --color-text-dark: #1a3b5d;
+  --color-background: #f4f7fa;
+  --color-card: #fff;
+  --color-border: #ddd;
+  --color-success: #d4edda;
+  --color-error: #e53935;
+  --color-light-bg: #f8f9fa;
+  
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 8px;
+  --spacing-md: 10px;
+  --spacing-lg: 15px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 30px;
+  
+  /* Typography */
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 24px;
+  --font-size-xl: 36px;
+  
+  /* Borders */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  
+  /* Effects */
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+}
+
 /* Global Styles */
 * {
   box-sizing: border-box;
@@ -8,26 +49,26 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background-color: #f4f7fa;
+  color: var(--color-text);
+  background-color: var(--color-background);
 }
 
 .container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--spacing-xl);
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 10px;
-  color: #1a3b5d;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-dark);
 }
 
 .subtitle {
   text-align: center;
-  margin-bottom: 30px;
-  color: #455a74;
+  margin-bottom: var(--spacing-xxl);
+  color: var(--color-text-light);
   font-weight: normal;
 }
 
@@ -36,102 +77,102 @@ h1 {
 }
 
 .card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 20px;
+  background-color: var(--color-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
 }
 
 .button {
-  background-color: #2c6ecb;
+  background-color: var(--color-primary);
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  font-size: 16px;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-md);
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color var(--transition-speed);
 }
 
 .button:hover {
-  background-color: #1f5bab;
+  background-color: var(--color-primary-dark);
 }
 
 .button:disabled {
-  background-color: #b4c8e8;
+  background-color: var(--color-primary-light);
   cursor: not-allowed;
 }
 
 .error {
-  color: #e53935;
-  margin-top: 10px;
+  color: var(--color-error);
+  margin-top: var(--spacing-md);
 }
 
 /* Form Styles */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-lg);
 }
 
 label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: var(--spacing-xs);
   font-weight: 500;
 }
 
 input[type="text"],
 input[type="number"] {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
 }
 
 /* Game UI Styles */
 .game-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .game-info, .round-info {
-  font-size: 16px;
+  font-size: var(--font-size-md);
 }
 
 .economy-stats {
   display: flex;
   justify-content: space-around;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .stat-box {
   text-align: center;
-  padding: 15px;
-  border-radius: 6px;
-  background-color: #f8f9fa;
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-light-bg);
   min-width: 150px;
 }
 
 .stat-box h3, .stat-box h4 {
-  margin-bottom: 10px;
-  color: #455a74;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-light);
 }
 
 .stat-box p {
-  font-size: 24px;
+  font-size: var(--font-size-lg);
   font-weight: bold;
-  color: #2c6ecb;
+  color: var(--color-primary);
 }
 
 /* Investment Controls */
 .investment-controls {
-  margin: 20px 0;
+  margin: var(--spacing-xl) 0;
 }
 
 input[type="range"] {
   width: 100%;
-  margin: 10px 0;
+  margin: var(--spacing-md) 0;
 }
 
 .investment-values {
@@ -146,7 +187,7 @@ input[type="range"] {
 }
 
 #investmentStatus {
-  margin-top: 10px;
+  margin-top: var(--spacing-md);
   font-style: italic;
 }
 
@@ -154,23 +195,23 @@ input[type="range"] {
 .results-container {
   display: flex;
   justify-content: space-around;
-  margin: 20px 0;
+  margin: var(--spacing-xl) 0;
 }
 
 .result-box {
   text-align: center;
-  padding: 10px;
+  padding: var(--spacing-md);
 }
 
 .result-box p:first-child {
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: var(--spacing-xs);
 }
 
 #waitingNextRound {
   text-align: center;
   font-style: italic;
-  margin-top: 15px;
+  margin-top: var(--spacing-lg);
 }
 
 /* Instructor Specific Styles */
@@ -179,57 +220,57 @@ input[type="range"] {
 }
 
 .game-code-box {
-  font-size: 36px;
+  font-size: var(--font-size-xl);
   font-weight: bold;
   text-align: center;
-  margin: 15px 0;
-  padding: 15px;
-  background-color: #e8f0fe;
-  border-radius: 6px;
-  color: #2c6ecb;
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
+  background-color: var(--color-primary-lightest);
+  border-radius: var(--border-radius-md);
+  color: var(--color-primary);
 }
 
 .player-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--spacing-md);
 }
 
 .player-item {
-  background-color: #e8f0fe;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 14px;
+  background-color: var(--color-primary-lightest);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
 }
 
 .player-submitted {
-  background-color: #d4edda;
+  background-color: var(--color-success);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 20px 0;
+  margin: var(--spacing-xl) 0;
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: var(--spacing-md) var(--spacing-lg);
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border);
 }
 
 th {
-  background-color: #f8f9fa;
+  background-color: var(--color-light-bg);
   font-weight: 600;
 }
 
 .winner-display {
   text-align: center;
-  margin: 20px 0;
+  margin: var(--spacing-xl) 0;
 }
 
 .winner {
-  font-size: 24px;
+  font-size: var(--font-size-lg);
   font-weight: bold;
-  color: #2c6ecb;
+  color: var(--color-primary);
 } 

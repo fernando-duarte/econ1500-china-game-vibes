@@ -11,6 +11,7 @@ const joinError = document.getElementById('joinError');
 const displayName = document.getElementById('displayName');
 const displayCode = document.getElementById('displayCode');
 const roundNumber = document.getElementById('roundNumber');
+const totalRounds = document.getElementById('totalRounds');
 const roundStatus = document.getElementById('roundStatus');
 const capital = document.getElementById('capital');
 const output = document.getElementById('output');
@@ -30,6 +31,14 @@ const gameOverUI = document.getElementById('gameOverUI');
 const finalOutput = document.getElementById('finalOutput');
 const winner = document.getElementById('winner');
 const finalRankings = document.getElementById('finalRankings');
+
+// Initialize values from constants
+document.addEventListener('DOMContentLoaded', () => {
+  totalRounds.textContent = CONSTANTS.ROUNDS;
+  investmentSlider.step = CONSTANTS.INVESTMENT_STEP;
+  investmentValue.step = CONSTANTS.INVESTMENT_STEP;
+  timer.textContent = CONSTANTS.ROUND_DURATION_SECONDS;
+});
 
 // Game state
 let currentPlayerName = '';
@@ -153,7 +162,7 @@ socket.on('round_start', (data) => {
   investmentUI.classList.remove('hidden');
   
   // Start timer
-  startTimer(data.timeRemaining || 60);
+  startTimer(data.timeRemaining || CONSTANTS.ROUND_DURATION_SECONDS);
 });
 
 socket.on('investment_received', (data) => {
@@ -257,7 +266,7 @@ function startTimer(seconds) {
   // Start the countdown
   timerInterval = setInterval(() => {
     const currentTime = parseInt(timer.textContent);
-    if (currentTime <= 1) {
+    if (currentTime <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS) {
       clearInterval(timerInterval);
       timer.textContent = '0';
       
@@ -268,5 +277,5 @@ function startTimer(seconds) {
     } else {
       timer.textContent = currentTime - 1;
     }
-  }, 1000);
+  }, CONSTANTS.MILLISECONDS_PER_SECOND);
 } 

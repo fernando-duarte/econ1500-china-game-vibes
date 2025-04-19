@@ -7,6 +7,12 @@ const {
   validateInvestment 
 } = require('./model');
 
+const CONSTANTS = require('../shared/constants');
+
+// Game code constants
+const MIN_GAME_CODE = 1000;
+const MAX_GAME_CODE_RANGE = 9000;
+
 // In-memory game state
 const games = {};
 
@@ -14,7 +20,7 @@ const games = {};
  * Generate a random game code (4 digit number)
  */
 function generateGameCode() {
-  return Math.floor(1000 + Math.random() * 9000).toString();
+  return Math.floor(MIN_GAME_CODE + Math.random() * MAX_GAME_CODE_RANGE).toString();
 }
 
 /**
@@ -76,7 +82,7 @@ function addPlayer(gameCode, playerName, socketId) {
   return { 
     success: true, 
     initialCapital, 
-    initialOutput: parseFloat(initialOutput.toFixed(1))
+    initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
   };
 }
 
@@ -122,8 +128,8 @@ function startRound(gameCode, io) {
     if (player.connected) {
       io.to(player.socketId).emit('round_start', {
         roundNumber: game.round,
-        capital: parseFloat(player.capital.toFixed(1)),
-        output: parseFloat(player.output.toFixed(1)),
+        capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+        output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         timeRemaining: ROUND_DURATION_SECONDS
       });
     }
@@ -132,7 +138,7 @@ function startRound(gameCode, io) {
   // Start the round timer
   game.roundTimer = setTimeout(() => {
     endRound(gameCode, io);
-  }, ROUND_DURATION_SECONDS * 1000);
+  }, ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
   
   return { success: true };
 }
@@ -212,15 +218,15 @@ function endRound(gameCode, io) {
     results.push({
       playerName,
       investment: player.investment,
-      newCapital: parseFloat(newCapital.toFixed(1)),
-      newOutput: parseFloat(newOutput.toFixed(1))
+      newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+      newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
     });
     
     // Send round end event to the player
     if (player.connected && io) {
       io.to(player.socketId).emit('round_end', {
-        newCapital: parseFloat(newCapital.toFixed(1)),
-        newOutput: parseFloat(newOutput.toFixed(1))
+        newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+        newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       });
     }
   });
@@ -267,7 +273,7 @@ function endGame(gameCode, io) {
   const finalResults = [];
   
   Object.entries(game.players).forEach(([playerName, player]) => {
-    const finalOutput = parseFloat(player.output.toFixed(1));
+    const finalOutput = parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION));
     
     finalResults.push({
       playerName,
@@ -323,8 +329,8 @@ function playerReconnect(gameCode, playerName, socketId) {
     success: true,
     isGameRunning: game.isGameRunning,
     round: game.round,
-    capital: parseFloat(player.capital.toFixed(1)),
-    output: parseFloat(player.output.toFixed(1)),
+    capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
     submitted: player.investment !== null
   };
 }

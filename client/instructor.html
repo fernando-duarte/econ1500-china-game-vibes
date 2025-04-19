@@ -29,7 +29,7 @@
     <div id="gameControls" class="hidden card">
       <div class="game-status">
         <h3>Game Status</h3>
-        <p>Round: <span id="roundNumber">-</span> of 10</p>
+        <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds">10</span></p>
         <p id="roundStatus">Waiting for game to start...</p>
       </div>
     </div>
@@ -81,6 +81,7 @@
   </div>
   
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/constants.js"></script>
   <script src="instructor.js"></script>
 </body>
 </html> 

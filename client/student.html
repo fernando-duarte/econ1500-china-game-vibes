@@ -34,7 +34,7 @@
           <p>Game Code: <span id="displayCode"></span></p>
         </div>
         <div class="round-info">
-          <p>Round: <span id="roundNumber">-</span> of 10</p>
+          <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds">10</span></p>
           <p id="roundStatus">Waiting for game to start...</p>
         </div>
       </div>
@@ -43,25 +43,25 @@
         <div class="economy-stats">
           <div class="stat-box">
             <h3>Capital (K)</h3>
-            <p id="capital">100.0</p>
+            <p id="capital">-</p>
           </div>
           <div class="stat-box">
             <h3>Output (Y)</h3>
-            <p id="output">4.6</p>
+            <p id="output">-</p>
           </div>
         </div>
         
         <div id="investmentUI" class="hidden">
           <h3>Investment Decision</h3>
           <p>How much of your output do you want to invest?</p>
-          <p>Time remaining: <span id="timer">60</span> seconds</p>
+          <p>Time remaining: <span id="timer">-</span> seconds</p>
           
           <div class="investment-controls">
-            <input type="range" id="investmentSlider" min="0" max="100" value="0" step="0.1">
+            <input type="range" id="investmentSlider" min="0" value="0" step="0.1">
             <div class="investment-values">
               <span>0</span>
-              <input type="number" id="investmentValue" min="0" max="100" value="0" step="0.1">
-              <span id="maxOutput">4.6</span>
+              <input type="number" id="investmentValue" min="0" value="0" step="0.1">
+              <span id="maxOutput">-</span>
             </div>
           </div>
           
@@ -108,6 +108,7 @@
   </div>
   
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/constants.js"></script>
   <script src="student.js"></script>
 </body>
 </html> 
