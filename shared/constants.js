@@ -17,7 +17,16 @@ const GAME_CONSTANTS = {
   
   // Timing constants
   MILLISECONDS_PER_SECOND: 1000,
-  AUTO_SUBMIT_THRESHOLD_SECONDS: 1
+  AUTO_SUBMIT_THRESHOLD_SECONDS: 1,
+  
+  // Server defaults
+  DEFAULT_PORT: 3000,
+  // Game code configuration
+  GAME_CODE_LENGTH: 4,
+  // Investment input minimum
+  INVESTMENT_MIN: 0,
+  // CSS layout constant for stat-box width
+  STAT_BOX_MIN_WIDTH: 150
 };
 
 // Calculated constants (derived from the above)
