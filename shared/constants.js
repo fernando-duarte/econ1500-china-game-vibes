@@ -3,6 +3,7 @@ const GAME_CONSTANTS = {
   // Round configuration
   ROUNDS: 10,
   ROUND_DURATION_SECONDS: 60,
+  FIRST_ROUND_NUMBER: 1,
   
   // Economic model constants
   INITIAL_CAPITAL: 100,
@@ -11,9 +12,11 @@ const GAME_CONSTANTS = {
   
   // Display constants
   DECIMAL_PRECISION: 1,
+  DISPLAY_INDEX_OFFSET: 1,
   
   // Investment constants
   INVESTMENT_STEP: 0.1,
+  INVESTMENT_MIN: 0,
   
   // Timing constants
   MILLISECONDS_PER_SECOND: 1000,
@@ -21,10 +24,12 @@ const GAME_CONSTANTS = {
   
   // Server defaults
   DEFAULT_PORT: 3000,
+  
   // Game code configuration
   GAME_CODE_LENGTH: 4,
-  // Investment input minimum
-  INVESTMENT_MIN: 0,
+  MIN_GAME_CODE: 1000,
+  MAX_GAME_CODE_RANGE: 9000,
+  
   // CSS layout constant for stat-box width
   STAT_BOX_MIN_WIDTH: 150
 };

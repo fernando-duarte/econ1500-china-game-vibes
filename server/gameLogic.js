@@ -20,7 +20,7 @@ const games = {};
  * Generate a random game code (4 digit number)
  */
 function generateGameCode() {
-  return Math.floor(MIN_GAME_CODE + Math.random() * MAX_GAME_CODE_RANGE).toString();
+  return Math.floor(CONSTANTS.MIN_GAME_CODE + Math.random() * CONSTANTS.MAX_GAME_CODE_RANGE).toString();
 }
 
 /**
