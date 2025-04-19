@@ -3,8 +3,7 @@ const socket = io();
 
 // DOM Elements
 const createGameButton = document.getElementById('createGameButton');
-const gameCodeDisplay = document.getElementById('gameCodeDisplay');
-const gameCode = document.getElementById('gameCode');
+const gameStatus = document.getElementById('gameStatus');
 const playerCount = document.getElementById('playerCount');
 const startGameButton = document.getElementById('startGameButton');
 const gameControls = document.getElementById('gameControls');
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Game state
-let currentGameCode = '';
 let players = [];
 let submittedPlayers = [];
 
@@ -48,15 +46,11 @@ resetGameButton.addEventListener('click', () => {
 });
 
 // Socket event handlers
-socket.on('game_created', (data) => {
-  console.log('Game created:', data);
-  
-  // Store the game code
-  currentGameCode = data.code;
+socket.on('game_created', () => {
+  console.log('Game created');
   
   // Update UI
-  gameCode.textContent = currentGameCode;
-  gameCodeDisplay.classList.remove('hidden');
+  gameStatus.classList.remove('hidden');
   
   // Enable start button once players join
   updateStartButton();
