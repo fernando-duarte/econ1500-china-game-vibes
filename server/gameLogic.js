@@ -10,7 +10,7 @@ const CONSTANTS = require('../shared/constants');
 const games = {};
 
 /**
- * Generate a random game code (4 digit number)
+ * Generate a random game code
  */
 function generateGameCode() {
   return Math.floor(CONSTANTS.MIN_GAME_CODE + Math.random() * CONSTANTS.MAX_GAME_CODE_RANGE).toString();
