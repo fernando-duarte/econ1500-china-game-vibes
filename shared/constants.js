@@ -25,10 +25,13 @@ const GAME_CONSTANTS = {
   // Server defaults
   DEFAULT_PORT: 3000,
   
-  // Game code configuration
-  GAME_CODE_LENGTH: 4,
-  MIN_GAME_CODE: 1000,
-  MAX_GAME_CODE_RANGE: 9000,
+  // Game state constants
+  GAME_STATES: {
+    INACTIVE: 'inactive',
+    WAITING: 'waiting',
+    ACTIVE: 'active',
+    COMPLETED: 'completed'
+  },
   
   // CSS layout constant for stat-box width
   STAT_BOX_MIN_WIDTH: 150

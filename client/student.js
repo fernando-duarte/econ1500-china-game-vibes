@@ -4,12 +4,10 @@ const socket = io();
 // DOM Elements
 const joinForm = document.getElementById('joinForm');
 const gameUI = document.getElementById('gameUI');
-const gameCode = document.getElementById('gameCode');
 const playerName = document.getElementById('playerName');
 const joinButton = document.getElementById('joinButton');
 const joinError = document.getElementById('joinError');
 const displayName = document.getElementById('displayName');
-const displayCode = document.getElementById('displayCode');
 const roundNumber = document.getElementById('roundNumber');
 const totalRounds = document.getElementById('totalRounds');
 const roundStatus = document.getElementById('roundStatus');
@@ -39,27 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
   investmentValue.step = CONSTANTS.INVESTMENT_STEP;
   timer.textContent = CONSTANTS.ROUND_DURATION_SECONDS;
   // Input constraints from constants
-  gameCode.maxLength = CONSTANTS.GAME_CODE_LENGTH;
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
   investmentValue.min = CONSTANTS.INVESTMENT_MIN;
 });
 
 // Game state
 let currentPlayerName = '';
-let currentGameCode = '';
 let timerInterval = null;
 let currentOutput = 0;
 let hasSubmittedInvestment = false;
 
 // Join game
 joinButton.addEventListener('click', () => {
-  const code = gameCode.value.trim();
   const name = playerName.value.trim();
-  
-  if (!code) {
-    joinError.textContent = 'Please enter a game code';
-    return;
-  }
   
   if (!name) {
     joinError.textContent = 'Please enter your name';
@@ -69,7 +59,7 @@ joinButton.addEventListener('click', () => {
   joinError.textContent = '';
   joinButton.disabled = true;
   
-  socket.emit('join_game', { code, playerName: name });
+  socket.emit('join_game', { playerName: name });
 });
 
 // Handle investment slider and value sync
@@ -114,13 +104,11 @@ socket.on('join_ack', (data) => {
     return;
   }
   
-  // Store player name and game code
+  // Store player name
   currentPlayerName = playerName.value.trim();
-  currentGameCode = gameCode.value.trim();
   
   // Update UI
   displayName.textContent = currentPlayerName;
-  displayCode.textContent = currentGameCode;
   
   // Set initial capital and output
   capital.textContent = data.initialCapital;

@@ -6,51 +6,40 @@ const {
 
 const CONSTANTS = require('../shared/constants');
 
-// In-memory game state
-const games = {};
-
-/**
- * Generate a random game code
- */
-function generateGameCode() {
-  return Math.floor(CONSTANTS.MIN_GAME_CODE + Math.random() * CONSTANTS.MAX_GAME_CODE_RANGE).toString();
-}
+// In-memory game state - single game instead of multiple games
+let game = {
+  isGameRunning: false,
+  state: CONSTANTS.GAME_STATES.INACTIVE,
+  round: 0,
+  players: {},
+  roundTimer: null
+};
 
 /**
  * Create a new game session
  */
 function createGame() {
-  const gameCode = generateGameCode();
-  
-  games[gameCode] = {
-    code: gameCode,
+  // Reset game to initial state
+  game = {
     isGameRunning: false,
+    state: CONSTANTS.GAME_STATES.WAITING,
     round: 0,
     players: {},
     roundTimer: null
   };
   
-  return gameCode;
-}
-
-/**
- * Check if a game exists
- */
-function gameExists(gameCode) {
-  return games[gameCode] !== undefined;
+  return true;
 }
 
 /**
  * Add a player to a game
  */
-function addPlayer(gameCode, playerName, socketId) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
+function addPlayer(playerName, socketId) {
+  // Don't allow joins if no game exists or game is already running
+  if (game.state === CONSTANTS.GAME_STATES.INACTIVE) {
+    return { success: false, error: 'No active game' };
   }
   
-  const game = games[gameCode];
-  
-  // Don't allow joins if the game is already running
   if (game.isGameRunning) {
     return { success: false, error: 'Game already started' };
   }
@@ -82,13 +71,7 @@ function addPlayer(gameCode, playerName, socketId) {
 /**
  * Start a game
  */
-function startGame(gameCode) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
-  }
-  
-  const game = games[gameCode];
-  
+function startGame() {
   // Check if there are any players
   if (Object.keys(game.players).length === 0) {
     return { success: false, error: 'No players in the game' };
@@ -96,6 +79,7 @@ function startGame(gameCode) {
   
   // Start the game
   game.isGameRunning = true;
+  game.state = CONSTANTS.GAME_STATES.ACTIVE;
   game.round = CONSTANTS.FIRST_ROUND_NUMBER;
   
   return { success: true };
@@ -104,13 +88,7 @@ function startGame(gameCode) {
 /**
  * Start a new round
  */
-function startRound(gameCode, io) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
-  }
-  
-  const game = games[gameCode];
-  
+function startRound(io) {
   // Reset all investments
   Object.values(game.players).forEach(player => {
     player.investment = null;
@@ -130,7 +108,7 @@ function startRound(gameCode, io) {
   
   // Start the round timer
   game.roundTimer = setTimeout(() => {
-    endRound(gameCode, io);
+    endRound(io);
   }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
   
   return { success: true };
@@ -139,13 +117,7 @@ function startRound(gameCode, io) {
 /**
  * Process a player's investment
  */
-function submitInvestment(gameCode, playerName, investment) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
-  }
-  
-  const game = games[gameCode];
-  
+function submitInvestment(playerName, investment) {
   // Check if the game is running and in an active round
   if (!game.isGameRunning || game.round < CONSTANTS.FIRST_ROUND_NUMBER) {
     return { success: false, error: 'Game not running' };
@@ -172,7 +144,7 @@ function submitInvestment(gameCode, playerName, investment) {
   // If all players have submitted, end the round early
   if (allSubmitted) {
     clearTimeout(game.roundTimer);
-    endRound(gameCode, null); // Will be called with io in the actual implementation
+    endRound(null); // Will be called with io in the actual implementation
   }
   
   return { success: true, investment: validInvestment };
@@ -181,13 +153,7 @@ function submitInvestment(gameCode, playerName, investment) {
 /**
  * End a round and process all investments
  */
-function endRound(gameCode, io) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
-  }
-  
-  const game = games[gameCode];
-  
+function endRound(io) {
   // For players who didn't submit, set investment to 0
   Object.values(game.players).forEach(player => {
     if (player.investment === null) {
@@ -226,7 +192,7 @@ function endRound(gameCode, io) {
   
   // Send round summary to all instructor sockets
   if (io) {
-    io.to(gameCode + '_instructor').emit('round_summary', {
+    io.to('instructor').emit('round_summary', {
       roundNumber: game.round,
       results
     });
@@ -234,7 +200,7 @@ function endRound(gameCode, io) {
   
   // Check if the game is over
   if (game.round >= CONSTANTS.ROUNDS) {
-    endGame(gameCode, io);
+    endGame(io);
     return { success: true, gameOver: true };
   }
   
@@ -243,7 +209,7 @@ function endRound(gameCode, io) {
   
   // Start the next round
   if (io) {
-    startRound(gameCode, io);
+    startRound(io);
   }
   
   return { success: true, gameOver: false };
@@ -252,13 +218,7 @@ function endRound(gameCode, io) {
 /**
  * End the game and determine the winner
  */
-function endGame(gameCode, io) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
-  }
-  
-  const game = games[gameCode];
-  
+function endGame(io) {
   // Find the player with the highest output
   let maxOutput = -1;
   let winner = null;
@@ -284,7 +244,7 @@ function endGame(gameCode, io) {
   
   // Send game over event to all sockets
   if (io) {
-    io.to(gameCode).emit('game_over', {
+    io.to('players').emit('game_over', {
       finalResults,
       winner
     });
@@ -292,6 +252,7 @@ function endGame(gameCode, io) {
   
   // Reset game state
   game.isGameRunning = false;
+  game.state = CONSTANTS.GAME_STATES.COMPLETED;
   
   return { success: true, finalResults, winner };
 }
@@ -299,12 +260,11 @@ function endGame(gameCode, io) {
 /**
  * Handle player reconnection
  */
-function playerReconnect(gameCode, playerName, socketId) {
-  if (!gameExists(gameCode)) {
-    return { success: false, error: 'Game does not exist' };
+function playerReconnect(playerName, socketId) {
+  // Check if game is inactive
+  if (game.state === CONSTANTS.GAME_STATES.INACTIVE) {
+    return { success: false, error: 'No active game' };
   }
-  
-  const game = games[gameCode];
   
   // Check if player exists
   if (!game.players[playerName]) {
@@ -332,19 +292,16 @@ function playerReconnect(gameCode, playerName, socketId) {
  * Mark player as disconnected
  */
 function playerDisconnect(socketId) {
-  // Find the game and player with this socket ID
-  Object.values(games).forEach(game => {
-    Object.entries(game.players).forEach(([playerName, player]) => {
-      if (player.socketId === socketId) {
-        player.connected = false;
-      }
-    });
+  // Find player with this socket ID
+  Object.entries(game.players).forEach(([playerName, player]) => {
+    if (player.socketId === socketId) {
+      player.connected = false;
+    }
   });
 }
 
 module.exports = {
   createGame,
-  gameExists,
   addPlayer,
   startGame,
   startRound,

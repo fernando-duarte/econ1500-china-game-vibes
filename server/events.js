@@ -18,21 +18,20 @@ function setupSocketEvents(io) {
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
     
-    let gameCode = null;
     let playerName = null;
     let isInstructor = false;
     
     // Instructor creates a new game
     socket.on('create_game', () => {
       try {
-        gameCode = createGame();
+        createGame();
         isInstructor = true;
         
         // Join the instructor room
-        socket.join(gameCode + '_instructor');
+        socket.join('instructor');
         
-        console.log(`Game created: ${gameCode}`);
-        socket.emit('game_created', { code: gameCode });
+        console.log('Game created');
+        socket.emit('game_created');
       } catch (error) {
         console.error('Error in create_game:', error);
         socket.emit('error', { message: 'Error creating game' });
@@ -40,10 +39,10 @@ function setupSocketEvents(io) {
     });
     
     // Student joins a game
-    socket.on('join_game', ({ code, playerName: name }) => {
+    socket.on('join_game', ({ playerName: name }) => {
       try {
         // Validate input
-        if (!code || !name || typeof name !== 'string' || name.trim() === '') {
+        if (!name || typeof name !== 'string' || name.trim() === '') {
           socket.emit('join_ack', { 
             success: false, 
             error: 'Invalid input' 
@@ -51,21 +50,20 @@ function setupSocketEvents(io) {
           return;
         }
         
-        gameCode = code;
         playerName = name.trim();
         
         // Try to add the player to the game
-        const result = addPlayer(gameCode, playerName, socket.id);
+        const result = addPlayer(playerName, socket.id);
         
         if (result.success) {
-          // Join the game room
-          socket.join(gameCode);
+          // Join the players room
+          socket.join('players');
           
-          console.log(`Player joined: ${playerName} in game ${gameCode}`);
+          console.log(`Player joined: ${playerName}`);
           
           // Notify all clients about the new player
-          io.to(gameCode).emit('player_joined', { playerName });
-          io.to(gameCode + '_instructor').emit('player_joined', { playerName });
+          io.to('players').emit('player_joined', { playerName });
+          io.to('instructor').emit('player_joined', { playerName });
         }
         
         // Send acknowledgment to the client
@@ -80,10 +78,10 @@ function setupSocketEvents(io) {
     });
     
     // Handle reconnection with existing name
-    socket.on('reconnect_game', ({ code, playerName: name }) => {
+    socket.on('reconnect_game', ({ playerName: name }) => {
       try {
         // Validate input
-        if (!code || !name || typeof name !== 'string' || name.trim() === '') {
+        if (!name || typeof name !== 'string' || name.trim() === '') {
           socket.emit('join_ack', { 
             success: false, 
             error: 'Invalid input' 
@@ -91,17 +89,16 @@ function setupSocketEvents(io) {
           return;
         }
         
-        gameCode = code;
         playerName = name.trim();
         
         // Try to reconnect the player
-        const result = playerReconnect(gameCode, playerName, socket.id);
+        const result = playerReconnect(playerName, socket.id);
         
         if (result.success) {
-          // Join the game room
-          socket.join(gameCode);
+          // Join the players room
+          socket.join('players');
           
-          console.log(`Player reconnected: ${playerName} in game ${gameCode}`);
+          console.log(`Player reconnected: ${playerName}`);
           
           // Send current game state to the player
           if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
@@ -129,17 +126,17 @@ function setupSocketEvents(io) {
     // Instructor starts the game
     socket.on('start_game', () => {
       try {
-        if (!gameCode || !isInstructor) {
+        if (!isInstructor) {
           socket.emit('error', { message: 'Not authorized' });
           return;
         }
         
-        const result = startGame(gameCode);
+        const result = startGame();
         
         if (result.success) {
-          console.log(`Game started: ${gameCode}`);
-          io.to(gameCode).emit('game_started');
-          startRound(gameCode, io);
+          console.log('Game started');
+          io.to('players').emit('game_started');
+          startRound(io);
         } else {
           socket.emit('error', { message: result.error });
         }
@@ -152,19 +149,19 @@ function setupSocketEvents(io) {
     // Student submits investment
     socket.on('submit_investment', ({ investment }) => {
       try {
-        if (!gameCode || !playerName) {
+        if (!playerName) {
           socket.emit('error', { message: 'Not in a game' });
           return;
         }
         
-        const result = submitInvestment(gameCode, playerName, investment);
+        const result = submitInvestment(playerName, investment);
         
         if (result.success) {
           console.log(`Investment submitted by ${playerName}: ${result.investment}`);
           socket.emit('investment_received', { investment: result.investment });
           
           // Optionally, notify the instructor
-          io.to(gameCode + '_instructor').emit('investment_received', { playerName });
+          io.to('instructor').emit('investment_received', { playerName });
         } else {
           socket.emit('error', { message: result.error });
         }
