@@ -20,6 +20,40 @@ function setupSocketEvents(io) {
     
     let playerName = null;
     let isInstructor = false;
+    let isScreen = false;
+    
+    // Screen client connects
+    socket.on('screen_connect', () => {
+      try {
+        console.log(`Screen connected: ${socket.id}`);
+        
+        // Mark this socket as a screen
+        isScreen = true;
+        socket.screen = true;
+        socket.gameRole = 'screen';
+        
+        // Join a special room for screens
+        socket.join('screens');
+        
+        // Send current game state if available
+        const gameLogic = require('./gameLogic');
+        if (gameLogic.game) {
+          const stateData = {
+            isGameRunning: gameLogic.game.isGameRunning,
+            roundNumber: gameLogic.game.round,
+            timeRemaining: gameLogic.game.timeRemaining
+          };
+          
+          // If the game is running and a round is active, send more data
+          if (gameLogic.game.isGameRunning && gameLogic.game.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
+            socket.emit('state_snapshot', stateData);
+          }
+        }
+      } catch (error) {
+        console.error('Error in screen_connect:', error);
+        socket.emit('error', { message: 'Error connecting screen' });
+      }
+    });
     
     // Instructor creates a new game
     socket.on('create_game', () => {
@@ -38,6 +72,9 @@ function setupSocketEvents(io) {
         
         console.log('Game created');
         socket.emit('game_created');
+        
+        // Also notify screens
+        io.to('screens').emit('game_created');
       } catch (error) {
         console.error('Error in create_game:', error);
         socket.emit('error', { message: 'Error creating game' });
@@ -83,6 +120,9 @@ function setupSocketEvents(io) {
           } else {
             console.log('No instructor socket available for player_joined notification');
           }
+          
+          // Also notify screens
+          io.to('screens').emit('player_joined', { playerName });
         }
         
         // Send acknowledgment to the client
@@ -121,14 +161,21 @@ function setupSocketEvents(io) {
           
           // Send current game state to the player
           if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
+            const gameLogic = require('./gameLogic');
             socket.emit('state_snapshot', {
               roundNumber: result.round,
               capital: result.capital,
               output: result.output,
               submitted: result.submitted,
-              timeRemaining: null // Server doesn't track exact time remaining
+              timeRemaining: gameLogic.game.timeRemaining
             });
           }
+          
+          // Also notify screens about reconnection
+          io.to('screens').emit('player_joined', { 
+            playerName,
+            isReconnect: true
+          });
         }
         
         // Send acknowledgment to the client
@@ -208,8 +255,17 @@ function setupSocketEvents(io) {
                 console.log(`Sending investment_received directly to instructor socket ${instructorSocketId}`);
                 
                 // Log active connections for debugging
-                const activeSockets = Object.keys(io.sockets.sockets).length;
-                console.log(`Active socket connections: ${activeSockets}`);
+                try {
+                  // This method is more compatible with newer Socket.IO versions
+                  const roomSizes = {
+                    players: io.sockets.adapter.rooms.get('players')?.size || 0,
+                    instructor: io.sockets.adapter.rooms.get('instructor')?.size || 0,
+                    screens: io.sockets.adapter.rooms.get('screens')?.size || 0
+                  };
+                  console.log(`Active connections by room: `, roomSizes);
+                } catch (err) {
+                  console.error('Error counting active connections:', err);
+                }
                 
                 // Direct send to instructor - removed redundant test broadcast
                 gameLogic.game.instructorSocket.emit('investment_received', { 
@@ -234,6 +290,13 @@ function setupSocketEvents(io) {
             });
           }
           
+          // Also notify screens about the investment
+          io.to('screens').emit('investment_received', {
+            playerName,
+            investment: result.investment,
+            isAutoSubmit
+          });
+          
           // Check if the round should end (all players submitted)
           if (gameLogic.game.pendingEndRound) {
             console.log('All players have submitted - ending round immediately');
@@ -244,18 +307,41 @@ function setupSocketEvents(io) {
               timeRemaining: 2 // Show message for 2 seconds
             };
             
-            // Send notification to all students
-            io.to('players').emit('all_submitted', notificationData);
-            
-            // Send notification to instructor if available
-            if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
-              gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+            try {
+              // Send notification to all students
+              io.to('players').emit('all_submitted', notificationData);
+              
+              // Send notification to instructor if available
+              if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
+                gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+              }
+              
+              // Send notification to screens
+              io.to('screens').emit('all_submitted', notificationData);
+              
+              // Clear timers safely
+              try {
+                if (gameLogic.game.roundTimer) {
+                  clearTimeout(gameLogic.game.roundTimer);
+                }
+                if (gameLogic.game.timerInterval) {
+                  clearInterval(gameLogic.game.timerInterval);
+                }
+              } catch (timerError) {
+                console.error('Error clearing timers:', timerError);
+              }
+              
+              // Add a slight delay before ending the round to allow for UI updates
+              setTimeout(() => {
+                try {
+                  gameLogic.endRound(io);
+                } catch (endRoundError) {
+                  console.error('Error ending round:', endRoundError);
+                }
+              }, 2000);
+            } catch (notificationError) {
+              console.error('Error sending notifications:', notificationError);
             }
-            
-            // Add a slight delay before ending the round to allow for UI updates
-            setTimeout(() => {
-              gameLogic.endRound(io);
-            }, 2000);
           } else if (result.allSubmitted) {
             // This could happen if multiple submissions come in at almost the same time
             console.log('This submission completed all required inputs - will end round shortly');
@@ -280,6 +366,11 @@ function setupSocketEvents(io) {
         if (isInstructor && gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.id === socket.id) {
           console.log('Instructor disconnected');
           gameLogic.game.instructorSocket = null;
+        }
+        
+        // Handle screen disconnect
+        if (isScreen) {
+          console.log('Screen disconnected');
         }
         
         // Mark player as disconnected
