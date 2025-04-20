@@ -48,6 +48,11 @@ app.get('/instructor', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/instructor.html'));
 });
 
+// Serve screen dashboard page
+app.get('/screen', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/screen.html'));
+});
+
 // Set up Socket.IO event handlers
 setupSocketEvents(io);
 
@@ -63,4 +68,5 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Student view: http://localhost:${PORT}`);
   console.log(`Instructor view: http://localhost:${PORT}/instructor`);
+  console.log(`Screen dashboard: http://localhost:${PORT}/screen`);
 }); 

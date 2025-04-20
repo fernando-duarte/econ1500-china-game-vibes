@@ -13,6 +13,9 @@ let game = {
   round: CONSTANTS.FIRST_ROUND_NUMBER - 1,
   players: {},
   roundTimer: null,
+  timerInterval: null,
+  timeRemaining: 0,
+  roundEndTime: null,
   currentIo: null,
   pendingEndRound: false,
   instructorSocket: null, // Add reference to instructor socket
@@ -30,6 +33,9 @@ function createGame() {
     round: CONSTANTS.FIRST_ROUND_NUMBER - 1,
     players: {},
     roundTimer: null,
+    timerInterval: null,
+    timeRemaining: 0,
+    roundEndTime: null,
     currentIo: null,
     pendingEndRound: false,
     instructorSocket: null,
@@ -146,26 +152,80 @@ function startRound(io) {
   // Store the io reference for this round
   game.currentIo = io;
   
-  // Emit round start event to all players
+  // Set up the centralized timer
+  game.timeRemaining = CONSTANTS.ROUND_DURATION_SECONDS;
+  game.roundEndTime = Date.now() + (CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
+  
+  // Clear any existing timers safely
+  try {
+    if (game.roundTimer) {
+      clearTimeout(game.roundTimer);
+      game.roundTimer = null;
+    }
+    if (game.timerInterval) {
+      clearInterval(game.timerInterval);
+      game.timerInterval = null;
+    }
+  } catch (timerError) {
+    console.error('Error clearing existing timers in startRound:', timerError);
+  }
+  
+  try {
+    // Start the centralized timer interval
+    game.timerInterval = setInterval(() => {
+      try {
+        // Calculate time remaining
+        game.timeRemaining = Math.max(0, Math.ceil((game.roundEndTime - Date.now()) / CONSTANTS.MILLISECONDS_PER_SECOND));
+        
+        // Emit timer update to all clients
+        if (io) {
+          io.emit('timer_update', { timeRemaining: game.timeRemaining });
+        }
+        
+        // If time has run out, end the round
+        if (game.timeRemaining <= 0) {
+          clearInterval(game.timerInterval);
+          game.timerInterval = null;
+          endRound(io);
+        }
+      } catch (intervalError) {
+        console.error('Error in timer interval:', intervalError);
+      }
+    }, 1000); // Update every second
+    
+    // Set a backup timer to ensure the round ends
+    game.roundTimer = setTimeout(() => {
+      try {
+        // Clear the interval timer
+        if (game.timerInterval) {
+          clearInterval(game.timerInterval);
+          game.timerInterval = null;
+        }
+        
+        // When timer expires, use the stored io reference
+        endRound(game.currentIo);
+      } catch (timeoutError) {
+        console.error('Error in round end timeout:', timeoutError);
+      }
+    }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
+  } catch (timerSetupError) {
+    console.error('Error setting up timers:', timerSetupError);
+  }
+  
+  // Emit round start event to all players with the initial timeRemaining
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.connected) {
       io.to(player.socketId).emit('round_start', {
         roundNumber: game.round,
         capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-        timeRemaining: CONSTANTS.ROUND_DURATION_SECONDS
+        timeRemaining: game.timeRemaining
       });
     }
   });
   
-  // Start the round timer
-  game.roundTimer = setTimeout(() => {
-    // When timer expires, use the stored io reference
-    endRound(game.currentIo);
-  }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
-  
   // Notify instructor of round start
-  const instructorData = { roundNumber: game.round, timeRemaining: CONSTANTS.ROUND_DURATION_SECONDS };
+  const instructorData = { roundNumber: game.round, timeRemaining: game.timeRemaining };
   if (game.instructorSocket && game.instructorSocket.connected) {
     game.instructorSocket.emit('round_start', instructorData);
   } else {
@@ -232,6 +292,20 @@ function endRound(io) {
   // Reset pendingEndRound flag
   game.pendingEndRound = false;
   
+  // Clear any existing timers
+  try {
+    if (game.roundTimer) {
+      clearTimeout(game.roundTimer);
+      game.roundTimer = null;
+    }
+    if (game.timerInterval) {
+      clearInterval(game.timerInterval);
+      game.timerInterval = null;
+    }
+  } catch (timerError) {
+    console.error('Error clearing timers in endRound:', timerError);
+  }
+  
   console.log(`Ending round ${game.round}...`);
   
   // For players who didn't submit, set investment to their last slider value if available
@@ -294,6 +368,13 @@ function endRound(io) {
         results
       });
     }
+    
+    // Also send round summary to screen clients
+    console.log('Sending round_summary to screens room');
+    io.to('screens').emit('round_summary', {
+      roundNumber: game.round,
+      results
+    });
   } else {
     console.error('No io object available when ending round!');
   }
@@ -369,6 +450,13 @@ function endGame(io) {
         winner
       });
     }
+    
+    // Send to screen clients
+    console.log(`Sending game_over to screens room`);
+    io.to('screens').emit('game_over', {
+      finalResults,
+      winner
+    });
   }
   
   // Reset game state
