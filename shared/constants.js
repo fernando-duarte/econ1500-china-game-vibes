@@ -236,6 +236,8 @@ const GAME_CONSTANTS = {
     EVENT_TIMER_UPDATE: 'timer_update',
     EVENT_GAME_JOINED: 'game_joined',
     EVENT_STATE_SNAPSHOT: 'state_snapshot',
+    EVENT_INSTRUCTOR_DISCONNECTED: 'instructor_disconnected',
+    EVENT_PLAYER_DISCONNECTED: 'player_disconnected',
 
     // Control events (client → server)
     EVENT_FORCE_END_GAME: 'force_end_game',
