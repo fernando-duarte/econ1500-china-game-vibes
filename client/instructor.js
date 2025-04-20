@@ -210,7 +210,7 @@ socket.on('investment_received', (data) => {
     setTimeout(() => {
       console.log('Calling updateCurrentInvestmentsTable after delay');
       updateCurrentInvestmentsTable();
-    }, 50);
+    }, CONSTANTS.MEDIUM_UI_DELAY_MS);
   }
   
   // Mark player as submitted
@@ -239,10 +239,10 @@ socket.on('investment_received', (data) => {
   statusElement.classList.add('status-message');
   document.body.appendChild(statusElement);
   
-  // Remove the message after 3 seconds
+  // Remove the message after a specified time
   setTimeout(() => {
     statusElement.remove();
-  }, 3000);
+  }, CONSTANTS.STATUS_MESSAGE_DISPLAY_MS);
   
   // Check for all submitted
   if (submittedPlayers.length === players.length) {
@@ -357,10 +357,10 @@ socket.on('admin_notification', (data) => {
   notification.classList.add('admin-notification', `admin-notification-${data.type || 'info'}`);
   document.body.appendChild(notification);
   
-  // Remove notification after a few seconds
+  // Remove notification after specified time
   setTimeout(() => {
     notification.remove();
-  }, 5000);
+  }, CONSTANTS.NOTIFICATION_DISPLAY_MS);
 });
 
 // Add handler for timer updates from the server
@@ -414,7 +414,7 @@ function updatePlayerList() {
   playerList.style.opacity = '0.99';
   setTimeout(() => {
     playerList.style.opacity = '1';
-  }, 10);
+  }, CONSTANTS.SHORT_UI_DELAY_MS);
 }
 
 function updateCurrentInvestmentsTable() {
@@ -461,6 +461,6 @@ function updateCurrentInvestmentsTable() {
   // Add visual highlight to show the table updated
   currentInvestmentsSection.style.animation = 'none';
   setTimeout(() => {
-    currentInvestmentsSection.style.animation = 'flashUpdate 0.5s';
-  }, 10);
+    currentInvestmentsSection.style.animation = `flashUpdate ${CONSTANTS.CSS_ANIMATION_DURATION_SECONDS}s`;
+  }, CONSTANTS.SHORT_UI_DELAY_MS);
 } 

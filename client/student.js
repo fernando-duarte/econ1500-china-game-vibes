@@ -347,10 +347,10 @@ socket.on('admin_notification', (data) => {
   notification.classList.add('admin-notification', `admin-notification-${data.type || 'info'}`);
   document.body.appendChild(notification);
   
-  // Remove notification after a few seconds
+  // Remove notification after specified time
   setTimeout(() => {
     notification.remove();
-  }, 5000);
+  }, CONSTANTS.NOTIFICATION_DISPLAY_MS);
 });
 
 socket.on('disconnect', () => {
@@ -373,8 +373,8 @@ function startTimer(seconds) {
     seconds--;
     timer.textContent = seconds;
     
-    // When 5 seconds or less are left, add warning class
-    if (seconds <= 5) {
+    // When timer reaches warning threshold or less, add warning class
+    if (seconds <= CONSTANTS.TIMER_WARNING_THRESHOLD_SECONDS) {
       timer.classList.add('timer-warning');
     }
     
