@@ -19,7 +19,9 @@ let game = {
   currentIo: null,
   pendingEndRound: false,
   instructorSocket: null, // Add reference to instructor socket
-  allSubmittedTime: null // Time when all players have submitted
+  allSubmittedTime: null, // Time when all players have submitted
+  roundStartTime: null,
+  roundActive: false
 };
 
 /**
@@ -39,7 +41,9 @@ function createGame() {
     currentIo: null,
     pendingEndRound: false,
     instructorSocket: null,
-    allSubmittedTime: null
+    allSubmittedTime: null,
+    roundStartTime: null,
+    roundActive: false
   });
 
   return true;
@@ -141,99 +145,111 @@ function startGame() {
 }
 
 /**
- * Start a new round
+ * Start a round
  */
 function startRound(io) {
-  // Reset all investments
-  Object.values(game.players).forEach(player => {
+  console.log('Starting round');
+  
+  // Set round end time explicitly
+  game.roundStartTime = Date.now();
+  game.roundEndTime = game.roundStartTime + (CONSTANTS.ROUND_DURATION_SECONDS * 1000);
+  game.roundActive = true;
+  
+  // Reset player investments for the new round
+  for (const player of Object.values(game.players)) {
     player.investment = null;
-  });
+    player.isAutoSubmit = false;
+  }
   
-  // Store the io reference for this round
-  game.currentIo = io;
+  // Set the round timer to end the round after the specified duration
+  game.roundTimer = setTimeout(() => {
+    // End the round
+    endRound(io);
+  }, CONSTANTS.ROUND_DURATION_SECONDS * 1000);
   
-  // Set up the centralized timer
+  // Create a timer interval for second-by-second updates
   game.timeRemaining = CONSTANTS.ROUND_DURATION_SECONDS;
-  game.roundEndTime = Date.now() + (CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
-  
-  // Clear any existing timers safely
-  try {
-    if (game.roundTimer) {
-      clearTimeout(game.roundTimer);
-      game.roundTimer = null;
-    }
-    if (game.timerInterval) {
-      clearInterval(game.timerInterval);
-      game.timerInterval = null;
-    }
-  } catch (timerError) {
-    console.error('Error clearing existing timers in startRound:', timerError);
-  }
-  
-  try {
-    // Start the centralized timer interval
-    game.timerInterval = setInterval(() => {
-      try {
-        // Calculate time remaining
-        game.timeRemaining = Math.max(0, Math.ceil((game.roundEndTime - Date.now()) / CONSTANTS.MILLISECONDS_PER_SECOND));
-        
-        // Emit timer update to all clients
-        if (io) {
-          io.emit('timer_update', { timeRemaining: game.timeRemaining });
-        }
-        
-        // If time has run out, end the round
-        if (game.timeRemaining <= 0) {
-          clearInterval(game.timerInterval);
-          game.timerInterval = null;
-          endRound(io);
-        }
-      } catch (intervalError) {
-        console.error('Error in timer interval:', intervalError);
-      }
-    }, 1000); // Update every second
-    
-    // Set a backup timer to ensure the round ends
-    game.roundTimer = setTimeout(() => {
-      try {
-        // Clear the interval timer
-        if (game.timerInterval) {
-          clearInterval(game.timerInterval);
-          game.timerInterval = null;
-        }
-        
-        // When timer expires, use the stored io reference
-        endRound(game.currentIo);
-      } catch (timeoutError) {
-        console.error('Error in round end timeout:', timeoutError);
-      }
-    }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
-  } catch (timerSetupError) {
-    console.error('Error setting up timers:', timerSetupError);
-  }
-  
-  // Emit round start event to all players with the initial timeRemaining
-  Object.entries(game.players).forEach(([playerName, player]) => {
-    if (player.connected) {
-      io.to(player.socketId).emit('round_start', {
-        roundNumber: game.round,
-        capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-        output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+  game.timerInterval = setInterval(() => {
+    if (game.timeRemaining > 0) {
+      game.timeRemaining--;
+      
+      // Broadcast timer update to all clients
+      io.emit('timer_update', {
         timeRemaining: game.timeRemaining
       });
+      
+      // Auto-submit for anyone who hasn't submitted with X seconds remaining
+      if (game.timeRemaining === CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS) {
+        console.log(`Auto-submit threshold reached (${CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS} seconds remaining)`);
+        
+        // Check all players
+        let autoSubmitCount = 0;
+        for (const [playerName, player] of Object.entries(game.players)) {
+          // Skip players who have already submitted
+          if (player.investment !== null) continue;
+          
+          // Auto-submit for this player (default 0)
+          console.log(`Auto-submitting investment for ${playerName}`);
+          const investment = 0; // Default to investing nothing
+          player.investment = investment;
+          player.isAutoSubmit = true;
+          autoSubmitCount++;
+          
+          // Notify the player
+          if (player.socketId && player.connected) {
+            try {
+              const playerSocket = io.sockets.sockets.get(player.socketId);
+              if (playerSocket) {
+                playerSocket.emit('investment_received', {
+                  investment,
+                  isAutoSubmit: true
+                });
+              }
+            } catch (err) {
+              console.error(`Error notifying player ${playerName} about auto-submission:`, err);
+            }
+          }
+          
+          // Notify instructor
+          if (game.instructorSocket && game.instructorSocket.connected) {
+            game.instructorSocket.emit('investment_received', {
+              playerName,
+              investment,
+              isAutoSubmit: true
+            });
+          }
+          
+          // Notify screens
+          io.to('screens').emit('investment_received', {
+            playerName,
+            investment,
+            isAutoSubmit: true
+          });
+        }
+        
+        if (autoSubmitCount > 0) {
+          console.log(`Auto-submitted for ${autoSubmitCount} players`);
+        }
+        
+        // Check if everyone has submitted
+        const pendingPlayers = Object.values(game.players).filter(p => p.investment === null);
+        if (pendingPlayers.length === 0) {
+          console.log('All players have submitted (via auto-submit) - will end round');
+          game.pendingEndRound = true;
+        }
+      }
     }
+  }, 1000);
+  
+  // Send more accurate time remaining
+  const timeRemaining = CONSTANTS.ROUND_DURATION_SECONDS;
+  
+  // Broadcast round start with timestamp
+  io.emit('round_start', {
+    roundNumber: game.round,
+    timeRemaining: timeRemaining,
+    serverTimestamp: Date.now() // Include server time for sync
   });
-  
-  // Notify instructor of round start
-  const instructorData = { roundNumber: game.round, timeRemaining: game.timeRemaining };
-  if (game.instructorSocket && game.instructorSocket.connected) {
-    game.instructorSocket.emit('round_start', instructorData);
-  } else {
-    // Just broadcast to everyone if no instructor socket available
-    io.emit('round_start', instructorData);
-  }
-  
-  return { success: true };
 }
 
 /**
@@ -467,34 +483,68 @@ function endGame(io) {
 }
 
 /**
- * Handle player reconnection
+ * Handle a player reconnection
  */
-function playerReconnect(playerName, socketId) {
-  // Check if game is inactive
-  if (game.state === CONSTANTS.GAME_STATES.INACTIVE) {
-    return { success: false, error: 'No active game' };
+function playerReconnect(socketId, playerName) {
+  const reconnectTime = Date.now();
+  console.log(`Player ${playerName} reconnecting at ${new Date(reconnectTime).toISOString()}`);
+  
+  // Check if game exists
+  if (!game) {
+    console.error('No game exists for reconnection');
+    return { success: false, error: 'No game exists' };
   }
   
   // Check if player exists
   if (!game.players[playerName]) {
+    console.error(`Player ${playerName} not found in game for reconnection`);
     return { success: false, error: 'Player not found' };
   }
   
   const player = game.players[playerName];
   
-  // Update socket ID and connection status
+  // Update socket id and connection status
   player.socketId = socketId;
   player.connected = true;
+  player.lastReconnectTime = reconnectTime;
   
-  // Return current game state for the player
-  return {
+  console.log(`Updated socket ID for ${playerName} to ${socketId}`);
+  
+  // Determine game state and remaining time
+  let gameState = 'waiting'; // Default state
+  let timeRemaining = 0;
+  
+  if (game.roundActive) {
+    gameState = 'round_active';
+    // Calculate remaining time based on current time and round end time
+    timeRemaining = Math.max(0, Math.floor((game.roundEndTime - Date.now()) / 1000));
+  } else if (game.round > 0) {
+    gameState = 'between_rounds';
+  }
+  
+  // Check if player has already invested in the current round
+  const lastInvestment = player.investment !== null ? player.investment : null;
+  
+  // Create game state to send back
+  const gameStateInfo = {
     success: true,
+    playerName: playerName,
+    gameState: gameState,
+    roundNumber: game.round,
+    capital: parseFloat(player.capital.toFixed(2)),
+    output: parseFloat(player.output.toFixed(2)),
+    timeRemaining: timeRemaining,
+    lastInvestment: lastInvestment,
     isGameRunning: game.isGameRunning,
-    round: game.round,
-    capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-    output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-    submitted: player.investment !== null
+    submitted: player.investment !== null,
+    finalOutput: game.state === CONSTANTS.GAME_STATES.COMPLETED && player.finalOutput !== undefined
+      ? parseFloat(player.finalOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
+      : null
   };
+  
+  console.log(`Sending game state to reconnected player ${playerName}:`, gameStateInfo);
+  
+  return gameStateInfo;
 }
 
 /**
