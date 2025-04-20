@@ -89,6 +89,7 @@ const GAME_CONSTANTS = {
     ERROR_CREATING_GAME: 'Error creating game',
     ERROR_STARTING_GAME: 'Error starting game',
     ERROR_FORCE_END_GAME: 'Failed to force end game',
+    ERROR_PROCESSING_FORCE_END_GAME: 'Error processing force end game request',
     ERROR_SETTING_MANUAL_START: 'Error setting manual start mode',
     ERROR_PROCESSING_INVESTMENT: 'Error processing investment',
     NOT_IN_GAME: 'Not in a game',
