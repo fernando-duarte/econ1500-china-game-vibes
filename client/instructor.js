@@ -191,9 +191,12 @@ socket.on('investment_received', (data) => {
   // Force UI update
   updatePlayerList();
   
+  // Format investment with consistent decimal precision
+  const formattedInvestment = parseFloat(data.investment).toFixed(CONSTANTS.DECIMAL_PRECISION);
+  
   // Add an indicator message to confirm submission was received
   const statusElement = document.createElement('div');
-  statusElement.textContent = `${data.playerName} submitted their investment: ${data.investment}`;
+  statusElement.textContent = `${data.playerName} submitted their investment: ${formattedInvestment}`;
   statusElement.classList.add('status-message');
   document.body.appendChild(statusElement);
   
@@ -249,9 +252,12 @@ socket.on('round_summary', (data) => {
       row.title = 'Auto-submitted (current slider value)';
     }
     
+    // Format investment with consistent decimal precision
+    const formattedInvestment = parseFloat(result.investment).toFixed(CONSTANTS.DECIMAL_PRECISION);
+    
     row.innerHTML = `
       <td>${result.playerName}</td>
-      <td>${result.investment}${result.isAutoSubmit ? ' (auto)' : ''}</td>
+      <td>${formattedInvestment}${result.isAutoSubmit ? ' (auto)' : ''}</td>
       <td>${result.newCapital}</td>
       <td>${result.newOutput}</td>
     `;
@@ -386,9 +392,12 @@ function updateCurrentInvestmentsTable() {
       row.title = 'Auto-submitted (current slider value)';
     }
     
+    // Format investment with consistent decimal precision
+    const formattedInvestment = parseFloat(data.investment).toFixed(CONSTANTS.DECIMAL_PRECISION);
+    
     row.innerHTML = `
       <td>${playerName}</td>
-      <td>${data.investment}${data.isAutoSubmit ? ' (auto)' : ''}</td>
+      <td>${formattedInvestment}${data.isAutoSubmit ? ' (auto)' : ''}</td>
     `;
     currentInvestmentsBody.appendChild(row);
   });
