@@ -125,7 +125,7 @@ function checkAutoStart(io) { // Accept io here
     if (startResult.success && io) { // Check if io exists
       console.log('Game started successfully via auto-start');
       // Broadcast game started to all players and instructors
-      io.to('all').emit('game_started');
+      io.to('all').emit(CONSTANTS.SOCKET.EVENT_GAME_STARTED);
       
       // Start the first round immediately instead of scheduling it
       console.log('Starting first round immediately due to auto-start');
@@ -197,7 +197,7 @@ function startRound(io) {
         
         // Emit timer update to all clients
         if (io) {
-          io.to('all').emit('timer_update', { timeRemaining: game.timeRemaining });
+          io.to('all').emit(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, { timeRemaining: game.timeRemaining });
         }
         
         // If time has run out, end the round
@@ -233,7 +233,7 @@ function startRound(io) {
   // Emit round start event to all players with the initial timeRemaining
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.connected) {
-      io.to(`player:${playerName}`).emit('round_start', {
+      io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_START, {
         roundNumber: game.round,
         capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
@@ -245,7 +245,7 @@ function startRound(io) {
   // Notify instructor of round start
   const instructorData = { roundNumber: game.round, timeRemaining: game.timeRemaining };
   // Always broadcast to the instructor room
-  io.to('instructor').emit('round_start', instructorData);
+  io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_ROUND_START, instructorData);
   
   return { success: true };
 }
@@ -256,12 +256,12 @@ function startRound(io) {
 function submitInvestment(playerName, investment, isAutoSubmit = false) {
   // Check if the game is running and in an active round
   if (!game.isGameRunning || game.round < CONSTANTS.FIRST_ROUND_NUMBER) {
-    return { success: false, error: 'Game not running' };
+    return { success: false, error: CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START };
   }
   
   // Check if game is over (round exceeds total rounds)
   if (game.round > CONSTANTS.ROUNDS) {
-    return { success: false, error: 'Game is over' };
+    return { success: false, error: CONSTANTS.UI_TEXT.STATUS_GAME_OVER };
   }
   
   // Check if player exists
@@ -360,7 +360,7 @@ function endRound(io) {
     
     // Send round end event to the player
     if (player.connected && io) {
-      io.to(`player:${playerName}`).emit('round_end', {
+      io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_END, {
         newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       });
@@ -374,14 +374,14 @@ function endRound(io) {
   if (io) {
     // Send to instructor room
     console.log('Sending round_summary to instructor room');
-    io.to('instructor').emit('round_summary', {
+    io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, {
       roundNumber: game.round,
       results
     });
     
     // Also send round summary to screen clients
     console.log('Sending round_summary to screens room');
-    io.to('screens').emit('round_summary', {
+    io.to('screens').emit(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, {
       roundNumber: game.round,
       results
     });
@@ -442,21 +442,21 @@ function endGame(io) {
   // Send game over event to all sockets
   if (io) {
     // Send to all players
-    io.to('players').emit('game_over', {
+    io.to('players').emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner
     });
     
     // Send to instructor room
     console.log('Sending game_over to instructor room');
-    io.to('instructor').emit('game_over', {
+    io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner
     });
     
     // Send to screen clients
     console.log(`Sending game_over to screens room`);
-    io.to('screens').emit('game_over', {
+    io.to('screens').emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner
     });
@@ -504,9 +504,9 @@ function forceEndGame(io) {
   
   // Send notification to all clients
   if (io) {
-    io.to('all').emit('admin_notification', { 
+    io.to('all').emit(CONSTANTS.SOCKET.EVENT_ADMIN_NOTIFICATION, { 
       message: 'Game is being ended by the instructor...',
-      type: 'warning'
+      type: CONSTANTS.NOTIFICATION.TYPE_WARNING
     });
   }
   
