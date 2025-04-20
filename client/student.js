@@ -162,6 +162,27 @@ socket.on('investment_received', (data) => {
   investmentResult.textContent = data.investment;
 });
 
+socket.on('all_submitted', (data) => {
+  console.log('All students have submitted:', data);
+  
+  // Show message that round is ending early
+  investmentStatus.innerHTML = `<span class="all-submitted-message">${data.message}</span>`;
+  
+  // Disable controls if not already submitted
+  if (!hasSubmittedInvestment) {
+    submitInvestment.disabled = true;
+    investmentSlider.disabled = true;
+    investmentValue.disabled = true;
+  }
+  
+  // Adjust timer display
+  timer.classList.add('timer-ending');
+  timer.textContent = 'Ending...';
+  
+  // Stop the current timer
+  clearInterval(timerInterval);
+});
+
 socket.on('round_end', (data) => {
   console.log('Round ended:', data);
   
@@ -264,7 +285,13 @@ function startTimer(seconds) {
       
       // Auto-submit if not submitted yet
       if (!hasSubmittedInvestment) {
-        submitInvestment.click();
+        const currentInvestment = parseFloat(investmentSlider.value);
+        socket.emit('submit_investment', { investment: currentInvestment, isAutoSubmit: true });
+        submitInvestment.disabled = true;
+        investmentSlider.disabled = true;
+        investmentValue.disabled = true;
+        investmentStatus.textContent = 'Time expired. Current investment value submitted automatically.';
+        hasSubmittedInvestment = true;
       }
     } else {
       timer.textContent = currentTime - 1;
