@@ -174,8 +174,8 @@ socket.on('round_start', (data) => {
   roundResults.classList.add('hidden');
   investmentUI.classList.remove('hidden');
   
-  // Start timer
-  startTimer(data.timeRemaining || CONSTANTS.ROUND_DURATION_SECONDS);
+  // Initialize timer with the server's time
+  timer.textContent = data.timeRemaining;
 });
 
 socket.on('investment_received', (data) => {
@@ -303,9 +303,26 @@ socket.on('state_snapshot', (data) => {
   // Show the appropriate UI
   investmentUI.classList.remove('hidden');
   
-  // If there's time remaining, start the timer
+  // Initialize timer display from state
   if (data.timeRemaining) {
-    startTimer(data.timeRemaining);
+    timer.textContent = data.timeRemaining;
+  }
+});
+
+// Add handler for timer updates from the server
+socket.on('timer_update', (data) => {
+  // Update timer display with server time
+  timer.textContent = data.timeRemaining;
+  
+  // Auto-submit if time is below threshold and no submission yet
+  if (data.timeRemaining <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS && !hasSubmittedInvestment) {
+    const currentInvestment = parseFloat(investmentSlider.value);
+    socket.emit('submit_investment', { investment: currentInvestment, isAutoSubmit: true });
+    submitInvestment.disabled = true;
+    investmentSlider.disabled = true;
+    investmentValue.disabled = true;
+    investmentStatus.textContent = 'Time expired. Current investment value submitted automatically.';
+    hasSubmittedInvestment = true;
   }
 });
 
