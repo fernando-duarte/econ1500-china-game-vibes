@@ -25,6 +25,10 @@ function setupSocketEvents(io) {
   createGame();
   console.log('Game created automatically on server start');
   
+  // Enable manual start mode by default
+  gameLogic.setManualStartMode(true);
+  console.log('Manual start mode enabled by default');
+  
   // Handle new socket connections
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
@@ -85,7 +89,9 @@ function setupSocketEvents(io) {
       socket.gameRole = 'instructor';
       
       // Notify the instructor client that a game is already created
-      socket.emit('game_created');
+      socket.emit('game_created', {
+        manualStartEnabled: gameLogic.game.manualStartEnabled
+      });
     }
     
     // Instructor creates a new game (keeping for backward compatibility)
@@ -145,7 +151,8 @@ function setupSocketEvents(io) {
             initialOutput: result.initialOutput,
             isGameRunning: gameLogic.game.isGameRunning,
             round: gameLogic.game.round,
-            autoStart: result.autoStart
+            autoStart: result.autoStart,
+            manualStartEnabled: result.manualStartEnabled
           });
 
           // Send player_joined directly to instructor if available
@@ -275,6 +282,31 @@ function setupSocketEvents(io) {
       } catch (error) {
         console.error('Error in force_end_game:', error);
         socket.emit('error', { message: 'Error processing force end game request' });
+      }
+    });
+    
+    // Instructor toggles manual start mode
+    socket.on('set_manual_start', ({ enabled }) => {
+      try {
+        if (!isInstructor) {
+          socket.emit('error', { message: 'Not authorized' });
+          return;
+        }
+        
+        console.log(`Instructor requested to ${enabled ? 'enable' : 'disable'} manual start mode`);
+        
+        const gameLogic = require('./gameLogic');
+        const result = gameLogic.setManualStartMode(enabled);
+        
+        if (result.success) {
+          console.log(`Manual start mode ${enabled ? 'enabled' : 'disabled'}`);
+          
+          // Notify all clients about the change
+          io.emit('manual_start_mode', { enabled: result.manualStartEnabled });
+        }
+      } catch (error) {
+        console.error('Error in set_manual_start:', error);
+        socket.emit('error', { message: 'Error setting manual start mode' });
       }
     });
     
