@@ -253,6 +253,13 @@ function endRound(io) {
         results
       });
     }
+    
+    // Also send round summary to screen clients
+    console.log('Sending round_summary to screens room');
+    io.to('screens').emit('round_summary', {
+      roundNumber: game.round,
+      results
+    });
   } else {
     console.error('No io object available when ending round!');
   }
@@ -321,6 +328,13 @@ function endGame(io) {
         winner
       });
     }
+    
+    // Send to screen clients
+    console.log(`Sending game_over to screens room`);
+    io.to('screens').emit('game_over', {
+      finalResults,
+      winner
+    });
   }
   
   // Reset game state
