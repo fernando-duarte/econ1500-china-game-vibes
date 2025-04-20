@@ -33,6 +33,9 @@ const GAME_CONSTANTS = {
   MEDIUM_UI_DELAY_MS: 50, // Medium delay for UI updates
   CSS_ANIMATION_DURATION_SECONDS: 0.5, // Duration for UI animations
   
+  // UI Hacks
+  REPAINT_HACK_OPACITY: '0.99', // Temporary opacity to force browser repaint
+  
   // Auto-start feature
   AUTO_START_ENABLED: false,  // Disabled - use manual start instead
   AUTO_START_PLAYERS: 3,  // Default number of players needed if auto-start is enabled
