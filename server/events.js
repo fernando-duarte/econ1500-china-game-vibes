@@ -64,12 +64,12 @@ function setupSocketEvents(io) {
 
           // If the game is running and a round is active, send more data
           if (gameLogic.game.isGameRunning && gameLogic.game.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
-            io.to('screens').emit('state_snapshot', stateData);
+            io.to('screens').emit(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, stateData);
           }
         }
       } catch (error) {
         console.error('Error in screen_connect:', error);
-        socket.emit('error', { message: 'Error connecting screen' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error connecting screen' });
       }
     });
 
@@ -89,7 +89,7 @@ function setupSocketEvents(io) {
       socket.join('instructor'); // Add instructor to a dedicated room for broadcasts
 
       // Notify the instructor client that a game is already created
-      io.to('instructor').emit('game_created', {
+      io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
         manualStartEnabled: gameLogic.game.manualStartEnabled
       });
     }
@@ -112,23 +112,23 @@ function setupSocketEvents(io) {
         console.log('Game created');
 
         // Notify the client
-        io.to('instructor').emit('game_created', {
+        io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
           manualStartEnabled: gameLogic.game.manualStartEnabled
         });
 
         // Also notify screens
-        io.to('screens').emit('game_created');
+        io.to('screens').emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED);
       } catch (error) {
         console.error('Error in create_game:', error);
-        socket.emit('error', { message: 'Error creating game' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error creating game' });
       }
     });
 
     // Student joins a game
-    socket.on('join_game', ({ playerName: name }) => {
+    socket.on(CONSTANTS.SOCKET.EVENT_JOIN_GAME, ({ playerName: name }) => {
       try {
         if (!name) {
-          socket.emit('error', { message: 'Player name is required' });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Player name is required' });
           return;
         }
 
@@ -150,7 +150,7 @@ function setupSocketEvents(io) {
 
         if (result.success) {
           console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
-          io.to(`player:${playerName}`).emit('game_joined', {
+          io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
             playerName: playerName,
             initialCapital: result.initialCapital,
             initialOutput: result.initialOutput,
@@ -162,22 +162,22 @@ function setupSocketEvents(io) {
 
           // Send player_joined to the instructor room
           console.log('Sending player_joined to instructor room');
-          io.to('instructor').emit('player_joined', {
+          io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
             playerName: playerName,
             initialCapital: result.initialCapital,
             initialOutput: result.initialOutput
           });
 
           // Also notify screens
-          io.to('screens').emit('player_joined', { playerName });
+          io.to('screens').emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, { playerName });
 
         } else {
           console.error(`Player join failed for ${playerName}:`, result.error);
-          socket.emit('error', { message: result.error });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
         console.error('Error in join_game:', error);
-        socket.emit('error', { message: 'Error joining game' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error joining game' });
       }
     });
 
@@ -210,7 +210,7 @@ function setupSocketEvents(io) {
           // Send current game state to the player
           if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
             const gameLogic = require('./gameLogic');
-            io.to(`player:${playerName}`).emit('state_snapshot', {
+            io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, {
               roundNumber: result.round,
               capital: result.capital,
               output: result.output,
@@ -220,7 +220,7 @@ function setupSocketEvents(io) {
           }
 
           // Also notify screens about reconnection
-          io.to('screens').emit('player_joined', {
+          io.to('screens').emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
             playerName,
             isReconnect: true
           });
@@ -238,10 +238,10 @@ function setupSocketEvents(io) {
     });
 
     // Instructor starts the game
-    socket.on('start_game', () => {
+    socket.on(CONSTANTS.SOCKET.EVENT_START_GAME, () => {
       try {
         if (!isInstructor) {
-          socket.emit('error', { message: 'Not authorized' });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Not authorized' });
           return;
         }
 
@@ -251,24 +251,24 @@ function setupSocketEvents(io) {
           console.log('Game started');
 
           // Broadcast game started to all players and instructors
-          io.to('all').emit('game_started');
+          io.to('all').emit(CONSTANTS.SOCKET.EVENT_GAME_STARTED);
 
           // Start the first round
           startRound(io);
         } else {
-          socket.emit('error', { message: result.error });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
         console.error('Error in start_game:', error);
-        socket.emit('error', { message: 'Error starting game' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error starting game' });
       }
     });
 
     // Instructor forces the game to end
-    socket.on('force_end_game', () => {
+    socket.on(CONSTANTS.SOCKET.EVENT_FORCE_END_GAME, () => {
       try {
         if (!isInstructor) {
-          socket.emit('error', { message: 'Not authorized' });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Not authorized' });
           return;
         }
 
@@ -279,19 +279,19 @@ function setupSocketEvents(io) {
         const result = gameLogic.forceEndGame(io);
 
         if (!result.success) {
-          socket.emit('error', { message: result.error || 'Failed to force end game' });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error || 'Failed to force end game' });
         }
       } catch (error) {
         console.error('Error in force_end_game:', error);
-        socket.emit('error', { message: 'Error processing force end game request' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error processing force end game request' });
       }
     });
 
     // Instructor toggles manual start mode
-    socket.on('set_manual_start', ({ enabled }) => {
+    socket.on(CONSTANTS.SOCKET.EVENT_SET_MANUAL_START, ({ enabled }) => {
       try {
         if (!isInstructor) {
-          socket.emit('error', { message: 'Not authorized' });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Not authorized' });
           return;
         }
 
@@ -304,22 +304,22 @@ function setupSocketEvents(io) {
           console.log(`Manual start mode ${enabled ? 'enabled' : 'disabled'}`);
 
           // Notify all clients about the change
-          io.to('all').emit('manual_start_mode', { enabled: result.manualStartEnabled });
+          io.to('all').emit(CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE, { enabled: result.manualStartEnabled });
         }
       } catch (error) {
         console.error('Error in set_manual_start:', error);
-        socket.emit('error', { message: 'Error setting manual start mode' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error setting manual start mode' });
       }
     });
 
     // Student submits investment
-    socket.on('submit_investment', ({ investment, isAutoSubmit }) => {
+    socket.on(CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT, ({ investment, isAutoSubmit }) => {
       try {
         console.log(`Received investment submission from socket ${socket.id} (role: ${socket.gameRole || 'unknown'})`);
 
         if (!playerName) {
           console.error(`Cannot process investment: No player name associated with socket ${socket.id}`);
-          socket.emit('error', { message: 'Not in a game' });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Not in a game' });
           return;
         }
 
@@ -338,18 +338,18 @@ function setupSocketEvents(io) {
 
         if (result.success) {
           console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
-          io.to(`player:${playerName}`).emit('investment_received', { investment: result.investment, isAutoSubmit });
+          io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, { investment: result.investment, isAutoSubmit });
 
           // Always broadcast to instructor room
           console.log('Sending investment_received to instructor room');
-          io.to('instructor').emit('investment_received', {
+          io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, {
             playerName,
             investment: result.investment,
             isAutoSubmit
           });
 
           // Also notify screens about the investment
-          io.to('screens').emit('investment_received', {
+          io.to('screens').emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, {
             playerName,
             investment: result.investment,
             isAutoSubmit
@@ -367,13 +367,13 @@ function setupSocketEvents(io) {
 
             try {
               // Send notification to all students
-              io.to('players').emit('all_submitted', notificationData);
+              io.to('players').emit(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, notificationData);
 
               // Send notification to instructor room
-              io.to('instructor').emit('all_submitted', notificationData);
+              io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, notificationData);
 
               // Send notification to screens
-              io.to('screens').emit('all_submitted', notificationData);
+              io.to('screens').emit(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, notificationData);
 
               // Clear timers safely
               try {
@@ -404,11 +404,11 @@ function setupSocketEvents(io) {
           }
         } else {
           console.error(`Investment submission failed for ${playerName}:`, result.error);
-          socket.emit('error', { message: result.error });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
         console.error('Error in submit_investment:', error);
-        socket.emit('error', { message: 'Error processing investment' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error processing investment' });
       }
     });
 
