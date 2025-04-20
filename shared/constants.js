@@ -79,6 +79,12 @@ const GAME_CONSTANTS = {
     STATUS_WAITING_FOR_PLAYERS: 'Waiting for Players',
     STATUS_GAME_STARTING: 'Game Starting',
     STATUS_WAITING_FOR_GAME: 'Waiting for Game',
+    STATUS_GAME_STARTED: 'Game has started. Waiting for first round...',
+    STATUS_ALREADY_SUBMITTED: 'You have already submitted your investment for this round',
+    STATUS_TIME_EXPIRED: 'Time expired. Current investment value submitted automatically.',
+    STATUS_ENDING: 'Ending...',
+    STATUS_WAITING_FOR_GAME_START: 'Waiting for game to start...',
+    STATUS_WAITING_FOR_NEXT_ROUND: 'Waiting for next round...',
     TITLE_AUTO_SUBMITTED: 'Auto-submitted (current slider value)',
     AUTO_SUBMIT_SUFFIX: ' (auto)',
     PLACEHOLDER_INVESTMENT_SUBMITTED: 'No investments submitted yet',
@@ -91,7 +97,12 @@ const GAME_CONSTANTS = {
     STATUS_INVESTMENT_SUBMITTED: 'Investment submitted. Waiting for other players...',
     STATUS_TIMES_UP_AUTO_SUBMIT: 'Time\'s up! Your investment was auto-submitted.',
     STATUS_GAME_OVER_NO_INVESTMENTS: 'Game is over. No more investments can be made.',
-    ALL_SUBMITTED_NOTIFICATION: 'All players have submitted their investments. Round ending early...'
+    ALL_SUBMITTED_NOTIFICATION: 'All players have submitted their investments. Round ending early...',
+    ERROR_PREFIX: 'Error: ',
+    TIMER_PLACEHOLDER: '-',
+    ROUND_COMPLETED_FORMAT: 'Round {0} Completed',
+    PLACEHOLDER_TEXT: '-',
+    PLAYER_NAME_PLACEHOLDER: 'Enter your name'
   },
 
   // CSS Class Constants
