@@ -132,9 +132,9 @@ function checkAutoStart(io) { // Accept io here
       startRound(io);
       return true;
     } else if (!startResult.success) {
-      console.error('Auto-start failed:', startResult.error);
+      console.error(CONSTANTS.DEBUG_MESSAGES.AUTO_START_FAILED, startResult.error);
     } else if (!io) {
-      console.error('Auto-start failed: io object is missing');
+      console.error(CONSTANTS.DEBUG_MESSAGES.AUTO_START_FAILED_NO_IO);
     }
   }
   
@@ -185,7 +185,7 @@ function startRound(io) {
       game.timerInterval = null;
     }
   } catch (timerError) {
-    console.error('Error clearing existing timers in startRound:', timerError);
+    console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS_START_ROUND, timerError);
   }
   
   try {
@@ -207,7 +207,7 @@ function startRound(io) {
           endRound(io);
         }
       } catch (intervalError) {
-        console.error('Error in timer interval:', intervalError);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_TIMER_INTERVAL, intervalError);
       }
     }, CONSTANTS.MILLISECONDS_PER_SECOND); // Update every second
     
@@ -223,11 +223,11 @@ function startRound(io) {
         // When timer expires, use the stored io reference
         endRound(game.currentIo);
       } catch (timeoutError) {
-        console.error('Error in round end timeout:', timeoutError);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_ROUND_END_TIMEOUT, timeoutError);
       }
     }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
   } catch (timerSetupError) {
-    console.error('Error setting up timers:', timerSetupError);
+    console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_SETTING_UP_TIMERS, timerSetupError);
   }
   
   // Emit round start event to all players with the initial timeRemaining
@@ -322,7 +322,7 @@ function endRound(io) {
       game.timerInterval = null;
     }
   } catch (timerError) {
-    console.error('Error clearing timers in endRound:', timerError);
+    console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS_END_ROUND, timerError);
   }
   
   console.log(`Ending round ${game.round}...`);
@@ -386,7 +386,7 @@ function endRound(io) {
       results
     });
   } else {
-    console.error('No io object available when ending round!');
+    console.error(CONSTANTS.DEBUG_MESSAGES.NO_IO_AVAILABLE_END_ROUND);
   }
 
   // Increment the round counter first
@@ -406,7 +406,7 @@ function endRound(io) {
   if (io) {
     startRound(io);
   } else {
-    console.error('Cannot start next round - no io object available!');
+    console.error(CONSTANTS.DEBUG_MESSAGES.CANNOT_START_NEXT_ROUND);
   }
 
   return { success: true, gameOver: false };
@@ -491,7 +491,7 @@ function forceEndGame(io) {
       game.timerInterval = null;
     }
   } catch (timerError) {
-    console.error('Error clearing timers in forceEndGame:', timerError);
+    console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS_FORCE_END, timerError);
   }
   
   // For any players who haven't submitted investments in this round, 

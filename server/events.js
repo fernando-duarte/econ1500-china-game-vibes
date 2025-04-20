@@ -68,7 +68,7 @@ function setupSocketEvents(io) {
           }
         }
       } catch (error) {
-        console.error('Error in screen_connect:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SCREEN_CONNECT, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_CONNECTING_SCREEN });
       }
     });
@@ -119,7 +119,7 @@ function setupSocketEvents(io) {
         // Also notify screens
         io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED);
       } catch (error) {
-        console.error('Error in create_game:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_CREATE_GAME, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_CREATING_GAME });
       }
     });
@@ -172,11 +172,11 @@ function setupSocketEvents(io) {
           io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, { playerName });
 
         } else {
-          console.error(`Player join failed for ${playerName}:`, result.error);
+          console.error(`${CONSTANTS.DEBUG_MESSAGES.PLAYER_JOIN_FAILED} ${playerName}:`, result.error);
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
-        console.error('Error in join_game:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_JOIN_GAME, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_JOINING_GAME });
       }
     });
@@ -229,7 +229,7 @@ function setupSocketEvents(io) {
         // Send acknowledgment to the client
         socket.emit(CONSTANTS.SOCKET.EVENT_JOIN_ACK, result);
       } catch (error) {
-        console.error('Error in reconnect_game:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_RECONNECT_GAME, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_JOIN_ACK, {
           success: false,
           error: CONSTANTS.ERROR_MESSAGES.SERVER_ERROR_RECONNECT
@@ -259,7 +259,7 @@ function setupSocketEvents(io) {
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
-        console.error('Error in start_game:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_START_GAME, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_STARTING_GAME });
       }
     });
@@ -282,7 +282,7 @@ function setupSocketEvents(io) {
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error || CONSTANTS.ERROR_MESSAGES.ERROR_FORCE_END_GAME });
         }
       } catch (error) {
-        console.error('Error in force_end_game:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_FORCE_END_GAME, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_FORCE_END_GAME });
       }
     });
@@ -307,7 +307,7 @@ function setupSocketEvents(io) {
           io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE, { enabled: result.manualStartEnabled });
         }
       } catch (error) {
-        console.error('Error in set_manual_start:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SET_MANUAL_START, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_SETTING_MANUAL_START });
       }
     });
@@ -318,7 +318,7 @@ function setupSocketEvents(io) {
         console.log(`Received investment submission from socket ${socket.id} (role: ${socket.gameRole || 'unknown'})`);
 
         if (!playerName) {
-          console.error(`Cannot process investment: No player name associated with socket ${socket.id}`);
+          console.error(`${CONSTANTS.DEBUG_MESSAGES.NO_PLAYER_NAME} ${socket.id}`);
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.NOT_IN_GAME });
           return;
         }
@@ -384,7 +384,7 @@ function setupSocketEvents(io) {
                   clearInterval(gameLogic.game.timerInterval);
                 }
               } catch (timerError) {
-                console.error('Error clearing timers:', timerError);
+                console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS, timerError);
               }
 
               // Add a slight delay before ending the round to allow for UI updates
@@ -392,22 +392,22 @@ function setupSocketEvents(io) {
                 try {
                   gameLogic.endRound(io);
                 } catch (endRoundError) {
-                  console.error('Error ending round:', endRoundError);
+                  console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_ENDING_ROUND, endRoundError);
                 }
               }, CONSTANTS.ALL_SUBMITTED_UI_DELAY_MS);
             } catch (notificationError) {
-              console.error('Error sending notifications:', notificationError);
+              console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_SENDING_NOTIFICATIONS, notificationError);
             }
           } else if (result.allSubmitted) {
             // This could happen if multiple submissions come in at almost the same time
             console.log('This submission completed all required inputs - will end round shortly');
           }
         } else {
-          console.error(`Investment submission failed for ${playerName}:`, result.error);
+          console.error(`${CONSTANTS.DEBUG_MESSAGES.INVESTMENT_SUBMISSION_FAILED} ${playerName}:`, result.error);
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
-        console.error('Error in submit_investment:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SUBMIT_INVESTMENT, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_INVESTMENT });
       }
     });
@@ -430,7 +430,7 @@ function setupSocketEvents(io) {
         // Mark player as disconnected
         playerDisconnect(socket.id);
       } catch (error) {
-        console.error('Error in disconnect handler:', error);
+        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_DISCONNECT, error);
       }
     });
   });
