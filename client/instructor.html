@@ -19,6 +19,16 @@
         <p>Students can join directly from the student page</p>
         <p id="playerCount">0 players have joined</p>
       </div>
+      <div class="join-controls">
+        <div class="toggle-container">
+          <label class="toggle-switch">
+            <input type="checkbox" id="manualStartToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">Manual Start Mode: <span id="manualStartStatus">Enabled</span></span>
+        </div>
+        <button id="startGameButton" class="button">Start Game</button>
+      </div>
     </div>
     
     <!-- Game Controls -->
@@ -28,6 +38,9 @@
         <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds"></span></p>
         <p id="roundStatus">Waiting for game to start...</p>
         <p>Time Remaining: <span id="roundTimer" class="timer">-</span> seconds</p>
+      </div>
+      <div class="admin-controls">
+        <button id="forceEndGameButton" class="button button-warning">Force End Game</button>
       </div>
     </div>
     
