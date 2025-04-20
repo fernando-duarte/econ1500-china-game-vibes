@@ -14,6 +14,10 @@ const CONSTANTS = require('../shared/constants');
  * Set up Socket.IO event handlers
  */
 function setupSocketEvents(io) {
+  // Store io instance in gameLogic for auto-start functionality
+  const gameLogic = require('./gameLogic');
+  gameLogic.game.currentIo = io;
+  
   // Handle new socket connections
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
@@ -82,6 +86,12 @@ function setupSocketEvents(io) {
             gameLogic.game.instructorSocket.emit('player_joined', { playerName });
           } else {
             console.log('No instructor socket available for player_joined notification');
+          }
+          
+          // If game auto-started, broadcast game_started event
+          if (result.autoStart) {
+            console.log('Broadcasting game_started due to auto-start');
+            io.emit('game_started');
           }
         }
         

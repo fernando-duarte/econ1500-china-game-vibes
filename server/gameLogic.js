@@ -69,11 +69,43 @@ function addPlayer(playerName, socketId) {
     connected: true
   };
   
+  // Check if auto-start is enabled and enough players have joined
+  const autoStartResult = checkAutoStart();
+  
   return { 
     success: true, 
     initialCapital, 
-    initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
+    initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    autoStart: autoStartResult
   };
+}
+
+/**
+ * Check if the game should auto-start and start it if conditions are met
+ */
+function checkAutoStart() {
+  if (CONSTANTS.AUTO_START_ENABLED && 
+      Object.keys(game.players).length >= CONSTANTS.AUTO_START_PLAYERS && 
+      !game.isGameRunning) {
+    
+    console.log('Auto-starting game with', Object.keys(game.players).length, 'players');
+    const startResult = startGame();
+    
+    if (startResult.success) {
+      // Schedule start round on next event loop to allow clients to receive game_started first
+      setTimeout(() => {
+        if (game.currentIo) {
+          startRound(game.currentIo);
+        } else {
+          console.error('Cannot auto-start round: No IO instance available');
+        }
+      }, 100);
+      
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 /**
@@ -373,6 +405,7 @@ function playerDisconnect(socketId) {
   });
 }
 
+// Export the game functions
 module.exports = {
   createGame,
   addPlayer,
@@ -383,5 +416,5 @@ module.exports = {
   endGame,
   playerReconnect,
   playerDisconnect,
-  game
+  game  // Export the game object for external use
 }; 

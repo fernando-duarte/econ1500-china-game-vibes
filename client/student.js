@@ -118,6 +118,14 @@ socket.on('join_ack', (data) => {
   joinForm.classList.add('hidden');
   gameUI.classList.remove('hidden');
   
+  // If game is auto-starting, update the UI accordingly
+  if (data.autoStart) {
+    console.log('Game is auto-starting');
+    roundStatus.textContent = 'Game is starting automatically...';
+  } else {
+    roundStatus.textContent = 'Waiting for instructor to start the game...';
+  }
+  
   console.log('Successfully joined the game');
 });
 
