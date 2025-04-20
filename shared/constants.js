@@ -9,6 +9,7 @@ const GAME_CONSTANTS = {
   INITIAL_CAPITAL: 100,
   ALPHA: 0.3,
   DEPRECIATION_RATE: 0.1,
+  NEGATIVE_INITIAL_VALUE: -1, // Used as sentinel value for finding maximums
   
   // Display constants
   DECIMAL_PRECISION: 1,

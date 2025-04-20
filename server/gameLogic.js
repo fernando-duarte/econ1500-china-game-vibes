@@ -415,7 +415,7 @@ function endRound(io) {
  */
 function endGame(io) {
   // Find the player with the highest output
-  let maxOutput = -1;
+  let maxOutput = CONSTANTS.NEGATIVE_INITIAL_VALUE;
   let winner = null;
   
   const finalResults = [];
