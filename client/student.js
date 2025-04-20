@@ -272,6 +272,12 @@ socket.on('game_over', (data) => {
   
   // Update round status
   roundStatus.textContent = 'Game over';
+  
+  // Disable all investment controls
+  submitInvestment.disabled = true;
+  investmentSlider.disabled = true;
+  investmentValue.disabled = true;
+  investmentStatus.textContent = 'Game is over. No more investments can be made.';
 });
 
 socket.on('state_snapshot', (data) => {
@@ -329,6 +335,22 @@ socket.on('timer_update', (data) => {
 socket.on('error', (data) => {
   joinError.textContent = data.message;
   joinButton.disabled = false;
+});
+
+// Add handler for admin notifications
+socket.on('admin_notification', (data) => {
+  console.log('Admin notification:', data);
+  
+  // Display notification to user
+  const notification = document.createElement('div');
+  notification.textContent = data.message;
+  notification.classList.add('admin-notification', `admin-notification-${data.type || 'info'}`);
+  document.body.appendChild(notification);
+  
+  // Remove notification after a few seconds
+  setTimeout(() => {
+    notification.remove();
+  }, 5000);
 });
 
 socket.on('disconnect', () => {
