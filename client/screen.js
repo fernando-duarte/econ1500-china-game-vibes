@@ -315,7 +315,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
   }
 
   // Update game status based on round
-  if (data.roundNumber > 0) {
+  if (data.roundNumber >= CONSTANTS.FIRST_ROUND_NUMBER) {
     gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
     gameState = CONSTANTS.GAME_STATES.ACTIVE;
   }
