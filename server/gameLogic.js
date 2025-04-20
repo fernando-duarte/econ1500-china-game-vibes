@@ -72,17 +72,17 @@ function addPlayer(playerName, socketId, io) {
 
   // Check if game is running
   if (game.isGameRunning) {
-    return { success: false, error: 'Game already in progress' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.GAME_ALREADY_IN_PROGRESS };
   }
 
   // Check if player name is already taken
   if (game.players[playerName]) {
-    return { success: false, error: 'Player name already taken' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.PLAYER_NAME_TAKEN };
   }
 
   // Check max players
   if (Object.keys(game.players).length >= CONSTANTS.MAX_PLAYERS) {
-    return { success: false, error: 'Maximum number of players reached' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.MAX_PLAYERS_REACHED };
   }
 
   // Add player to the game
@@ -125,7 +125,7 @@ function checkAutoStart(io) { // Accept io here
     if (startResult.success && io) { // Check if io exists
       console.log('Game started successfully via auto-start');
       // Broadcast game started to all players and instructors
-      io.to('all').emit(CONSTANTS.SOCKET.EVENT_GAME_STARTED);
+      io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_GAME_STARTED);
       
       // Start the first round immediately instead of scheduling it
       console.log('Starting first round immediately due to auto-start');
@@ -147,7 +147,7 @@ function checkAutoStart(io) { // Accept io here
 function startGame() {
   // Check if there are any players
   if (Object.keys(game.players).length === 0) {
-    return { success: false, error: 'No players in the game' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.NO_PLAYERS_IN_GAME };
   }
   
   // Start the game
@@ -197,7 +197,7 @@ function startRound(io) {
         
         // Emit timer update to all clients
         if (io) {
-          io.to('all').emit(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, { timeRemaining: game.timeRemaining });
+          io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, { timeRemaining: game.timeRemaining });
         }
         
         // If time has run out, end the round
@@ -233,7 +233,7 @@ function startRound(io) {
   // Emit round start event to all players with the initial timeRemaining
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.connected) {
-      io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_START, {
+      io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_START, {
         roundNumber: game.round,
         capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
@@ -245,7 +245,7 @@ function startRound(io) {
   // Notify instructor of round start
   const instructorData = { roundNumber: game.round, timeRemaining: game.timeRemaining };
   // Always broadcast to the instructor room
-  io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_ROUND_START, instructorData);
+  io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_ROUND_START, instructorData);
   
   return { success: true };
 }
@@ -266,7 +266,7 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
   
   // Check if player exists
   if (!game.players[playerName]) {
-    return { success: false, error: 'Player not found' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.PLAYER_NOT_FOUND };
   }
   
   const player = game.players[playerName];
@@ -360,7 +360,7 @@ function endRound(io) {
     
     // Send round end event to the player
     if (player.connected && io) {
-      io.to(`player:${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_END, {
+      io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_END, {
         newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       });
@@ -374,14 +374,14 @@ function endRound(io) {
   if (io) {
     // Send to instructor room
     console.log('Sending round_summary to instructor room');
-    io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, {
+    io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, {
       roundNumber: game.round,
       results
     });
     
     // Also send round summary to screen clients
     console.log('Sending round_summary to screens room');
-    io.to('screens').emit(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, {
+    io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, {
       roundNumber: game.round,
       results
     });
@@ -442,21 +442,21 @@ function endGame(io) {
   // Send game over event to all sockets
   if (io) {
     // Send to all players
-    io.to('players').emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
+    io.to(CONSTANTS.SOCKET_ROOMS.PLAYERS).emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner
     });
     
     // Send to instructor room
     console.log('Sending game_over to instructor room');
-    io.to('instructor').emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
+    io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner
     });
     
     // Send to screen clients
     console.log(`Sending game_over to screens room`);
-    io.to('screens').emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
+    io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner
     });
@@ -475,7 +475,7 @@ function endGame(io) {
 function forceEndGame(io) {
   // Check if game is running
   if (!game.isGameRunning) {
-    return { success: false, error: 'Game is not running' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.GAME_NOT_RUNNING };
   }
   
   console.log('Force ending game by instructor request');
@@ -504,8 +504,8 @@ function forceEndGame(io) {
   
   // Send notification to all clients
   if (io) {
-    io.to('all').emit(CONSTANTS.SOCKET.EVENT_ADMIN_NOTIFICATION, { 
-      message: 'Game is being ended by the instructor...',
+    io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_ADMIN_NOTIFICATION, { 
+      message: CONSTANTS.NOTIFICATION_MESSAGES.GAME_ENDING,
       type: CONSTANTS.NOTIFICATION.TYPE_WARNING
     });
   }
@@ -522,7 +522,7 @@ function forceEndGame(io) {
 function playerReconnect(playerName, socketId) {
   // Check if player exists
   if (!game.players[playerName]) {
-    return { success: false, error: 'Player not found' };
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.PLAYER_NOT_FOUND };
   }
   
   const player = game.players[playerName];

@@ -65,6 +65,49 @@ const GAME_CONSTANTS = {
   // CSS layout constant for stat-box width
   STAT_BOX_MIN_WIDTH: 150,
 
+  // Socket Room Constants
+  SOCKET_ROOMS: {
+    ALL: 'all',
+    PLAYERS: 'players',
+    INSTRUCTOR: 'instructor',
+    SCREENS: 'screens',
+    PLAYER_PREFIX: 'player:'
+  },
+  
+  // Game Role Constants
+  GAME_ROLES: {
+    PLAYER: 'player',
+    INSTRUCTOR: 'instructor',
+    SCREEN: 'screen'
+  },
+  
+  // Error Message Constants
+  ERROR_MESSAGES: {
+    NOT_AUTHORIZED: 'Not authorized',
+    PLAYER_NAME_REQUIRED: 'Player name is required',
+    ERROR_JOINING_GAME: 'Error joining game',
+    ERROR_CREATING_GAME: 'Error creating game',
+    ERROR_STARTING_GAME: 'Error starting game',
+    ERROR_FORCE_END_GAME: 'Failed to force end game',
+    ERROR_SETTING_MANUAL_START: 'Error setting manual start mode',
+    ERROR_PROCESSING_INVESTMENT: 'Error processing investment',
+    NOT_IN_GAME: 'Not in a game',
+    ERROR_CONNECTING_SCREEN: 'Error connecting screen',
+    INVALID_INPUT: 'Invalid input',
+    SERVER_ERROR_RECONNECT: 'Server error reconnecting to game',
+    GAME_ALREADY_IN_PROGRESS: 'Game already in progress',
+    PLAYER_NAME_TAKEN: 'Player name already taken',
+    MAX_PLAYERS_REACHED: 'Maximum number of players reached',
+    NO_PLAYERS_IN_GAME: 'No players in the game',
+    PLAYER_NOT_FOUND: 'Player not found',
+    GAME_NOT_RUNNING: 'Game is not running'
+  },
+  
+  // Notification Messages
+  NOTIFICATION_MESSAGES: {
+    GAME_ENDING: 'Game is being ended by the instructor...'
+  },
+
   // UI Text Constants
   UI_TEXT: {
     STATUS_ENABLED: 'Enabled',
@@ -98,7 +141,7 @@ const GAME_CONSTANTS = {
     STATUS_INVESTMENT_SUBMITTED: 'Investment submitted. Waiting for other players...',
     STATUS_TIMES_UP_AUTO_SUBMIT: 'Time\'s up! Your investment was auto-submitted.',
     STATUS_GAME_OVER_NO_INVESTMENTS: 'Game is over. No more investments can be made.',
-    ALL_SUBMITTED_NOTIFICATION: 'All players have submitted their investments. Round ending early...',
+    ALL_SUBMITTED_NOTIFICATION: 'All players have submitted investments. Round ending early...',
     ERROR_PREFIX: 'Error: ',
     TIMER_PLACEHOLDER: '-',
     ROUND_COMPLETED_FORMAT: 'Round {0} Completed',
@@ -153,7 +196,11 @@ const GAME_CONSTANTS = {
     EVENT_SET_MANUAL_START: 'set_manual_start',
     EVENT_START_GAME: 'start_game',
     EVENT_SUBMIT_INVESTMENT: 'submit_investment',
-    EVENT_JOIN_GAME: 'join_game'
+    EVENT_JOIN_GAME: 'join_game',
+    EVENT_SCREEN_CONNECT: 'screen_connect',
+    EVENT_RECONNECT_GAME: 'reconnect_game',
+    EVENT_CREATE_GAME: 'create_game',
+    EVENT_JOIN_ACK: 'join_ack'
   },
 
   // Notification Types
