@@ -98,7 +98,7 @@ submitInvestment.addEventListener('click', () => {
 });
 
 // Socket event handlers
-socket.on('game_joined', (data) => { // TODO: Add constant for this event
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, (data) => {
   // Store player name from server data
   currentPlayerName = data.playerName;
 
@@ -204,7 +204,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, (data) => {
   clearInterval(timerInterval);
 });
 
-socket.on('round_end', (data) => { // TODO: Add constant for this event
+socket.on(CONSTANTS.SOCKET.EVENT_ROUND_END, (data) => {
   console.log('Round ended:', data);
 
   // Stop the timer
@@ -280,7 +280,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   investmentStatus.textContent = 'Game is over. No more investments can be made.';
 });
 
-socket.on('state_snapshot', (data) => { // TODO: Add constant for this event
+socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
   console.log('Received state snapshot:', data);
 
   // Update round number and capital/output

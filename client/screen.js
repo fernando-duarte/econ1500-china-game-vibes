@@ -306,7 +306,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   addEvent('game_over', `Game over! Winner: ${data.winner}`, true);
 });
 
-socket.on('state_snapshot', (data) => { // TODO: Add constant for this event
+socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
   console.log('Received state snapshot:', data);
 
   // Update round number

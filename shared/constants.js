@@ -5,23 +5,23 @@ const GAME_CONSTANTS = {
   ROUND_DURATION_SECONDS: 60,
   FIRST_ROUND_NUMBER: 1,
   MAX_PLAYERS: 50, // Maximum number of players allowed
-  
+
   // Economic model constants
   INITIAL_CAPITAL: 100,
   ALPHA: 0.3,
   DEPRECIATION_RATE: 0.1,
   NEGATIVE_INITIAL_VALUE: -1, // Used as sentinel value for finding maximums
-  
+
   // Display constants
   DECIMAL_PRECISION: 1,
   DISPLAY_INDEX_OFFSET: 1,
   TIMER_WARNING_THRESHOLD_SECONDS: 5, // When to show timer warning
   MAX_EVENT_LOG_SIZE: 50, // Maximum number of events in event log
-  
+
   // Investment constants
   INVESTMENT_STEP: 0.1,
   INVESTMENT_MIN: 0,
-  
+
   // Timing constants
   MILLISECONDS_PER_SECOND: 1000,
   AUTO_SUBMIT_THRESHOLD_SECONDS: 1,
@@ -32,17 +32,17 @@ const GAME_CONSTANTS = {
   SHORT_UI_DELAY_MS: 10, // Very short delay for UI repaints
   MEDIUM_UI_DELAY_MS: 50, // Medium delay for UI updates
   CSS_ANIMATION_DURATION_SECONDS: 0.5, // Duration for UI animations
-  
+
   // UI Hacks
   REPAINT_HACK_OPACITY: '0.99', // Temporary opacity to force browser repaint
-  
+
   // Auto-start feature
   AUTO_START_ENABLED: false,  // Disabled - use manual start instead
   AUTO_START_PLAYERS: 3,  // Default number of players needed if auto-start is enabled
-  
+
   // Server defaults
   DEFAULT_PORT: 3000,
-  
+
   // Game state constants
   GAME_STATES: {
     INACTIVE: 'inactive',
@@ -50,20 +50,20 @@ const GAME_CONSTANTS = {
     ACTIVE: 'active',
     COMPLETED: 'completed'
   },
-  
+
   // Content type constants
   CONTENT_TYPES: {
     JAVASCRIPT: 'application/javascript'
   },
-  
+
   // Environment constants
   ENVIRONMENT: {
     TYPEOF_UNDEFINED: 'undefined'
   },
-  
+
   // CSS layout constant for stat-box width
   STAT_BOX_MIN_WIDTH: 150,
-  
+
   // UI Text Constants
   UI_TEXT: {
     STATUS_ENABLED: 'Enabled',
@@ -81,7 +81,7 @@ const GAME_CONSTANTS = {
     CONFIRM_START_GAME_SUFFIX: ' player(s)?',
     ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.'
   },
-  
+
   // CSS Class Constants
   CSS: {
     HIDDEN: 'hidden',
@@ -98,14 +98,14 @@ const GAME_CONSTANTS = {
     PLAYER_STATUS: 'player-status',
     PLAYER_STATUS_PENDING: 'pending'
   },
-  
+
   // Socket.IO Events
   SOCKET: {
     // Connection events
     EVENT_CONNECT: 'connect',
     EVENT_DISCONNECT: 'disconnect',
     EVENT_ERROR: 'error',
-    
+
     // Game state events (server → client)
     EVENT_GAME_CREATED: 'game_created',
     EVENT_PLAYER_JOINED: 'player_joined',
@@ -114,11 +114,14 @@ const GAME_CONSTANTS = {
     EVENT_INVESTMENT_RECEIVED: 'investment_received',
     EVENT_ALL_SUBMITTED: 'all_submitted',
     EVENT_ROUND_SUMMARY: 'round_summary',
+    EVENT_ROUND_END: 'round_end',
     EVENT_GAME_OVER: 'game_over',
     EVENT_MANUAL_START_MODE: 'manual_start_mode',
     EVENT_ADMIN_NOTIFICATION: 'admin_notification',
     EVENT_TIMER_UPDATE: 'timer_update',
-    
+    EVENT_GAME_JOINED: 'game_joined',
+    EVENT_STATE_SNAPSHOT: 'state_snapshot',
+
     // Control events (client → server)
     EVENT_FORCE_END_GAME: 'force_end_game',
     EVENT_SET_MANUAL_START: 'set_manual_start',
@@ -126,7 +129,7 @@ const GAME_CONSTANTS = {
     EVENT_SUBMIT_INVESTMENT: 'submit_investment',
     EVENT_JOIN_GAME: 'join_game'
   },
-  
+
   // Notification Types
   NOTIFICATION: {
     TYPE_INFO: 'info',
@@ -134,7 +137,7 @@ const GAME_CONSTANTS = {
     TYPE_ERROR: 'error',
     DEFAULT_TYPE: 'info'
   },
-  
+
   // HTTP Routes
   ROUTES: {
     ROOT: '/',
@@ -144,7 +147,7 @@ const GAME_CONSTANTS = {
     SHARED: '/shared',
     CONSTANTS: '/constants.js'
   },
-  
+
   // Table columns
   INVESTMENTS_TABLE_COLUMN_COUNT: 2
 };
@@ -164,4 +167,4 @@ if (typeof module !== GAME_CONSTANTS.ENVIRONMENT.TYPEOF_UNDEFINED && module.expo
   module.exports = {
     ...ALL_CONSTANTS
   };
-} 
+}
