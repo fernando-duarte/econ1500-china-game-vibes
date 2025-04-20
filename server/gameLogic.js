@@ -467,6 +467,53 @@ function endGame(io) {
 }
 
 /**
+ * Force end the game immediately
+ */
+function forceEndGame(io) {
+  // Check if game is running
+  if (!game.isGameRunning) {
+    return { success: false, error: 'Game is not running' };
+  }
+  
+  console.log('Force ending game by instructor request');
+  
+  // Clear any existing timers
+  try {
+    if (game.roundTimer) {
+      clearTimeout(game.roundTimer);
+      game.roundTimer = null;
+    }
+    if (game.timerInterval) {
+      clearInterval(game.timerInterval);
+      game.timerInterval = null;
+    }
+  } catch (timerError) {
+    console.error('Error clearing timers in forceEndGame:', timerError);
+  }
+  
+  // For any players who haven't submitted investments in this round, 
+  // set investment to 0 to avoid null values
+  Object.values(game.players).forEach(player => {
+    if (player.investment === null) {
+      player.investment = 0;
+    }
+  });
+  
+  // Send notification to all clients
+  if (io) {
+    io.emit('admin_notification', { 
+      message: 'Game is being ended by the instructor...',
+      type: 'warning'
+    });
+  }
+  
+  // Call endGame function to determine winner and send game_over events
+  const result = endGame(io);
+  
+  return { success: true, ...result };
+}
+
+/**
  * Handle player reconnection
  */
 function playerReconnect(playerName, socketId) {
@@ -518,6 +565,7 @@ module.exports = {
   submitInvestment,
   endRound,
   endGame,
+  forceEndGame,
   playerReconnect,
   playerDisconnect,
   game  // Export the game object for external use

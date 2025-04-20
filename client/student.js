@@ -331,6 +331,22 @@ socket.on('error', (data) => {
   joinButton.disabled = false;
 });
 
+// Add handler for admin notifications
+socket.on('admin_notification', (data) => {
+  console.log('Admin notification:', data);
+  
+  // Display notification to user
+  const notification = document.createElement('div');
+  notification.textContent = data.message;
+  notification.classList.add('admin-notification', `admin-notification-${data.type || 'info'}`);
+  document.body.appendChild(notification);
+  
+  // Remove notification after a few seconds
+  setTimeout(() => {
+    notification.remove();
+  }, 5000);
+});
+
 socket.on('disconnect', () => {
   console.log('Disconnected from server');
   if (timerInterval) {
