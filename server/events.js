@@ -27,8 +27,14 @@ function setupSocketEvents(io) {
         createGame();
         isInstructor = true;
         
-        // Join the instructor room
-        socket.join('instructor');
+        // Store a direct reference to the instructor socket
+        const gameLogic = require('./gameLogic');
+        gameLogic.game.instructorSocket = socket;
+        console.log(`Saved instructor socket with ID ${socket.id} in ${typeof gameLogic.game.instructorSocket}`);
+        
+        // Map this socket to "instructor" role
+        socket.instructor = true;
+        socket.gameRole = 'instructor';
         
         console.log('Game created');
         socket.emit('game_created');
@@ -59,11 +65,24 @@ function setupSocketEvents(io) {
           // Join the players room
           socket.join('players');
           
-          console.log(`Player joined: ${playerName}`);
+          // Mark this socket as a student
+          socket.student = true;
+          socket.gameRole = 'student';
+          socket.playerName = playerName;
           
-          // Notify all clients about the new player
+          console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
+          
+          // Notify all players about the new player
           io.to('players').emit('player_joined', { playerName });
-          io.to('instructor').emit('player_joined', { playerName });
+          
+          // Notify instructor directly if available
+          const gameLogic = require('./gameLogic');
+          if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
+            console.log(`Sending player_joined directly to instructor socket ${gameLogic.game.instructorSocket.id}`);
+            gameLogic.game.instructorSocket.emit('player_joined', { playerName });
+          } else {
+            console.log('No instructor socket available for player_joined notification');
+          }
         }
         
         // Send acknowledgment to the client
@@ -135,7 +154,11 @@ function setupSocketEvents(io) {
         
         if (result.success) {
           console.log('Game started');
-          io.to('players').emit('game_started');
+          
+          // Broadcast game started to all players and instructors
+          io.emit('game_started');
+          
+          // Start the first round
           startRound(io);
         } else {
           socket.emit('error', { message: result.error });
@@ -147,22 +170,107 @@ function setupSocketEvents(io) {
     });
     
     // Student submits investment
-    socket.on('submit_investment', ({ investment }) => {
+    socket.on('submit_investment', ({ investment, isAutoSubmit }) => {
       try {
+        console.log(`Received investment submission from socket ${socket.id} (role: ${socket.gameRole || 'unknown'})`);
+        
         if (!playerName) {
+          console.error(`Cannot process investment: No player name associated with socket ${socket.id}`);
           socket.emit('error', { message: 'Not in a game' });
           return;
         }
         
-        const result = submitInvestment(playerName, investment);
+        console.log(`Processing investment from ${playerName}: ${investment}`);
+        
+        const gameLogic = require('./gameLogic');
+        // Debug game state
+        console.log('Game state:', {
+          isGameRunning: gameLogic.game.isGameRunning,
+          round: gameLogic.game.round,
+          playerCount: Object.keys(gameLogic.game.players).length,
+          hasInstructorSocket: !!gameLogic.game.instructorSocket
+        });
+        
+        const result = gameLogic.submitInvestment(playerName, investment, isAutoSubmit);
         
         if (result.success) {
-          console.log(`Investment submitted by ${playerName}: ${result.investment}`);
-          socket.emit('investment_received', { investment: result.investment });
+          console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
+          socket.emit('investment_received', { investment: result.investment, isAutoSubmit });
           
-          // Optionally, notify the instructor
-          io.to('instructor').emit('investment_received', { playerName });
+          // Directly send to instructor socket
+          if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
+            try {
+              // Verify the socket is still valid
+              const instructorSocketId = gameLogic.game.instructorSocket.id;
+              if (!instructorSocketId) {
+                console.error('Instructor socket is invalid (no ID)');
+              } else {
+                console.log(`Sending investment_received directly to instructor socket ${instructorSocketId}`);
+                
+                // Log active connections for debugging
+                const activeSockets = Object.keys(io.sockets.sockets).length;
+                console.log(`Active socket connections: ${activeSockets}`);
+                
+                // Broadcast to all connected sockets for testing
+                console.log('Broadcasting investment_received to all sockets as a test');
+                io.emit('investment_received', { 
+                  playerName, 
+                  investment: result.investment,
+                  isAutoSubmit,
+                  isTestBroadcast: true
+                });
+                
+                // Direct send to instructor
+                gameLogic.game.instructorSocket.emit('investment_received', { 
+                  playerName, 
+                  investment: result.investment,
+                  isAutoSubmit 
+                });
+                console.log('Successfully sent investment_received to instructor');
+              }
+            } catch (err) {
+              console.error('Error sending to instructor socket:', err);
+            }
+          } else {
+            console.error('Cannot notify instructor: No valid instructor socket reference found');
+            // Fallback to broadcasting
+            console.log('Broadcasting investment_received as fallback');
+            io.emit('investment_received', { 
+              playerName, 
+              investment: result.investment,
+              isAutoSubmit,
+              isFallback: true
+            });
+          }
+          
+          // Check if the round should end (all players submitted)
+          if (gameLogic.game.pendingEndRound) {
+            console.log('All players have submitted - ending round immediately');
+            
+            // Prepare notification message
+            const notificationData = { 
+              message: 'All players have submitted their investments. Round ending early...',
+              timeRemaining: 2 // Show message for 2 seconds
+            };
+            
+            // Send notification to all students
+            io.to('players').emit('all_submitted', notificationData);
+            
+            // Send notification to instructor if available
+            if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
+              gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+            }
+            
+            // Add a slight delay before ending the round to allow for UI updates
+            setTimeout(() => {
+              gameLogic.endRound(io);
+            }, 2000);
+          } else if (result.allSubmitted) {
+            // This could happen if multiple submissions come in at almost the same time
+            console.log('This submission completed all required inputs - will end round shortly');
+          }
         } else {
+          console.error(`Investment submission failed for ${playerName}:`, result.error);
           socket.emit('error', { message: result.error });
         }
       } catch (error) {
@@ -175,6 +283,13 @@ function setupSocketEvents(io) {
     socket.on('disconnect', () => {
       try {
         console.log(`Disconnected: ${socket.id}`);
+        
+        // Check if this was the instructor socket
+        const gameLogic = require('./gameLogic');
+        if (isInstructor && gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.id === socket.id) {
+          console.log('Instructor disconnected');
+          gameLogic.game.instructorSocket = null;
+        }
         
         // Mark player as disconnected
         playerDisconnect(socket.id);
