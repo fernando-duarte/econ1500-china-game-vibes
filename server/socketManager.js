@@ -1,8 +1,11 @@
 // server/socketManager.js
 
-// Use a WeakMap for socket tracking to prevent memory leaks
-const socketPlayerMap = new WeakMap();
-const playerSockets = new Map();
+/**
+ * DEPRECATED: This module is being phased out in favor of playerManager.js
+ * Only keeping for backward compatibility with legacy code
+ */
+
+const playerManager = require('./playerManager');
 
 /**
  * Track a socket-player association
@@ -11,17 +14,9 @@ const playerSockets = new Map();
  * @param {string} playerName - The player's name
  */
 function trackPlayerSocket(socketId, socket, playerName) {
-  console.log(`Tracking socket ${socketId} for player ${playerName}`);
-  
-  // Store in both directions for efficient lookup
-  socketPlayerMap.set(socket, playerName);
-  
-  // Update the playerSockets map
-  playerSockets.set(playerName, {
-    socketId,
-    socket,
-    lastActive: Date.now()
-  });
+  console.log(`[DEPRECATED] Tracking socket ${socketId} for player ${playerName} via socketManager`);
+  // Forward to the proper playerManager implementation
+  playerManager.trackPlayerSocket(socketId, playerName);
 }
 
 /**
@@ -30,20 +25,14 @@ function trackPlayerSocket(socketId, socket, playerName) {
  * @returns {string|null} - The player name associated with this socket, or null
  */
 function untrackPlayerSocket(socket) {
-  const playerName = socketPlayerMap.get(socket);
-  if (playerName) {
-    console.log(`Untracking socket for player ${playerName}`);
-    socketPlayerMap.delete(socket);
-    
-    // Only delete from playerSockets if this is the current socket for this player
-    const playerSocket = playerSockets.get(playerName);
-    if (playerSocket && playerSocket.socket === socket) {
-      playerSockets.delete(playerName);
-    }
-    
-    return playerName;
+  if (!socket || !socket.id) {
+    console.error('[DEPRECATED] Invalid socket passed to untrackPlayerSocket');
+    return null;
   }
-  return null;
+  
+  console.log(`[DEPRECATED] Untracking socket ${socket.id} via socketManager`);
+  // Forward to the proper playerManager implementation
+  return playerManager.untrackPlayerSocket(socket.id);
 }
 
 /**
@@ -53,44 +42,11 @@ function untrackPlayerSocket(socket) {
  * @param {string} socketId - The new socket ID
  */
 function handlePlayerSocketSwitch(socket, playerName, socketId) {
-  console.log(`Checking for existing connections for player ${playerName}`);
+  console.log(`[DEPRECATED] Checking for existing connections for player ${playerName} via socketManager`);
   
-  // Check if this player has another active socket
-  if (playerSockets.has(playerName)) {
-    const existing = playerSockets.get(playerName);
-    
-    // If it's a different socket, disconnect the old one
-    if (existing.socketId !== socketId && existing.socket) {
-      console.log(`Found old socket ${existing.socketId} for player ${playerName}`);
-      
-      try {
-        // Send notification before disconnecting
-        existing.socket.emit('error', { 
-          message: 'You have connected from another device. This session is being closed.' 
-        });
-        
-        // Untrack the old socket
-        socketPlayerMap.delete(existing.socket);
-        
-        // Disconnect with a delay to allow error message to be sent
-        setTimeout(() => {
-          try {
-            console.log(`Disconnecting old socket ${existing.socketId} for player ${playerName}`);
-            existing.socket.disconnect(true);
-          } catch (e) {
-            console.error('Error disconnecting old socket:', e);
-          }
-        }, 100);
-      } catch (err) {
-        console.error('Error handling socket switch:', err);
-      }
-    } else {
-      console.log(`Player ${playerName} reconnected with the same socket ID`);
-    }
-  }
-  
-  // Register the new socket
-  trackPlayerSocket(socketId, socket, playerName);
+  // Forward to connection handler which has proper socket switching logic
+  const connectionHandler = require('./connectionHandler');
+  connectionHandler.handleSocketSwitch(global.io, socket, playerName, socketId);
 }
 
 /**
@@ -99,7 +55,10 @@ function handlePlayerSocketSwitch(socket, playerName, socketId) {
  * @returns {string|null} - The player name or null
  */
 function getPlayerBySocket(socket) {
-  return socketPlayerMap.get(socket);
+  if (!socket || !socket.id) {
+    return null;
+  }
+  return playerManager.getPlayerNameForSocket(socket.id);
 }
 
 /**
@@ -108,8 +67,18 @@ function getPlayerBySocket(socket) {
  * @returns {Object|null} - The socket or null
  */
 function getSocketByPlayerName(playerName) {
-  const entry = playerSockets.get(playerName);
-  return entry ? entry.socket : null;
+  const socketId = playerManager.getSocketIdForPlayer(playerName);
+  
+  // If we have an io instance and a socketId, return the actual socket
+  if (global.io && socketId) {
+    try {
+      return global.io.sockets.sockets.get(socketId);
+    } catch (e) {
+      console.error(`Error getting socket for player ${playerName}:`, e);
+    }
+  }
+  
+  return null;
 }
 
 /**
@@ -118,7 +87,7 @@ function getSocketByPlayerName(playerName) {
  * @returns {boolean} - True if player has an active socket
  */
 function hasActiveSocket(playerName) {
-  return playerSockets.has(playerName);
+  return playerManager.playerHasActiveSocket(playerName);
 }
 
 // Export functions for use in other files

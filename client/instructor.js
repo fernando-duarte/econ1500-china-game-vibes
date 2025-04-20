@@ -171,6 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Add refresh capability
   addRefreshButton();
   
+  // Add reset game button
+  addResetGameButton();
+  
   // Set up periodic recovery check
   setInterval(recoverInstructorUI, 10000); // Check every 10 seconds
 });
@@ -695,14 +698,66 @@ function addRefreshButton() {
   refreshBtn.textContent = 'Refresh Game Data';
   refreshBtn.className = 'button refresh-button';
   refreshBtn.addEventListener('click', () => {
-    if (socket.connected) {
-      socket.emit('request_state_snapshot');
+    try {
+      if (socket && socket.connected) {
+        if (isInstructorAuthenticated) {
+          console.log('Requesting fresh game state');
+          socket.emit('request_state_snapshot', {});
+          showNotification('Refreshing game data...', 'info');
+        } else {
+          console.warn('Cannot refresh - not authenticated as instructor');
+          showNotification('Not authenticated as instructor', 'error');
+        }
+      } else {
+        console.error('Cannot refresh - socket not connected');
+        showNotification('Connection error. Try reloading the page.', 'error');
+      }
+    } catch (error) {
+      console.error('Error refreshing game data:', error);
+      showNotification('Failed to refresh game data', 'error');
     }
   });
   
   // Add to the controls section
   if (gameControls) {
     gameControls.appendChild(refreshBtn);
+  }
+}
+
+// Add a reset game button for emergency recovery
+function addResetGameButton() {
+  const resetBtn = document.createElement('button');
+  resetBtn.textContent = 'Reset Game';
+  resetBtn.className = 'button reset-button warning';
+  resetBtn.style.marginLeft = '10px';
+  resetBtn.style.backgroundColor = '#FF9800';
+  
+  resetBtn.addEventListener('click', () => {
+    try {
+      if (confirm('Are you sure you want to reset the game? This will clear all player data and start fresh.')) {
+        if (socket && socket.connected) {
+          if (isInstructorAuthenticated) {
+            console.log('Requesting game reset');
+            socket.emit('reset_game');
+            showNotification('Resetting game...', 'warning');
+          } else {
+            console.warn('Cannot reset - not authenticated as instructor');
+            showNotification('Not authenticated as instructor', 'error');
+          }
+        } else {
+          console.error('Cannot reset - socket not connected');
+          showNotification('Connection error. Try reloading the page.', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error requesting game reset:', error);
+      showNotification('Failed to reset game', 'error');
+    }
+  });
+  
+  // Add to the controls section
+  if (gameControls) {
+    gameControls.appendChild(resetBtn);
   }
 }
 

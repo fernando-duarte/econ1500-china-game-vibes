@@ -25,6 +25,55 @@ console.log('ConnectionStatus initialized:', !!connectionStatus);
 // Enhanced reconnect event tracking
 let reconnectAttempt = 0;
 let reconnectionTimer;
+let lastConnectionStatus = 'disconnected';
+let connectionCheckTimeout = null;
+
+// Enable periodic connection check to make sure we're still connected
+function startConnectionCheck() {
+  if (connectionCheckTimeout) {
+    clearTimeout(connectionCheckTimeout);
+  }
+  
+  // Poll for connection status every 30 seconds
+  connectionCheckTimeout = setInterval(() => {
+    if (socket.connected) {
+      // Send a ping and expect a response
+      const startTime = Date.now();
+      let responseReceived = false;
+      
+      socket.emit('connection_check', {}, (response) => {
+        responseReceived = true;
+        const latency = Date.now() - startTime;
+        console.log(`Connection check successful. Latency: ${latency}ms`);
+        
+        // Update connection indicator
+        updateConnectionStatus('connected');
+      });
+      
+      // If no response in 5 seconds, consider connection lost
+      setTimeout(() => {
+        if (!responseReceived) {
+          console.warn('Connection check failed - no response from server');
+          updateConnectionStatus('disconnected');
+          
+          // Try reconnecting
+          if (socket.connected) {
+            console.log('Socket thinks it is connected but server is not responding. Reconnecting...');
+            socket.disconnect();
+            setTimeout(() => socket.connect(), 1000);
+          }
+        }
+      }, 5000);
+    } else {
+      updateConnectionStatus('disconnected');
+    }
+  }, 30000);
+}
+
+// Start the connection check on page load
+document.addEventListener('DOMContentLoaded', () => {
+  startConnectionCheck();
+});
 
 // Storage utility with feature detection and fallbacks
 const Storage = {
@@ -219,8 +268,16 @@ const connectionIndicator = document.getElementById('connectionIndicator');
 
 // Debounced update to prevent flickering
 let connectionUpdateTimeout;
-function updateConnectionStatus(status, immediate = false) {
+function updateConnectionStatus(status, immediate = false, showBriefly = false) {
   if (!connectionIndicator) return;
+  
+  // Don't update if status hasn't changed (prevents UI flicker)
+  if (status === lastConnectionStatus && !immediate) {
+    return;
+  }
+  
+  // Update last known status
+  lastConnectionStatus = status;
   
   // Clear any pending update
   if (connectionUpdateTimeout) {
@@ -246,9 +303,22 @@ function updateConnectionStatus(status, immediate = false) {
         connectionIndicator.classList.add('connecting');
         connectionIndicator.setAttribute('data-status', 'Connecting...');
         break;
+      case 'server_restart':
+        connectionIndicator.classList.add('disconnected');
+        connectionIndicator.setAttribute('data-status', 'Server Restarting...');
+        break;
+      case 'replaced':
+        connectionIndicator.classList.add('disconnected');
+        connectionIndicator.setAttribute('data-status', 'Connected Elsewhere');
+        break;
       default:
         connectionIndicator.classList.add('connecting');
         connectionIndicator.setAttribute('data-status', status);
+    }
+    
+    // Also update the global connection status if available
+    if (window.connectionStatus && window.connectionStatus.update) {
+      window.connectionStatus.update(status, immediate, showBriefly);
     }
   };
   
@@ -269,6 +339,41 @@ document.addEventListener('DOMContentLoaded', () => {
   // Input constraints from constants
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
   investmentValue.min = CONSTANTS.INVESTMENT_MIN;
+  
+  // Check if we have stored player data
+  const storedData = getStoredPlayerData();
+  if (storedData.playerName) {
+    // Auto-fill name field
+    playerName.value = storedData.playerName;
+    
+    // Add reconnect option
+    if (!document.querySelector('.reconnect-notice')) {
+      const reconnectContainer = document.createElement('div');
+      reconnectContainer.className = 'reconnect-notice';
+      reconnectContainer.innerHTML = `
+        <p>You were previously playing as "${storedData.playerName}"</p>
+        <button id="reconnectBtn" class="button">Reconnect</button>
+      `;
+      joinForm.appendChild(reconnectContainer);
+      
+      // Set up reconnect button
+      document.getElementById('reconnectBtn').addEventListener('click', () => {
+        if (socket.connected) {
+          console.log(`Attempting to reconnect as ${storedData.playerName}`);
+          currentPlayerName = storedData.playerName;
+          socket.emit('join_game', { 
+            playerName: storedData.playerName, 
+            isReconnect: true 
+          });
+          joinButton.disabled = true;
+          joinButton.textContent = 'Reconnecting...';
+        } else {
+          joinError.textContent = 'Waiting for connection...';
+          showNotification('Waiting for connection...', 'warning');
+        }
+      });
+    }
+  }
 });
 
 // Game state
@@ -432,6 +537,8 @@ function resetGameState() {
 // Handle investment slider and value sync
 investmentSlider.addEventListener('input', () => {
   investmentValue.value = investmentSlider.value;
+  // Update maxOutput visibility to ensure it's showing
+  maxOutput.style.display = 'inline-block';
 });
 
 investmentValue.addEventListener('input', () => {
@@ -441,6 +548,8 @@ investmentValue.addEventListener('input', () => {
     const clampedValue = Math.min(Math.max(0, value), currentOutput);
     investmentValue.value = clampedValue;
     investmentSlider.value = clampedValue;
+    // Ensure max output is visible
+    maxOutput.style.display = 'inline-block';
   }
 });
 
@@ -603,9 +712,25 @@ socket.on('join_ack', (response) => {
       });
     }
   } else {
-    // Show error message
-    joinError.textContent = response.error || 'Failed to join game';
-    showNotification(response.error || 'Failed to join game', 'error');
+    // Handle case where player doesn't exist but can join as new
+    if (response.notFound && response.canJoinAsNew) {
+      joinError.innerHTML = `${response.message || 'You were not found in the current game.'}<br><button id="joinAsNewBtn" class="button">Join as New Player</button>`;
+      
+      // Add handler for join as new button
+      document.getElementById('joinAsNewBtn')?.addEventListener('click', () => {
+        // Clear reconnect flag and try joining as a new player
+        socket.emit('join_game', { 
+          playerName: playerName.value.trim(), 
+          isReconnect: false 
+        });
+        joinButton.disabled = true;
+        joinButton.textContent = 'Joining...';
+      });
+    } else {
+      // Standard error message
+      joinError.textContent = response.error || 'Failed to join game';
+      showNotification(response.error || 'Failed to join game', 'error');
+    }
   }
 });
 
@@ -704,24 +829,22 @@ socket.on('investment_received', (data) => {
 });
 
 socket.on('all_submitted', (data) => {
-  console.log('All students have submitted:', data);
+  console.log('All players have submitted investments:', data);
   
-  // Show message that round is ending early
-  investmentStatus.innerHTML = `<span class="all-submitted-message">${data.message}</span>`;
-  
-  // Disable controls if not already submitted
-  if (!hasSubmittedInvestment) {
-    submitInvestment.disabled = true;
-    investmentSlider.disabled = true;
-    investmentValue.disabled = true;
+  // Show notification to user
+  if (data.message) {
+    showNotification(data.message, 'success');
   }
   
-  // Adjust timer display
-  timer.classList.add('timer-ending');
-  timer.textContent = 'Ending...';
+  // Update UI to indicate waiting for results
+  if (investmentStatus) {
+    investmentStatus.textContent = 'All players have submitted. Calculating results...';
+  }
   
-  // Stop the current timer
-  clearInterval(timerInterval);
+  // Disable submit button again to prevent double submissions during this short period
+  if (submitInvestment) {
+    submitInvestment.disabled = true;
+  }
 });
 
 socket.on('round_end', (data) => {
@@ -797,32 +920,9 @@ socket.on('game_over', (data) => {
 socket.on('state_snapshot', (data) => {
   console.log('Received state snapshot:', data);
   
-  // Validate the snapshot before using
-  if (!data || typeof data !== 'object') {
-    console.error('Invalid state snapshot received');
-    return;
-  }
-  
-  // Save player state for potential reconnection
-  savePlayerState(data);
-  
-  // Reset the processed events since we're getting a fresh state
-  processedEvents.reset();
-  
-  // Reset any existing timers
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-  
-  // Show game UI and hide join form
-  joinForm.classList.add('hidden');
-  gameUI.classList.remove('hidden');
-  
-  // Update round number and capital/output with safeguards
+  // Update game state from snapshot
   if (data.roundNumber !== undefined) {
     roundNumber.textContent = data.roundNumber;
-    processedEvents.roundNumber = data.roundNumber;
   }
   
   if (data.capital !== undefined) {
@@ -834,24 +934,63 @@ socket.on('state_snapshot', (data) => {
     output.textContent = data.output;
     currentOutput = data.output;
     lastOutput = data.output;
+  }
+  
+  // Make sure we correctly set the submission status based on the server state
+  hasSubmittedInvestment = !!data.submitted;
+  
+  // Update UI based on game state
+  if (data.gameState === 'active' || data.gameState === 'round_active') {
+    roundStatus.textContent = 'Round in progress';
     
-    // Also update investment slider max value
-    if (investmentSlider) {
-      investmentSlider.max = data.output;
-      maxOutput.textContent = data.output;
+    // Update investment UI
+    investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
+    investmentSlider.max = data.output;
+    maxOutput.textContent = data.output;
+    
+    // Check if already submitted
+    if (data.submitted) {
+      submitInvestment.disabled = true;
+      investmentSlider.disabled = true;
+      investmentValue.disabled = true;
+      investmentStatus.textContent = 'Investment already submitted. Waiting for other players...';
+      hasSubmittedInvestment = true;
+    } else {
+      submitInvestment.disabled = false;
+      investmentSlider.disabled = false;
+      investmentValue.disabled = false;
+      investmentStatus.textContent = '';
+      hasSubmittedInvestment = false;
+    }
+    
+    // Set timer if provided
+    if (data.timeRemaining !== undefined) {
+      timer.textContent = data.timeRemaining;
+      startTimer(data.timeRemaining);
+    }
+    
+    // Show correct UI
+    roundResults.classList.add('hidden');
+    investmentUI.classList.remove('hidden');
+  } else if (data.gameState === 'results' || data.gameState === 'between_rounds') {
+    roundStatus.textContent = 'Round completed';
+    
+    // If we have last investment data, show results
+    if (data.lastInvestment !== null) {
+      investmentResult.textContent = data.lastInvestment;
+      newCapital.textContent = data.capital;
+      newOutput.textContent = data.output;
+      
+      // Show results UI
+      investmentUI.classList.add('hidden');
+      roundResults.classList.remove('hidden');
     }
   }
   
-  // If the player has already submitted their investment
-  hasSubmittedInvestment = !!data.submitted;
-  
-  // Show the appropriate UI based on game phase
-  updateUIForGamePhase(data);
-  
-  // Handle timer synchronization if round is active
-  if (data.timeRemaining && data.timeRemaining > 0 && !data.submitted) {
-    // Use server-provided time
-    startTimer(Math.max(1, data.timeRemaining));
+  // Make game UI visible
+  if (joinForm && gameUI && currentPlayerName) {
+    joinForm.classList.add('hidden');
+    gameUI.classList.remove('hidden');
   }
 });
 
@@ -1147,9 +1286,6 @@ document.head.appendChild(style);
 const reconnectionUI = document.getElementById('reconnectionUI');
 const manualReconnectBtn = document.getElementById('manualReconnectBtn');
 const refreshPageBtn = document.getElementById('refreshPageBtn');
-const clearSessionBtn = document.getElementById('clearSessionBtn');
-
-// Show/hide connection status
 function updateConnectionStatus(status, showBriefly = false) {
   connectionStatus.update(status, true, showBriefly);
 }
@@ -1199,106 +1335,32 @@ if (clearSessionBtn) {
   });
 }
 
-// Add handler for state snapshot
-socket.on('state_snapshot', (data) => {
-  console.log('Received state snapshot:', data);
-  
-  // Update game state from snapshot
-  if (data.roundNumber !== undefined) {
-    roundNumber.textContent = data.roundNumber;
-  }
-  
-  if (data.capital !== undefined) {
-    capital.textContent = data.capital;
-    lastCapital = data.capital;
-  }
-  
-  if (data.output !== undefined) {
-    output.textContent = data.output;
-    currentOutput = data.output;
-    lastOutput = data.output;
-  }
-  
-  // Update UI based on game state
-  if (data.gameState === 'active') {
-    roundStatus.textContent = 'Round in progress';
-    
-    // Update investment UI
-    investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
-    investmentSlider.max = data.output;
-    maxOutput.textContent = data.output;
-    
-    // Check if already submitted
-    if (data.submitted) {
-      submitInvestment.disabled = true;
-      investmentSlider.disabled = true;
-      investmentValue.disabled = true;
-      investmentStatus.textContent = 'Investment already submitted. Waiting for other players...';
-      hasSubmittedInvestment = true;
-    } else {
-      submitInvestment.disabled = false;
-      investmentSlider.disabled = false;
-      investmentValue.disabled = false;
-      investmentStatus.textContent = '';
-      hasSubmittedInvestment = false;
-    }
-    
-    // Set timer if provided
-    if (data.timeRemaining !== undefined) {
-      timer.textContent = data.timeRemaining;
-      startTimer(data.timeRemaining);
-    }
-    
-    // Show correct UI
-    roundResults.classList.add('hidden');
-    investmentUI.classList.remove('hidden');
-  } else if (data.gameState === 'results') {
-    roundStatus.textContent = 'Round completed';
-    
-    // If we have last investment data, show results
-    if (data.lastInvestment !== null) {
-      investmentResult.textContent = data.lastInvestment;
-      newCapital.textContent = data.capital;
-      newOutput.textContent = data.output;
-      
-      // Show results UI
-      investmentUI.classList.add('hidden');
-      roundResults.classList.remove('hidden');
-    }
-  }
-  
-  // Make game UI visible
-  if (joinForm && gameUI && currentPlayerName) {
-    joinForm.classList.add('hidden');
-    gameUI.classList.remove('hidden');
-  }
-});
-
-// Function to try rejoin game after reconnect
+// Modified tryRejoinGameAfterReconnect function
 function tryRejoinGameAfterReconnect() {
-  // Only try to rejoin if we were previously in a game
-  if (currentPlayerName) {
-    console.log('Attempting to rejoin game as', currentPlayerName);
-    socket.emit('join_game', { 
-      playerName: currentPlayerName,
-      isReconnect: true
-    });
-    return true;
-  }
+  const storedData = getStoredPlayerData();
+  const storedState = getStoredPlayerState();
   
-  // Otherwise check if we have saved state
-  const savedState = getStoredPlayerState();
-  if (savedState && savedState.playerName) {
-    console.log('Attempting to rejoin game with saved state:', savedState.playerName);
-    currentPlayerName = savedState.playerName;
+  // Only attempt if we have a player name
+  if (storedData.playerName) {
+    console.log(`Attempting to rejoin as ${storedData.playerName}`);
+    
+    // Store for later use
+    currentPlayerName = storedData.playerName;
+    
+    // Attempt reconnection with the stored name
     socket.emit('join_game', { 
-      playerName: savedState.playerName,
-      isReconnect: true
+      playerName: storedData.playerName, 
+      isReconnect: true,
+      socketId: socket.id 
     });
-    return true;
+    
+    // Request a snapshot to ensure we have latest state
+    setTimeout(() => {
+      if (socket.connected && currentPlayerName) {
+        socket.emit('request_state_snapshot', { playerName: currentPlayerName });
+      }
+    }, 1000);
   }
-  
-  return false;
 }
 
 // Handle connection status messages from server
@@ -1361,4 +1423,44 @@ socket.on('notification', (data) => {
       }
     }
   }
+});
+
+// Handle game reset by instructor
+socket.on('game_reset', (data) => {
+  console.log('Game has been reset by instructor:', data);
+  
+  // Show notification
+  showNotification('The game has been reset by the instructor. Please rejoin.', 'warning');
+  
+  // Reset UI state
+  hasSubmittedInvestment = false;
+  
+  // Clear any active timers
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  
+  // Keep current player name for potential reconnection
+  const previousName = currentPlayerName;
+  
+  // Update UI to show join form
+  joinForm.classList.remove('hidden');
+  gameUI.classList.add('hidden');
+  
+  // Pre-fill the player name field
+  if (previousName) {
+    playerName.value = previousName;
+  }
+  
+  // Allow the join button to be clicked
+  joinButton.disabled = false;
+  joinButton.textContent = 'Rejoin Game';
+});
+
+// Handle round results
+socket.on('round_results', (data) => {
+  console.log('Round results received:', data);
+  // Process results
+  // ... existing code ...
 }); 

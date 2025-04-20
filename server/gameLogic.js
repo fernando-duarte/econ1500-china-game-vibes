@@ -57,16 +57,25 @@ function createGame() {
 function addPlayer(playerName, socketId, io) {
   console.log(`[ADD_PLAYER] Attempting to add player: ${playerName}, socketId: ${socketId}`);
   
-  // Check if game is running
-  if (game.isGameRunning) {
-    console.log(`[ADD_PLAYER] Failed: Game already in progress`);
-    return { success: false, error: 'Game already in progress' };
-  }
-
-  // Check if player name is already taken
+  // Check if player already exists (handles reconnection cases)
   if (game.players[playerName]) {
-    console.log(`[ADD_PLAYER] Failed: Player name ${playerName} already taken`);
-    return { success: false, error: 'Player name already taken' };
+    console.log(`[ADD_PLAYER] Player ${playerName} already exists, handling as reconnect`);
+    // Update their socket ID
+    game.players[playerName].socketId = socketId;
+    game.players[playerName].connected = true;
+    
+    // Return their current state
+    return { 
+      success: true, 
+      initialCapital: parseFloat(game.players[playerName].capital.toFixed(CONSTANTS.DECIMAL_PRECISION)), 
+      initialOutput: parseFloat(game.players[playerName].output.toFixed(CONSTANTS.DECIMAL_PRECISION))
+    };
+  }
+  
+  // Check if game is running and not allowing new players
+  if (game.isGameRunning && !CONSTANTS.ALLOW_LATE_JOIN) {
+    console.log(`[ADD_PLAYER] Failed: Game already in progress and late joins not allowed`);
+    return { success: false, error: 'Game already in progress' };
   }
 
   // Check max players
@@ -562,7 +571,10 @@ function endGame(io) {
 }
 
 /**
- * Handle a player reconnection
+ * Handle player reconnection
+ * @param {string} socketId - New socket ID
+ * @param {string} playerName - Player name
+ * @returns {Object} Player state
  */
 function playerReconnect(socketId, playerName) {
   const reconnectTime = Date.now();
@@ -573,7 +585,7 @@ function playerReconnect(socketId, playerName) {
     console.error('No game exists for reconnection');
     return { 
       success: false, 
-      error: Errors.gameNotFound().message 
+      error: 'No active game found'
     };
   }
   
@@ -582,18 +594,23 @@ function playerReconnect(socketId, playerName) {
     console.error(`Player ${playerName} not found in game for reconnection`);
     return { 
       success: false, 
-      error: Errors.playerNotFound(playerName).message 
+      error: `Player ${playerName} not found in current game`
     };
   }
   
   const player = game.players[playerName];
   
   // Update socket id and connection status
+  const oldSocketId = player.socketId;
   player.socketId = socketId;
   player.connected = true;
   player.lastReconnectTime = reconnectTime;
   
-  console.log(`Updated socket ID for ${playerName} to ${socketId}`);
+  console.log(`Updated socket ID for ${playerName} from ${oldSocketId || 'none'} to ${socketId}`);
+  
+  // Also track this in player manager to maintain consistency
+  const playerManager = require('./playerManager');
+  playerManager.trackPlayerSocket(socketId, playerName);
   
   // Determine game state and remaining time
   let gameState = 'waiting'; // Default state
@@ -607,8 +624,12 @@ function playerReconnect(socketId, playerName) {
     gameState = 'between_rounds';
   }
   
-  // Check if player has already invested in the current round
-  const lastInvestment = player.investment !== null ? player.investment : null;
+  // Ensure we're consistent with investment status
+  // This handles the case where player reconnects during a round
+  const hasSubmitted = player.investment !== null;
+  const lastInvestment = player.lastInvestment !== undefined 
+    ? player.lastInvestment
+    : null;
   
   // Create game state to send back
   const gameStateInfo = {
@@ -621,7 +642,7 @@ function playerReconnect(socketId, playerName) {
     timeRemaining: timeRemaining,
     lastInvestment: lastInvestment,
     isGameRunning: game.isGameRunning,
-    submitted: player.investment !== null,
+    submitted: hasSubmitted,
     finalOutput: game.state === CONSTANTS.GAME_STATES.COMPLETED && player.finalOutput !== undefined
       ? parseFloat(player.finalOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       : null
@@ -633,15 +654,92 @@ function playerReconnect(socketId, playerName) {
 }
 
 /**
- * Mark player as disconnected
+ * Mark player as disconnected and clean up
+ * @param {string} socketId - Socket ID that disconnected
  */
 function playerDisconnect(socketId) {
+  if (!socketId) {
+    console.error('Invalid socketId in playerDisconnect');
+    return;
+  }
+  
+  console.log(`Processing disconnect for socket ${socketId}`);
+  
   // Find player with this socket ID
+  let disconnectedPlayer = null;
+  
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.socketId === socketId) {
-      player.connected = false;
+      // Check with player manager to ensure this is the correct socket
+      const playerManager = require('./playerManager');
+      const currentSocketId = playerManager.getSocketIdForPlayer(playerName);
+      
+      // Only mark as disconnected if this is the current socket for this player
+      if (currentSocketId === socketId) {
+        console.log(`Marking player ${playerName} as disconnected (socket: ${socketId})`);
+        player.connected = false;
+        disconnectedPlayer = playerName;
+      } else {
+        console.log(`Ignoring old socket disconnect for player ${playerName} (current socket: ${currentSocketId})`);
+      }
     }
   });
+  
+  // If we found a disconnected player, notify the instructor
+  if (disconnectedPlayer && game.instructorSocket && game.instructorSocket.connected) {
+    try {
+      game.instructorSocket.emit('player_disconnected', {
+        playerName: disconnectedPlayer
+      });
+    } catch (err) {
+      console.error('Error notifying instructor about disconnection:', err);
+    }
+  }
+}
+
+/**
+ * Force reset the game to a fresh state - used for recovery
+ */
+function resetGame() {
+  console.log('Force resetting game to initial state');
+  
+  // Reset game to initial state without reassigning the object
+  Object.assign(game, {
+    isGameRunning: false,
+    state: CONSTANTS.GAME_STATES.WAITING,
+    round: CONSTANTS.FIRST_ROUND_NUMBER - 1,
+    players: {},
+    roundTimer: null,
+    timerInterval: null,
+    timeRemaining: 0,
+    roundEndTime: null,
+    pendingEndRound: false,
+    allSubmittedTime: null,
+    roundStartTime: null,
+    roundActive: false
+  });
+  
+  // Keep the current IO instance and instructor token if they exist
+  if (game.currentIo) {
+    console.log('Preserved current IO instance during reset');
+  }
+  
+  if (game.instructorToken) {
+    console.log('Preserved instructor token during reset');
+  }
+  
+  // Clear any active timers to prevent memory leaks
+  if (game.roundTimer) {
+    clearTimeout(game.roundTimer);
+    game.roundTimer = null;
+  }
+  
+  if (game.timerInterval) {
+    clearInterval(game.timerInterval);
+    game.timerInterval = null;
+  }
+  
+  return { success: true, message: 'Game reset successfully' };
 }
 
 // Export the game functions
@@ -655,5 +753,6 @@ module.exports = {
   endGame,
   playerReconnect,
   playerDisconnect,
+  resetGame,
   game  // Export the game object for external use
 }; 

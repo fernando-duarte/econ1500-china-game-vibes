@@ -27,6 +27,9 @@ const server = http.createServer(app);
 // Set up Socket.IO
 const io = new Server(server);
 
+// Store IO instance globally for use across modules
+global.io = io;
+
 // Store server instance for clean shutdown
 let serverInstance = null;
 
@@ -41,66 +44,122 @@ process.on('SIGTERM', gracefulShutdown);
 function gracefulShutdown(callback) {
   console.log('Shutting down server gracefully...');
   
-  // Set a shutdown flag to prevent new connections
-  if (io) {
-    io.sockets.emit('connection_status', {
-      status: 'server_restart',
-      message: 'The server is restarting. Please wait...'
-    });
+  // Prevent adding more logic if shutdown already in progress
+  if (global.shuttingDown) {
+    console.log('Shutdown already in progress, ignoring duplicate call');
+    return;
   }
   
-  if (serverInstance) {
-    // Close all socket connections first
-    if (io) {
-      try {
-        io.close(() => {
-          console.log('Socket connections closed');
-          
-          // Then close the HTTP server
-          serverInstance.close(() => {
-            console.log('Server closed successfully');
-            if (typeof callback === 'function') {
-              callback();
-            } else {
-              process.exit(0);
-            }
-          });
-        });
-      } catch (err) {
-        console.error('Error during socket shutdown:', err);
-        if (typeof callback === 'function') {
-          callback();
-        } else {
-          process.exit(1);
-        }
-      }
-    } else {
-      serverInstance.close(() => {
-        console.log('Server closed successfully');
-        if (typeof callback === 'function') {
-          callback();
-        } else {
-          process.exit(0);
-        }
-      });
+  // Set global shutdown flag
+  global.shuttingDown = true;
+  
+  // Create a forceful exit function for worst case
+  const forceExit = () => {
+    console.error('Forcing exit after timeout');
+    process.exit(1);
+  };
+  
+  // Set a timeout for hard exit if graceful shutdown takes too long
+  const forceExitTimeout = setTimeout(forceExit, 10000);
+  
+  // Create cleanup function for consistent shutdown path
+  const cleanup = () => {
+    if (forceExitTimeout) {
+      clearTimeout(forceExitTimeout);
     }
     
-    // Increased timeout for graceful shutdown
-    setTimeout(() => {
-      console.error('Could not close connections in time, forcefully shutting down');
-      if (typeof callback === 'function') {
-        callback();
-      } else {
-        process.exit(1);
-      }
-    }, 10000); // Increased from 2000ms to 10000ms for production
-  } else {
     if (typeof callback === 'function') {
       callback();
     } else {
-      process.exit(0);
+      // Use process.nextTick to ensure any remaining handlers complete
+      process.nextTick(() => {
+        process.exit(0);
+      });
     }
+  };
+  
+  // If no server or socket, just exit
+  if (!io && !serverInstance) {
+    console.log('No active server or socket connections to close');
+    cleanup();
+    return;
   }
+  
+  // Notify all connected clients about the shutdown
+  try {
+    if (io) {
+      io.sockets.emit('connection_status', {
+        status: 'server_restart',
+        message: 'The server is restarting. The page will automatically refresh soon.'
+      });
+      console.log('Notifying clients of shutdown...');
+    }
+  } catch (err) {
+    console.error('Error notifying clients of shutdown:', err);
+  }
+  
+  // Give clients time to process notification before closing sockets
+  setTimeout(() => {
+    // First close all socket connections
+    if (io) {
+      try {
+        // Force close any remaining engine.io connections
+        try {
+          const engineIo = io.engine;
+          // Close all engine.io connections
+          if (engineIo && engineIo.clients) {
+            Object.keys(engineIo.clients).forEach(id => {
+              try {
+                const client = engineIo.clients[id];
+                if (client && client.close) {
+                  client.close();
+                }
+              } catch (e) {
+                console.error(`Error closing engine.io client ${id}:`, e);
+              }
+            });
+          }
+        } catch (engineErr) {
+          console.error('Error closing engine.io connections:', engineErr);
+        }
+        
+        io.close(() => {
+          console.log('Socket connections closed');
+          
+          // Then close the HTTP server if it exists
+          if (serverInstance) {
+            serverInstance.close(() => {
+              console.log('Server closed successfully');
+              cleanup();
+            });
+            // In case .close() hangs, we want to force exit
+            setTimeout(() => {
+              console.log('Server close timed out, forcing shutdown');
+              cleanup();
+            }, 5000);
+          } else {
+            cleanup();
+          }
+        });
+      } catch (err) {
+        console.error('Error during socket shutdown:', err);
+        cleanup();
+      }
+    } else if (serverInstance) {
+      // Close just the server if no io
+      serverInstance.close(() => {
+        console.log('Server closed successfully');
+        cleanup();
+      });
+      // In case .close() hangs, we want to force exit
+      setTimeout(() => {
+        console.log('Server close timed out, forcing shutdown');
+        cleanup();
+      }, 5000);
+    } else {
+      cleanup();
+    }
+  }, 1000);
 }
 
 // Add explicit body parser middleware

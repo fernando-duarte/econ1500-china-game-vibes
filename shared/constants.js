@@ -26,6 +26,10 @@ const GAME_CONSTANTS = {
   AUTO_START_ENABLED: true,
   AUTO_START_PLAYERS: 1,  // Start game automatically when this many players have joined
   
+  // Player management
+  MAX_PLAYERS: 30,        // Maximum number of players allowed in the game
+  ALLOW_LATE_JOIN: false, // Whether to allow players to join after game has started
+  
   // Server defaults
   DEFAULT_PORT: 3000,
   
