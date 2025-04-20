@@ -211,16 +211,7 @@ function setupSocketEvents(io) {
                 const activeSockets = Object.keys(io.sockets.sockets).length;
                 console.log(`Active socket connections: ${activeSockets}`);
                 
-                // Broadcast to all connected sockets for testing
-                console.log('Broadcasting investment_received to all sockets as a test');
-                io.emit('investment_received', { 
-                  playerName, 
-                  investment: result.investment,
-                  isAutoSubmit,
-                  isTestBroadcast: true
-                });
-                
-                // Direct send to instructor
+                // Direct send to instructor - removed redundant test broadcast
                 gameLogic.game.instructorSocket.emit('investment_received', { 
                   playerName, 
                   investment: result.investment,
