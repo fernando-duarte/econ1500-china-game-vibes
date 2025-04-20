@@ -194,7 +194,7 @@ function startRound(io) {
       } catch (intervalError) {
         console.error('Error in timer interval:', intervalError);
       }
-    }, 1000); // Update every second
+    }, CONSTANTS.MILLISECONDS_PER_SECOND); // Update every second
     
     // Set a backup timer to ensure the round ends
     game.roundTimer = setTimeout(() => {
