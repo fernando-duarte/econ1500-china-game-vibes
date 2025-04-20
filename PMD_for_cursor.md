@@ -60,14 +60,12 @@ This model highlights how saving/investment decisions impact future capital and,
 ## 4. User Roles
 
 ### 4.1 Instructor
-- **Creates a new game session** (server generates a join code).
-- **Shares code** so students can join.
-- **Starts** the game when ready (round 1 begins).
+- **Game is created automatically and starts when all teams have joined**
 - **Monitors** real-time decisions, capital, and output across all students each round.
 - **Views** final results and declares the student with **highest output** as winner.
 
 ### 4.2 Students
-- **Join** using the instructor’s code and a unique display name.
+- **Join** using a unique display name that they can enter in lieu of the econ-themed fun default pre-generated in the code.
 - **Submit investment** each round (anywhere from \(0\) to their entire current output).
 - **See** their updated capital and output after each round.
 - **Compete** to end with the highest final output after 10 rounds.
@@ -76,13 +74,11 @@ This model highlights how saving/investment decisions impact future capital and,
 
 ## 5. High-Level Game Flow
 
-1. **Instructor Creates Game**  
-   - Server generates a unique **session code** (e.g., 4- or 6-digit random).
-   - Instructor sees code on their dashboard; students must use it to join.
+1. **Instructor Creates Game Automatically When Game Server is Started**  
 
 2. **Students Join**  
    - Each student enters the code and a **unique name**.  
-   - The server validates the code, ensures the name is not already taken, then sends back **initial capital** (100) and **initial output** (~4.64).
+   - The server ensures the name is not already taken, then sends back **initial capital** (100) and **initial output** (~4.64).
 
 3. **Instructor Starts Game**  
    - Once enough students have joined, the instructor clicks “Start.”  
@@ -277,9 +273,7 @@ solow-game/
 ## 12. Security & Edge Cases
 
 - **Minimal**: Classroom setting doesn’t require heavy security.  
-- **Join Code**: Must be random to prevent uninvited access.  
-- **Name Uniqueness**: Reject duplicates if the original is still connected.  
-- **No Late Joins**: After the game starts, ignore new join requests.  
+- **Name Uniqueness**: Reject duplicates if the original is still connected.   
 - **Cheating**: Not feasible since the server is authoritative for calculations.
 
 ---
