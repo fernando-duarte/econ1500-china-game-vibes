@@ -411,7 +411,7 @@ function updatePlayerList() {
   });
   
   // Force a re-paint - sometimes needed to make sure the UI updates
-  playerList.style.opacity = '0.99';
+  playerList.style.opacity = CONSTANTS.REPAINT_HACK_OPACITY;
   setTimeout(() => {
     playerList.style.opacity = '1';
   }, CONSTANTS.SHORT_UI_DELAY_MS);
