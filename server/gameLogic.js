@@ -46,24 +46,30 @@ function createGame() {
 }
 
 /**
- * Add a player to a game
+ * Add a new player to the game
  */
-function addPlayer(playerName, socketId) {
-  // Don't allow joins if no game exists or game is already running
-  if (game.state === CONSTANTS.GAME_STATES.INACTIVE) {
-    return { success: false, error: 'No active game' };
-  }
-  
+function addPlayer(playerName, socketId, io) {
+  // No longer require instructor to have joined first
+  // if (!game.instructorSocket) {
+  //   return { success: false, error: 'Instructor has not joined yet' };
+  // }
+
+  // Check if game is running
   if (game.isGameRunning) {
-    return { success: false, error: 'Game already started' };
+    return { success: false, error: 'Game already in progress' };
   }
-  
+
   // Check if player name is already taken
-  if (Object.keys(game.players).some(name => name.toLowerCase() === playerName.toLowerCase())) {
+  if (game.players[playerName]) {
     return { success: false, error: 'Player name already taken' };
   }
-  
-  // Add the player to the game
+
+  // Check max players
+  if (Object.keys(game.players).length >= CONSTANTS.MAX_PLAYERS) {
+    return { success: false, error: 'Maximum number of players reached' };
+  }
+
+  // Add player to the game
   const initialCapital = CONSTANTS.INITIAL_CAPITAL;
   const initialOutput = calculateOutput(initialCapital);
   
@@ -71,15 +77,50 @@ function addPlayer(playerName, socketId) {
     socketId,
     capital: initialCapital,
     output: initialOutput,
-    investment: null,
-    connected: true
+    investment: null, // Initialize investment to null
+    connected: true,
+    isAutoSubmit: false // Track auto-submissions
   };
-  
+
+  // Check if the game should auto-start
+  const autoStartResult = checkAutoStart(io); // Pass io here
+
   return { 
     success: true, 
-    initialCapital, 
-    initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
+    initialCapital: parseFloat(initialCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)), 
+    initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    autoStart: autoStartResult
   };
+}
+
+/**
+ * Check if the game should auto-start and start it if conditions are met
+ */
+function checkAutoStart(io) { // Accept io here
+  if (CONSTANTS.AUTO_START_ENABLED && 
+      Object.keys(game.players).length >= CONSTANTS.AUTO_START_PLAYERS && 
+      !game.isGameRunning) {
+    
+    console.log('Auto-starting game with', Object.keys(game.players).length, 'players');
+    const startResult = startGame();
+    
+    if (startResult.success && io) { // Check if io exists
+      console.log('Game started successfully via auto-start');
+      // Broadcast game started to all players and instructors
+      io.emit('game_started'); // <<< ADDED THIS LINE
+      
+      // Start the first round immediately instead of scheduling it
+      console.log('Starting first round immediately due to auto-start');
+      startRound(io);
+      return true;
+    } else if (!startResult.success) {
+      console.error('Auto-start failed:', startResult.error);
+    } else if (!io) {
+      console.error('Auto-start failed: io object is missing');
+    }
+  }
+  
+  return false;
 }
 
 /**
@@ -188,7 +229,7 @@ function startRound(io) {
   if (game.instructorSocket && game.instructorSocket.connected) {
     game.instructorSocket.emit('round_start', instructorData);
   } else {
-    console.error('Cannot notify instructor: No valid instructor socket for round_start');
+    // Just broadcast to everyone if no instructor socket available
     io.emit('round_start', instructorData);
   }
   
@@ -320,9 +361,9 @@ function endRound(io) {
         results
       });
     } else {
-      // Fallback to room-based messaging
-      console.log('Sending round_summary to instructor room');
-      io.to('instructor').emit('round_summary', {
+      // Fallback to broadcasting if no instructor socket
+      console.log('Broadcasting round_summary to all clients');
+      io.emit('round_summary', {
         roundNumber: game.round,
         results
       });
@@ -401,6 +442,13 @@ function endGame(io) {
         finalResults,
         winner
       });
+    } else {
+      // Broadcast to everyone as fallback
+      console.log('Broadcasting game_over to all clients');
+      io.emit('game_over', {
+        finalResults,
+        winner
+      });
     }
     
     // Send to screen clients
@@ -461,6 +509,7 @@ function playerDisconnect(socketId) {
   });
 }
 
+// Export the game functions
 module.exports = {
   createGame,
   addPlayer,
@@ -471,5 +520,5 @@ module.exports = {
   endGame,
   playerReconnect,
   playerDisconnect,
-  game
+  game  // Export the game object for external use
 }; 

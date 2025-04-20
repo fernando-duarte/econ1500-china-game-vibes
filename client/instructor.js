@@ -7,7 +7,6 @@ socket.on('connect', () => {
 });
 
 // DOM Elements
-const createGameButton = document.getElementById('createGameButton');
 const gameStatus = document.getElementById('gameStatus');
 const playerCount = document.getElementById('playerCount');
 const startGameButton = document.getElementById('startGameButton');
@@ -46,12 +45,6 @@ let submittedPlayers = [];
 let autoSubmittedPlayers = [];
 let currentRoundInvestments = {};
 
-// Create a new game
-createGameButton.addEventListener('click', () => {
-  socket.emit('create_game');
-  createGameButton.disabled = true;
-});
-
 // Start the game
 startGameButton.addEventListener('click', () => {
   socket.emit('start_game');
@@ -66,9 +59,6 @@ resetGameButton.addEventListener('click', () => {
 // Socket event handlers
 socket.on('game_created', () => {
   console.log('Game created event received by instructor client');
-  
-  // Update UI
-  gameStatus.classList.remove('hidden');
   
   // Enable start button once players join
   updateStartButton();
@@ -96,6 +86,17 @@ socket.on('player_joined', (data) => {
   
   // Enable start button if at least one player has joined
   updateStartButton();
+  
+  // Display auto-start message if enabled and threshold met
+  if (CONSTANTS.AUTO_START_ENABLED && players.length >= CONSTANTS.AUTO_START_PLAYERS) {
+    startGameButton.disabled = true;
+    const autoStartMsg = document.createElement('p');
+    autoStartMsg.textContent = 'Game auto-start triggered';
+    autoStartMsg.classList.add('auto-start-msg');
+    if (!document.querySelector('.auto-start-msg')) {
+      gameStatus.appendChild(autoStartMsg);
+    }
+  }
 });
 
 socket.on('game_started', () => {
@@ -196,9 +197,12 @@ socket.on('investment_received', (data) => {
   // Force UI update
   updatePlayerList();
   
+  // Format investment with consistent decimal precision
+  const formattedInvestment = parseFloat(data.investment).toFixed(CONSTANTS.DECIMAL_PRECISION);
+  
   // Add an indicator message to confirm submission was received
   const statusElement = document.createElement('div');
-  statusElement.textContent = `${data.playerName} submitted their investment: ${data.investment}`;
+  statusElement.textContent = `${data.playerName} submitted their investment: ${formattedInvestment}`;
   statusElement.classList.add('status-message');
   document.body.appendChild(statusElement);
   
@@ -254,9 +258,12 @@ socket.on('round_summary', (data) => {
       row.title = 'Auto-submitted (current slider value)';
     }
     
+    // Format investment with consistent decimal precision
+    const formattedInvestment = parseFloat(result.investment).toFixed(CONSTANTS.DECIMAL_PRECISION);
+    
     row.innerHTML = `
       <td>${result.playerName}</td>
-      <td>${result.investment}${result.isAutoSubmit ? ' (auto)' : ''}</td>
+      <td>${formattedInvestment}${result.isAutoSubmit ? ' (auto)' : ''}</td>
       <td>${result.newCapital}</td>
       <td>${result.newOutput}</td>
     `;
@@ -399,9 +406,12 @@ function updateCurrentInvestmentsTable() {
       row.title = 'Auto-submitted (current slider value)';
     }
     
+    // Format investment with consistent decimal precision
+    const formattedInvestment = parseFloat(data.investment).toFixed(CONSTANTS.DECIMAL_PRECISION);
+    
     row.innerHTML = `
       <td>${playerName}</td>
-      <td>${data.investment}${data.isAutoSubmit ? ' (auto)' : ''}</td>
+      <td>${formattedInvestment}${data.isAutoSubmit ? ' (auto)' : ''}</td>
     `;
     currentInvestmentsBody.appendChild(row);
   });
