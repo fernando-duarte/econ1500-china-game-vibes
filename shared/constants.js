@@ -22,6 +22,7 @@ const GAME_CONSTANTS = {
   // Timing constants
   MILLISECONDS_PER_SECOND: 1000,
   AUTO_SUBMIT_THRESHOLD_SECONDS: 1,
+  ALL_SUBMITTED_UI_DELAY_MS: 2000, // Delay before ending round after all players submitted (for UI updates)
   
   // Auto-start feature
   AUTO_START_ENABLED: false,  // Disabled - use manual start instead

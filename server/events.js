@@ -444,7 +444,7 @@ function setupSocketEvents(io) {
                 } catch (endRoundError) {
                   console.error('Error ending round:', endRoundError);
                 }
-              }, 2000);
+              }, CONSTANTS.ALL_SUBMITTED_UI_DELAY_MS);
             } catch (notificationError) {
               console.error('Error sending notifications:', notificationError);
             }
