@@ -25,6 +25,7 @@ const gameOverSection = document.getElementById('gameOverSection');
 const winnerName = document.getElementById('winnerName');
 const finalResultsBody = document.getElementById('finalResultsBody');
 const resetGameButton = document.getElementById('resetGameButton');
+const roundTimer = document.getElementById('roundTimer');
 
 // Initialize values from constants
 document.addEventListener('DOMContentLoaded', () => {
@@ -122,6 +123,11 @@ socket.on('round_start', (data) => {
   
   // Update round status - change from "Game starting..." to "Round in progress" for any round ≥ 1
   roundStatus.textContent = 'Round in progress';
+  
+  // Initialize timer with server time
+  if (roundTimer) {
+    roundTimer.textContent = data.timeRemaining;
+  }
   
   // Reset submitted players list
   submittedPlayers = [];
@@ -291,6 +297,14 @@ socket.on('game_over', (data) => {
 socket.on('error', (data) => {
   console.error('Socket error:', data.message);
   alert('Error: ' + data.message);
+});
+
+// Add handler for timer updates from the server
+socket.on('timer_update', (data) => {
+  // Update timer display if element exists
+  if (roundTimer) {
+    roundTimer.textContent = data.timeRemaining;
+  }
 });
 
 // Utility functions

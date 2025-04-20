@@ -40,7 +40,8 @@ function setupSocketEvents(io) {
         if (gameLogic.game) {
           const stateData = {
             isGameRunning: gameLogic.game.isGameRunning,
-            roundNumber: gameLogic.game.round
+            roundNumber: gameLogic.game.round,
+            timeRemaining: gameLogic.game.timeRemaining
           };
           
           // If the game is running and a round is active, send more data
@@ -160,12 +161,13 @@ function setupSocketEvents(io) {
           
           // Send current game state to the player
           if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
+            const gameLogic = require('./gameLogic');
             socket.emit('state_snapshot', {
               roundNumber: result.round,
               capital: result.capital,
               output: result.output,
               submitted: result.submitted,
-              timeRemaining: null // Server doesn't track exact time remaining
+              timeRemaining: gameLogic.game.timeRemaining
             });
           }
           
@@ -253,8 +255,17 @@ function setupSocketEvents(io) {
                 console.log(`Sending investment_received directly to instructor socket ${instructorSocketId}`);
                 
                 // Log active connections for debugging
-                const activeSockets = Object.keys(io.sockets.sockets).length;
-                console.log(`Active socket connections: ${activeSockets}`);
+                try {
+                  // This method is more compatible with newer Socket.IO versions
+                  const roomSizes = {
+                    players: io.sockets.adapter.rooms.get('players')?.size || 0,
+                    instructor: io.sockets.adapter.rooms.get('instructor')?.size || 0,
+                    screens: io.sockets.adapter.rooms.get('screens')?.size || 0
+                  };
+                  console.log(`Active connections by room: `, roomSizes);
+                } catch (err) {
+                  console.error('Error counting active connections:', err);
+                }
                 
                 // Direct send to instructor - removed redundant test broadcast
                 gameLogic.game.instructorSocket.emit('investment_received', { 
@@ -296,21 +307,41 @@ function setupSocketEvents(io) {
               timeRemaining: 2 // Show message for 2 seconds
             };
             
-            // Send notification to all students
-            io.to('players').emit('all_submitted', notificationData);
-            
-            // Send notification to instructor if available
-            if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
-              gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+            try {
+              // Send notification to all students
+              io.to('players').emit('all_submitted', notificationData);
+              
+              // Send notification to instructor if available
+              if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
+                gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+              }
+              
+              // Send notification to screens
+              io.to('screens').emit('all_submitted', notificationData);
+              
+              // Clear timers safely
+              try {
+                if (gameLogic.game.roundTimer) {
+                  clearTimeout(gameLogic.game.roundTimer);
+                }
+                if (gameLogic.game.timerInterval) {
+                  clearInterval(gameLogic.game.timerInterval);
+                }
+              } catch (timerError) {
+                console.error('Error clearing timers:', timerError);
+              }
+              
+              // Add a slight delay before ending the round to allow for UI updates
+              setTimeout(() => {
+                try {
+                  gameLogic.endRound(io);
+                } catch (endRoundError) {
+                  console.error('Error ending round:', endRoundError);
+                }
+              }, 2000);
+            } catch (notificationError) {
+              console.error('Error sending notifications:', notificationError);
             }
-            
-            // Send notification to screens
-            io.to('screens').emit('all_submitted', notificationData);
-            
-            // Add a slight delay before ending the round to allow for UI updates
-            setTimeout(() => {
-              gameLogic.endRound(io);
-            }, 2000);
           } else if (result.allSubmitted) {
             // This could happen if multiple submissions come in at almost the same time
             console.log('This submission completed all required inputs - will end round shortly');
