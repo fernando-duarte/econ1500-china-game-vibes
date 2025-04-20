@@ -73,16 +73,6 @@ socket.on('player_joined', (data) => {
   const countText = `${players.length} player${players.length !== 1 ? 's' : ''} have joined`;
   console.log(`Updating player count to: ${countText}`);
   playerCount.textContent = countText;
-  
-  // Display auto-start message if enabled and threshold met
-  if (CONSTANTS.AUTO_START_ENABLED && players.length >= CONSTANTS.AUTO_START_PLAYERS) {
-    const autoStartMsg = document.createElement('p');
-    autoStartMsg.textContent = 'Game auto-start triggered';
-    autoStartMsg.classList.add('auto-start-msg');
-    if (!document.querySelector('.auto-start-msg')) {
-      gameStatus.appendChild(autoStartMsg);
-    }
-  }
 });
 
 socket.on('game_started', () => {
