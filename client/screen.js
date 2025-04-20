@@ -123,22 +123,8 @@ function updateAverages() {
 
 // Helper function to start timer
 function startTimer(seconds) {
-  // Clear existing timer
-  clearInterval(timerInterval);
-  
   // Set initial time
   timer.textContent = seconds;
-  
-  // Start the countdown
-  timerInterval = setInterval(() => {
-    const currentTime = parseInt(timer.textContent);
-    if (currentTime <= 0) {
-      clearInterval(timerInterval);
-      timer.textContent = '0';
-    } else {
-      timer.textContent = currentTime - 1;
-    }
-  }, CONSTANTS.MILLISECONDS_PER_SECOND);
 }
 
 // Socket event handlers
@@ -218,8 +204,8 @@ socket.on('round_start', (data) => {
   autoSubmittedPlayers = [];
   roundInvestments = {};
   
-  // Start timer
-  startTimer(data.timeRemaining || CONSTANTS.ROUND_DURATION_SECONDS);
+  // Initialize timer with the server's time remaining
+  timer.textContent = data.timeRemaining;
   
   // Update display
   updatePlayerList();
@@ -281,8 +267,7 @@ socket.on('round_summary', (data) => {
   // Update game status
   gameStatus.textContent = `Round ${data.roundNumber} Completed`;
   
-  // Clear timer
-  clearInterval(timerInterval);
+  // Reset timer display
   timer.textContent = '-';
   
   // Collect capital and output values for averaging
@@ -329,10 +314,16 @@ socket.on('state_snapshot', (data) => {
     gameState = 'active';
   }
   
-  // If there's time remaining, start the timer
+  // If there's time remaining, initialize timer display
   if (data.timeRemaining) {
-    startTimer(data.timeRemaining);
+    timer.textContent = data.timeRemaining;
   }
+});
+
+// Add handler for timer updates from the server
+socket.on('timer_update', (data) => {
+  // Update timer display with the server's time
+  timer.textContent = data.timeRemaining;
 });
 
 socket.on('error', (data) => {
