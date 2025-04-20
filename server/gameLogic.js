@@ -248,6 +248,11 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
     return { success: false, error: 'Game not running' };
   }
   
+  // Check if game is over (round exceeds total rounds)
+  if (game.round > CONSTANTS.ROUNDS) {
+    return { success: false, error: 'Game is over' };
+  }
+  
   // Check if player exists
   if (!game.players[playerName]) {
     return { success: false, error: 'Player not found' };

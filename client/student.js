@@ -272,6 +272,12 @@ socket.on('game_over', (data) => {
   
   // Update round status
   roundStatus.textContent = 'Game over';
+  
+  // Disable all investment controls
+  submitInvestment.disabled = true;
+  investmentSlider.disabled = true;
+  investmentValue.disabled = true;
+  investmentStatus.textContent = 'Game is over. No more investments can be made.';
 });
 
 socket.on('state_snapshot', (data) => {
