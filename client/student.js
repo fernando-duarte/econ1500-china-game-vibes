@@ -44,10 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Game state
 let currentPlayerName = '';
 let timerInterval = null;
-let currentOutput = 0;
+let currentOutput = CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0; // default initial output 0
 let hasSubmittedInvestment = false;
-let lastCapital = 0;
-let lastOutput = 0;
+let lastCapital = CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0; // default last capital 0
+let lastOutput = CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0; // default last output 0
 
 // Join game
 joinButton.addEventListener('click', () => {

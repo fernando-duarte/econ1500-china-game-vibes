@@ -120,7 +120,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
   updatePlayerList();
   
   // Update player count
-  const countText = `${players.length} player${players.length !== 1 ? 's' : ''} have joined`;
+  const countText = `${players.length} player${players.length !== 1 ? CONSTANTS.UI_TEXT.PLAYER_PLURAL_SUFFIX : ''}${CONSTANTS.UI_TEXT.PLAYER_JOINED_SUFFIX}`;
   console.log(`Updating player count to: ${countText}`);
   playerCount.textContent = countText;
   
@@ -252,8 +252,8 @@ socket.on(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, (data) => {
     console.log('All players have submitted - round should end soon');
     
     // If we're in round 0 and all players submitted, update the UI to "Round 1" proactively
-    if (roundNumber.textContent === '0') {
-      roundNumber.textContent = '1';
+    if (roundNumber.textContent === String(CONSTANTS.FIRST_ROUND_NUMBER - 1)) {
+      roundNumber.textContent = String(CONSTANTS.FIRST_ROUND_NUMBER);
       roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
     }
   }
@@ -418,7 +418,7 @@ function updatePlayerList() {
   // Force a re-paint - sometimes needed to make sure the UI updates
   playerList.style.opacity = CONSTANTS.REPAINT_HACK_OPACITY;
   setTimeout(() => {
-    playerList.style.opacity = '1';
+    playerList.style.opacity = CONSTANTS.OPACITY_FULL;
   }, CONSTANTS.SHORT_UI_DELAY_MS);
 }
 
