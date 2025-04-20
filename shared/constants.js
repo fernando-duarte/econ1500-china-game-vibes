@@ -109,6 +109,51 @@ const GAME_CONSTANTS = {
     GAME_ENDING: 'Game is being ended by the instructor...'
   },
 
+  // Debug Message Constants
+  DEBUG_MESSAGES: {
+    // Auto-start related
+    AUTO_START_FAILED: 'Auto-start failed:',
+    AUTO_START_FAILED_NO_IO: 'Auto-start failed: io object is missing',
+    
+    // Timer-related errors
+    ERROR_CLEARING_TIMERS_START_ROUND: 'Error clearing existing timers in startRound:',
+    ERROR_TIMER_INTERVAL: 'Error in timer interval:',
+    ERROR_ROUND_END_TIMEOUT: 'Error in round end timeout:',
+    ERROR_SETTING_UP_TIMERS: 'Error setting up timers:',
+    ERROR_CLEARING_TIMERS_END_ROUND: 'Error clearing timers in endRound:',
+    ERROR_CLEARING_TIMERS: 'Error clearing timers:',
+    ERROR_CLEARING_TIMERS_FORCE_END: 'Error clearing timers in forceEndGame:',
+    
+    // IO-related errors
+    NO_IO_AVAILABLE_END_ROUND: 'No io object available when ending round!',
+    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!',
+    
+    // Socket handlers errors
+    ERROR_IN_SCREEN_CONNECT: 'Error in screen_connect:',
+    ERROR_IN_CREATE_GAME: 'Error in create_game:',
+    ERROR_IN_JOIN_GAME: 'Error in join_game:',
+    ERROR_IN_RECONNECT_GAME: 'Error in reconnect_game:',
+    ERROR_IN_START_GAME: 'Error in start_game:',
+    ERROR_IN_FORCE_END_GAME: 'Error in force_end_game:',
+    ERROR_IN_SET_MANUAL_START: 'Error in set_manual_start:',
+    PLAYER_JOIN_FAILED: 'Player join failed for',
+    NO_PLAYER_NAME: 'Cannot process investment: No player name associated with socket',
+    INVESTMENT_SUBMISSION_FAILED: 'Investment submission failed for',
+    ERROR_IN_SUBMIT_INVESTMENT: 'Error in submit_investment:',
+    ERROR_ENDING_ROUND: 'Error ending round:',
+    ERROR_SENDING_NOTIFICATIONS: 'Error sending notifications:',
+    ERROR_IN_DISCONNECT: 'Error in disconnect handler:',
+    
+    // Server errors
+    UNCAUGHT_EXCEPTION: 'Uncaught Exception:',
+    UNHANDLED_REJECTION: 'Unhandled Rejection at:',
+    EXPRESS_ERROR: 'Express error:',
+    
+    // Client-side errors
+    INVALID_INVESTMENT_DATA: 'Invalid investment_received data:',
+    SOCKET_ERROR: 'Socket error:'
+  },
+
   // UI Text Constants
   UI_TEXT: {
     STATUS_ENABLED: 'Enabled',
