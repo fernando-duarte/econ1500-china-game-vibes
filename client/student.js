@@ -73,7 +73,7 @@ investmentValue.addEventListener('input', () => {
   // Clamp the value between 0 and max output
   const value = parseFloat(investmentValue.value);
   if (!isNaN(value)) {
-    const clampedValue = Math.min(Math.max(0, value), currentOutput);
+    const clampedValue = Math.min(Math.max(CONSTANTS.INVESTMENT_MIN, value), currentOutput);
     investmentValue.value = clampedValue;
     investmentSlider.value = clampedValue;
   }
@@ -161,8 +161,8 @@ socket.on('round_start', (data) => {
   // Reset investment UI
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
   investmentSlider.max = data.output;
-  investmentSlider.value = 0;
-  investmentValue.value = 0;
+  investmentSlider.value = CONSTANTS.INVESTMENT_MIN;
+  investmentValue.value = CONSTANTS.INVESTMENT_MIN;
   maxOutput.textContent = data.output;
   submitInvestment.disabled = false;
   investmentSlider.disabled = false;
@@ -383,7 +383,7 @@ function startTimer(seconds) {
       
       // Auto-submit if not already submitted
       if (!hasSubmittedInvestment) {
-        const investment = parseFloat(investmentValue.value) || 0;
+        const investment = parseFloat(investmentValue.value) || CONSTANTS.INVESTMENT_MIN;
         socket.emit('submit_investment', { investment, isAutoSubmit: true });
         investmentStatus.textContent = 'Time\'s up! Your investment was auto-submitted.';
         submitInvestment.disabled = true;
@@ -392,5 +392,5 @@ function startTimer(seconds) {
         hasSubmittedInvestment = true;
       }
     }
-  }, 1000);
+  }, CONSTANTS.MILLISECONDS_PER_SECOND);
 } 

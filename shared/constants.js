@@ -4,6 +4,7 @@ const GAME_CONSTANTS = {
   ROUNDS: 10,
   ROUND_DURATION_SECONDS: 60,
   FIRST_ROUND_NUMBER: 1,
+  MAX_PLAYERS: 50, // Maximum number of players allowed
   
   // Economic model constants
   INITIAL_CAPITAL: 100,
