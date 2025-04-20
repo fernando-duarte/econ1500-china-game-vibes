@@ -145,8 +145,12 @@ socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
   // Update player list
   updatePlayerList();
 
-  // Log event
-  addEvent('player_joined', `Player joined: ${data.playerName}`);
+  // Log event with appropriate message for join or reconnect
+  const eventType = data.isReconnect ? 'player_reconnected' : 'player_joined';
+  const message = data.isReconnect ? 
+    `Player ${data.playerName} reconnected` : 
+    `Player ${data.playerName} joined`;
+  addEvent(eventType, message);
 });
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, () => {
@@ -330,6 +334,17 @@ socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
 socket.on(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, (data) => {
   // Update timer display with the server's time
   timer.textContent = data.timeRemaining;
+});
+
+// Add handlers for the new disconnection events
+socket.on(CONSTANTS.SOCKET.EVENT_INSTRUCTOR_DISCONNECTED, () => {
+  console.log('Instructor disconnected from server');
+  addEvent('instructor_disconnected', 'Instructor disconnected from server', true);
+});
+
+socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED, (data) => {
+  console.log('Player disconnected:', data.playerName);
+  addEvent('player_disconnected', `Player ${data.playerName} disconnected`, true);
 });
 
 socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (data) => {

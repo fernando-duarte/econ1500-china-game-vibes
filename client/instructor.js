@@ -124,6 +124,19 @@ socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
   console.log(`Updating player count to: ${countText}`);
   playerCount.textContent = countText;
 
+  // Show notification for reconnection
+  if (data.isReconnect) {
+    const statusElement = document.createElement('div');
+    statusElement.textContent = `${data.playerName} reconnected to the game`;
+    statusElement.classList.add(CONSTANTS.CSS.STATUS_MESSAGE);
+    document.body.appendChild(statusElement);
+
+    // Remove the message after a specified time
+    setTimeout(() => {
+      statusElement.remove();
+    }, CONSTANTS.STATUS_MESSAGE_DISPLAY_MS);
+  }
+
   // If data includes manual start info, update the controls
   if (data.manualStartEnabled !== undefined) {
     manualStartToggle.checked = data.manualStartEnabled;
@@ -364,6 +377,22 @@ socket.on(CONSTANTS.SOCKET.EVENT_ADMIN_NOTIFICATION, (data) => {
   setTimeout(() => {
     notification.remove();
   }, CONSTANTS.NOTIFICATION_DISPLAY_MS);
+});
+
+// Add handler for player disconnection
+socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED, (data) => {
+  console.log('Player disconnected:', data.playerName);
+  
+  // Show temporary notification using existing pattern
+  const statusElement = document.createElement('div');
+  statusElement.textContent = `${data.playerName} disconnected from the game`;
+  statusElement.classList.add(CONSTANTS.CSS.STATUS_MESSAGE);
+  document.body.appendChild(statusElement);
+
+  // Remove the message after a specified time
+  setTimeout(() => {
+    statusElement.remove();
+  }, CONSTANTS.STATUS_MESSAGE_DISPLAY_MS);
 });
 
 // Add handler for timer updates from the server

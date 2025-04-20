@@ -6,6 +6,15 @@ const {
 
 const CONSTANTS = require('../shared/constants');
 
+/**
+ * Get the room identifier for a specific player
+ * @param {string} playerName - The name of the player
+ * @return {string} The room identifier for the player
+ */
+function getPlayerRoom(playerName) {
+  return `${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`;
+}
+
 // In-memory game state - single game instead of multiple games
 let game = {
   isGameRunning: false,
@@ -233,7 +242,7 @@ function startRound(io) {
   // Emit round start event to all players with the initial timeRemaining
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.connected) {
-      io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_START, {
+      io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_ROUND_START, {
         roundNumber: game.round,
         capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
@@ -360,7 +369,7 @@ function endRound(io) {
     
     // Send round end event to the player
     if (player.connected && io) {
-      io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_ROUND_END, {
+      io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_ROUND_END, {
         newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       });

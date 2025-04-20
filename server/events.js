@@ -11,6 +11,15 @@ const {
 const CONSTANTS = require('../shared/constants');
 
 /**
+ * Get the room identifier for a specific player
+ * @param {string} playerName - The name of the player
+ * @return {string} The room identifier for the player
+ */
+function getPlayerRoom(playerName) {
+  return `${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`;
+}
+
+/**
  * Set up Socket.IO event handlers
  */
 function setupSocketEvents(io) {
@@ -141,7 +150,7 @@ function setupSocketEvents(io) {
         socket.join(CONSTANTS.SOCKET_ROOMS.PLAYERS);
         
         // Create player-specific room
-        socket.join(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`);
+        socket.join(getPlayerRoom(playerName));
 
         console.log(`Player ${playerName} attempting to join`);
 
@@ -150,7 +159,7 @@ function setupSocketEvents(io) {
 
         if (result.success) {
           console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
-          io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
+          io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
             playerName: playerName,
             initialCapital: result.initialCapital,
             initialOutput: result.initialOutput,
@@ -203,14 +212,14 @@ function setupSocketEvents(io) {
           socket.join(CONSTANTS.SOCKET_ROOMS.PLAYERS);
           
           // Join player-specific room
-          socket.join(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`);
+          socket.join(getPlayerRoom(playerName));
 
           console.log(`Player reconnected: ${playerName}`);
 
           // Send current game state to the player
           if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
             const gameLogic = require('./gameLogic');
-            io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, {
+            io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, {
               roundNumber: result.round,
               capital: result.capital,
               output: result.output,
@@ -338,7 +347,7 @@ function setupSocketEvents(io) {
 
         if (result.success) {
           console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
-          io.to(`${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`).emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, { investment: result.investment, isAutoSubmit });
+          io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, { investment: result.investment, isAutoSubmit });
 
           // Always broadcast to instructor room
           console.log('Sending investment_received to instructor room');
@@ -420,6 +429,7 @@ function setupSocketEvents(io) {
         // Socket.IO automatically handles room membership on disconnect
         if (isInstructor) {
           console.log('Instructor disconnected');
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_INSTRUCTOR_DISCONNECTED);
         }
 
         // Handle screen disconnect
@@ -427,6 +437,15 @@ function setupSocketEvents(io) {
           console.log('Screen disconnected');
         }
 
+        // If this was a player, notify others about the disconnection
+        if (playerName) {
+          console.log(`Player disconnected: ${playerName}`);
+          
+          // Notify instructor and screens about the disconnection
+          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED, { playerName });
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED, { playerName });
+        }
+        
         // Mark player as disconnected
         playerDisconnect(socket.id);
       } catch (error) {
