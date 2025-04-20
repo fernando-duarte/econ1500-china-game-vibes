@@ -9,7 +9,6 @@ socket.on('connect', () => {
 // DOM Elements
 const gameStatus = document.getElementById('gameStatus');
 const playerCount = document.getElementById('playerCount');
-const startGameButton = document.getElementById('startGameButton');
 const gameControls = document.getElementById('gameControls');
 const playerListSection = document.getElementById('playerListSection');
 const playerList = document.getElementById('playerList');
@@ -45,12 +44,6 @@ let submittedPlayers = [];
 let autoSubmittedPlayers = [];
 let currentRoundInvestments = {};
 
-// Start the game
-startGameButton.addEventListener('click', () => {
-  socket.emit('start_game');
-  startGameButton.disabled = true;
-});
-
 // Reset the game
 resetGameButton.addEventListener('click', () => {
   location.reload();
@@ -59,9 +52,6 @@ resetGameButton.addEventListener('click', () => {
 // Socket event handlers
 socket.on('game_created', () => {
   console.log('Game created event received by instructor client');
-  
-  // Enable start button once players join
-  updateStartButton();
 });
 
 socket.on('player_joined', (data) => {
@@ -84,12 +74,8 @@ socket.on('player_joined', (data) => {
   console.log(`Updating player count to: ${countText}`);
   playerCount.textContent = countText;
   
-  // Enable start button if at least one player has joined
-  updateStartButton();
-  
   // Display auto-start message if enabled and threshold met
   if (CONSTANTS.AUTO_START_ENABLED && players.length >= CONSTANTS.AUTO_START_PLAYERS) {
-    startGameButton.disabled = true;
     const autoStartMsg = document.createElement('p');
     autoStartMsg.textContent = 'Game auto-start triggered';
     autoStartMsg.classList.add('auto-start-msg');
@@ -358,21 +344,6 @@ function updatePlayerList() {
   setTimeout(() => {
     playerList.style.opacity = '1';
   }, 10);
-}
-
-function updateStartButton() {
-  // Enable start button if at least one player has joined
-  console.log(`updateStartButton called - ${players.length} players`);
-  const shouldEnable = players.length > 0;
-  startGameButton.disabled = !shouldEnable;
-  
-  if (shouldEnable) {
-    console.log('Start game button enabled');
-    startGameButton.classList.add('button-enabled');
-  } else {
-    console.log('Start game button disabled');
-    startGameButton.classList.remove('button-enabled');
-  }
 }
 
 function updateCurrentInvestmentsTable() {
