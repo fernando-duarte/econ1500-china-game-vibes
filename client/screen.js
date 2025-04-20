@@ -261,8 +261,11 @@ socket.on('all_submitted', (data) => {
 socket.on('round_summary', (data) => {
   console.log('Round summary:', data);
   
-  // Update round number - fix: increment by 1 to show next round like other clients
-  roundNumber.textContent = data.roundNumber + 1;
+  // Get the next round number (making sure not to exceed max rounds)
+  const nextRound = Math.min(data.roundNumber + 1, CONSTANTS.ROUNDS);
+  
+  // Update round number - making sure not to exceed max rounds
+  roundNumber.textContent = nextRound;
   
   // Update game status
   gameStatus.textContent = `Round ${data.roundNumber} Completed`;
@@ -287,6 +290,9 @@ socket.on('round_summary', (data) => {
 
 socket.on('game_over', (data) => {
   console.log('Game over:', data);
+  
+  // Ensure round number shows the final round
+  roundNumber.textContent = CONSTANTS.ROUNDS;
   
   // Update game status
   gameStatus.textContent = 'Game Over';

@@ -19,7 +19,8 @@ let game = {
   currentIo: null,
   pendingEndRound: false,
   instructorSocket: null, // Add reference to instructor socket
-  allSubmittedTime: null // Time when all players have submitted
+  allSubmittedTime: null, // Time when all players have submitted
+  manualStartEnabled: false // Add flag for manual start mode
 };
 
 /**
@@ -39,7 +40,8 @@ function createGame() {
     currentIo: null,
     pendingEndRound: false,
     instructorSocket: null,
-    allSubmittedTime: null
+    allSubmittedTime: null,
+    manualStartEnabled: !CONSTANTS.AUTO_START_ENABLED // Initialize based on constants
   });
 
   return true;
@@ -82,14 +84,15 @@ function addPlayer(playerName, socketId, io) {
     isAutoSubmit: false // Track auto-submissions
   };
 
-  // Check if the game should auto-start
-  const autoStartResult = checkAutoStart(io); // Pass io here
+  // Only check for auto-start if manual start is not enabled
+  const autoStartResult = game.manualStartEnabled ? false : checkAutoStart(io);
 
   return { 
     success: true, 
     initialCapital: parseFloat(initialCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)), 
     initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-    autoStart: autoStartResult
+    autoStart: autoStartResult,
+    manualStartEnabled: game.manualStartEnabled // Send manual start mode status to client
   };
 }
 
@@ -245,6 +248,11 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
     return { success: false, error: 'Game not running' };
   }
   
+  // Check if game is over (round exceeds total rounds)
+  if (game.round > CONSTANTS.ROUNDS) {
+    return { success: false, error: 'Game is over' };
+  }
+  
   // Check if player exists
   if (!game.players[playerName]) {
     return { success: false, error: 'Player not found' };
@@ -378,25 +386,27 @@ function endRound(io) {
   } else {
     console.error('No io object available when ending round!');
   }
-  
-  // Check if the game is over
-  if (game.round >= CONSTANTS.ROUNDS) {
+
+  // Increment the round counter first
+  game.round++;
+
+  // Check if the game is over (next round would exceed max rounds)
+  if (game.round > CONSTANTS.ROUNDS) {
     console.log('Game is over - final round reached.');
     endGame(io);
     return { success: true, gameOver: true };
   }
-  
-  // Increment the round
-  console.log(`Round ${game.round} completed. Advancing to round ${game.round + 1}`);
-  game.round++;
-  
+
+  // We haven't reached the last round yet, so start the next round
+  console.log(`Round ${game.round - 1} completed. Advancing to round ${game.round}`);
+
   // Start the next round
   if (io) {
     startRound(io);
   } else {
     console.error('Cannot start next round - no io object available!');
   }
-  
+
   return { success: true, gameOver: false };
 }
 
@@ -556,6 +566,14 @@ function playerDisconnect(socketId) {
   });
 }
 
+/**
+ * Set the game to manual start mode
+ */
+function setManualStartMode(enabled) {
+  game.manualStartEnabled = enabled;
+  return { success: true, manualStartEnabled: game.manualStartEnabled };
+}
+
 // Export the game functions
 module.exports = {
   createGame,
@@ -568,5 +586,6 @@ module.exports = {
   forceEndGame,
   playerReconnect,
   playerDisconnect,
+  setManualStartMode,
   game  // Export the game object for external use
 }; 

@@ -25,6 +25,10 @@ const finalResultsBody = document.getElementById('finalResultsBody');
 const resetGameButton = document.getElementById('resetGameButton');
 const roundTimer = document.getElementById('roundTimer');
 const forceEndGameButton = document.getElementById('forceEndGameButton');
+const startGameButton = document.getElementById('startGameButton');
+const manualStartToggle = document.getElementById('manualStartToggle');
+const manualStartStatus = document.getElementById('manualStartStatus');
+const gameSetup = document.getElementById('gameSetup');
 
 // Initialize values from constants
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,6 +51,9 @@ let currentRoundInvestments = {};
 
 // Reset the game
 resetGameButton.addEventListener('click', () => {
+  // Show the game setup section again before reloading
+  gameSetup.classList.remove('hidden');
+  
   location.reload();
 });
 
@@ -58,9 +65,40 @@ forceEndGameButton.addEventListener('click', () => {
   }
 });
 
+// Manual start toggle
+manualStartToggle.addEventListener('change', () => {
+  const enabled = manualStartToggle.checked;
+  socket.emit('set_manual_start', { enabled });
+  
+  // Update UI immediately for responsiveness
+  manualStartStatus.textContent = enabled ? 'Enabled' : 'Disabled';
+  startGameButton.disabled = !enabled;
+});
+
+// Start game button
+startGameButton.addEventListener('click', () => {
+  if (players.length === 0) {
+    alert('No players have joined yet. Wait for at least one player to join before starting the game.');
+    return;
+  }
+  
+  if (confirm(`Start the game with ${players.length} player(s)?`)) {
+    socket.emit('start_game');
+    console.log('Start game request sent');
+    startGameButton.disabled = true;
+  }
+});
+
 // Socket event handlers
-socket.on('game_created', () => {
-  console.log('Game created event received by instructor client');
+socket.on('game_created', (data) => {
+  console.log('Game created event received by instructor client', data);
+  
+  // Update manual start controls if info is provided
+  if (data && data.manualStartEnabled !== undefined) {
+    manualStartToggle.checked = data.manualStartEnabled;
+    manualStartStatus.textContent = data.manualStartEnabled ? 'Enabled' : 'Disabled';
+    startGameButton.disabled = !data.manualStartEnabled;
+  }
 });
 
 socket.on('player_joined', (data) => {
@@ -82,10 +120,20 @@ socket.on('player_joined', (data) => {
   const countText = `${players.length} player${players.length !== 1 ? 's' : ''} have joined`;
   console.log(`Updating player count to: ${countText}`);
   playerCount.textContent = countText;
+  
+  // If data includes manual start info, update the controls
+  if (data.manualStartEnabled !== undefined) {
+    manualStartToggle.checked = data.manualStartEnabled;
+    manualStartStatus.textContent = data.manualStartEnabled ? 'Enabled' : 'Disabled';
+    startGameButton.disabled = !data.manualStartEnabled;
+  }
 });
 
 socket.on('game_started', () => {
   console.log('Game started');
+  
+  // Hide game setup section (auto-start toggle and start game button)
+  gameSetup.classList.add('hidden');
   
   // Show game controls and player list
   gameControls.classList.remove('hidden');
@@ -289,6 +337,14 @@ socket.on('game_over', (data) => {
 socket.on('error', (data) => {
   console.error('Socket error:', data.message);
   alert('Error: ' + data.message);
+});
+
+// Handle manual start mode updates
+socket.on('manual_start_mode', (data) => {
+  console.log('Manual start mode update:', data);
+  manualStartToggle.checked = data.enabled;
+  manualStartStatus.textContent = data.enabled ? 'Enabled' : 'Disabled';
+  startGameButton.disabled = !data.enabled;
 });
 
 // Add handler for admin notifications
