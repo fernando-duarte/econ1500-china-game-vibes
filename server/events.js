@@ -9,6 +9,9 @@ const {
 } = require('./gameLogic');
 
 const CONSTANTS = require('../shared/constants');
+const playerManager = require('./playerManager');
+const connectionHandler = require('./connectionHandler');
+const { Errors } = require('./utils/errorHandler');
 
 /**
  * Set up Socket.IO event handlers
@@ -96,7 +99,12 @@ function setupSocketEvents(io) {
           // Join a special room for instructors
           socket.join('instructor');
           
-          // Store this socket as the instructor socket
+          // Store this socket as the instructor socket - make sure to re-assign for reconnection
+          if (isValidReconnection) {
+            console.log(`Instructor reconnected with token. Updating socket ID from ${
+              gameLogic.game.instructorSocket ? gameLogic.game.instructorSocket.id : 'null'
+            } to ${socket.id}`);
+          }
           gameLogic.game.instructorSocket = socket;
           
           // Generate a token if this is the first instructor
@@ -115,6 +123,7 @@ function setupSocketEvents(io) {
           
           // Send game state if reconnecting
           if (isValidReconnection && gameLogic.game.isGameRunning) {
+            console.log('Sending instructor snapshot after reconnection');
             sendInstructorSnapshot(socket, gameLogic);
           }
         } else {
@@ -244,7 +253,7 @@ function setupSocketEvents(io) {
         
         if (!playerName) {
           console.error(`Cannot process investment: No player name associated with socket ${socket.id}`);
-          socket.emit('error', { message: 'Not in a game' });
+          socket.emit('error', Errors.validation('Not in a game'));
           return;
         }
         
@@ -259,7 +268,26 @@ function setupSocketEvents(io) {
           hasInstructorSocket: !!gameLogic.game.instructorSocket
         });
         
-        const result = gameLogic.submitInvestment(playerName, investment, isAutoSubmit);
+        // Get the player's current game state
+        const player = gameLogic.game.players[playerName];
+        if (!player) {
+          socket.emit('error', Errors.gameState('Player not found in game'));
+          return;
+        }
+        
+        // Use our shared validation
+        const { validateInvestment } = require('../shared/gameUtils');
+        const validation = validateInvestment(investment, {
+          output: player.output
+        });
+        
+        if (!validation.valid) {
+          socket.emit('error', { message: validation.error });
+          return;
+        }
+        
+        // Use the validated value
+        const result = gameLogic.submitInvestment(playerName, validation.value, isAutoSubmit);
         
         if (result.success) {
           console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
@@ -272,6 +300,9 @@ function setupSocketEvents(io) {
               const instructorSocketId = gameLogic.game.instructorSocket.id;
               if (!instructorSocketId) {
                 console.error('Instructor socket is invalid (no ID)');
+                broadcastInvestment();
+              } else if (!io.sockets.sockets.has(instructorSocketId)) {
+                console.error(`Instructor socket ID ${instructorSocketId} not found in connected sockets`);
                 broadcastInvestment();
               } else {
                 console.log(`Sending investment_received directly to instructor socket ${instructorSocketId}`);
@@ -289,7 +320,7 @@ function setupSocketEvents(io) {
                   console.error('Error counting active connections:', err);
                 }
                 
-                 // Direct send to instructor
+                // Direct send to instructor
                 gameLogic.game.instructorSocket.emit('investment_received', { 
                   playerName, 
                   investment: result.investment,
@@ -339,7 +370,20 @@ function setupSocketEvents(io) {
               
               // Send notification to instructor if available
               if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
-                gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+                try {
+                  // Verify the socket is still valid
+                  const instructorSocketId = gameLogic.game.instructorSocket.id;
+                  if (!instructorSocketId) {
+                    console.error('Instructor socket is invalid (no ID) for all_submitted');
+                  } else if (!io.sockets.sockets.has(instructorSocketId)) {
+                    console.error(`Instructor socket ID ${instructorSocketId} not found for all_submitted`);
+                  } else {
+                    gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
+                    console.log('Successfully sent all_submitted to instructor');
+                  }
+                } catch (err) {
+                  console.error('Error sending all_submitted to instructor:', err);
+                }
               }
               
               // Send notification to screens
@@ -372,6 +416,11 @@ function setupSocketEvents(io) {
             // This could happen if multiple submissions come in at almost the same time
             console.log('This submission completed all required inputs - will end round shortly');
           }
+          
+          // Show validation message if investment was clamped
+          if (validation.error) {
+            socket.emit('notification', { message: validation.error, type: 'warning' });
+          }
         } else {
           console.error(`Investment submission failed for ${playerName}:`, result.error);
           socket.emit('error', { message: result.error });
@@ -385,8 +434,11 @@ function setupSocketEvents(io) {
     // Student joins a game
     socket.on('join_game', ({ playerName: name, isReconnect }) => {
       try {
+        console.log(`[JOIN] Received join_game event. Data:`, { name, isReconnect, socketId: socket.id });
+        
         // Validate input
         if (!name || typeof name !== 'string' || name.trim() === '') {
+          console.log(`[JOIN] Invalid player name: ${name}`);
           socket.emit('join_ack', { 
             success: false, 
             error: 'Invalid input' 
@@ -395,6 +447,7 @@ function setupSocketEvents(io) {
         }
         
         playerName = name.trim();
+        console.log(`[JOIN] Validated name: ${playerName}`);
         
         // Get game logic reference
         const gameLogic = require('./gameLogic');
@@ -407,13 +460,17 @@ function setupSocketEvents(io) {
         // Explicit reconnection requested or player exists
         const shouldReconnect = (isReconnect === true) || playerExists;
         
+        console.log(`[JOIN] Player exists: ${playerExists}, shouldReconnect: ${shouldReconnect}`);
+        
         if (shouldReconnect) {
+          console.log(`[JOIN] Handling player reconnection: ${playerName}`);
           handlePlayerReconnection(socket, playerName, gameLogic, io);
         } else {
+          console.log(`[JOIN] Handling new player join: ${playerName}`);
           handleNewPlayerJoin(socket, playerName, io);
         }
       } catch (error) {
-        console.error('Error in join_game:', error);
+        console.error('[JOIN] Error in join_game:', error);
         socket.emit('join_ack', { 
           success: false, 
           error: 'Server error processing join request' 
@@ -423,17 +480,13 @@ function setupSocketEvents(io) {
     
     // Helper for reconnection logic
     function handlePlayerReconnection(socket, playerName, gameLogic, io) {
-      console.log(`Player ${playerName} reconnection attempt`);
+      console.log(`Player ${playerName} reconnection attempt at ${new Date().toISOString()}`);
       
-      // Attempt to reconnect the player
-      const result = gameLogic.playerReconnect(socket.id, playerName);
+      // Use our new connection handler
+      const connectionHandler = require('./connectionHandler');
+      const result = connectionHandler.handlePlayerReconnection(io, socket, playerName, gameLogic);
       
       if (result.success) {
-        // Join the players room
-        socket.join('players');
-        
-        console.log(`Player reconnected: ${playerName}`);
-        
         // Send acknowledgment with reconnect flag
         socket.emit('join_ack', { 
           ...result,
@@ -460,30 +513,57 @@ function setupSocketEvents(io) {
     
     // Helper for new player join logic
     function handleNewPlayerJoin(socket, playerName, io) {
-      console.log(`New player joining: ${playerName}`);
+      console.log(`[JOIN] New player joining: ${playerName}`);
       
       // Normal join flow for new players
+      console.log(`[JOIN] Adding player ${playerName} to game`);
       const result = addPlayer(playerName, socket.id, io);
+      console.log(`[JOIN] addPlayer result:`, result);
       
       if (result.success) {
+        // Track this socket using our new playerManager
+        console.log(`[JOIN] Tracking socket ${socket.id} for player ${playerName}`);
+        playerManager.trackPlayerSocket(socket.id, playerName);
+        
+        // Set socket properties
+        socket.playerName = playerName;
+        socket.gameRole = 'player';
+        
         // Join the players room
+        console.log(`[JOIN] Adding socket to 'players' room`);
         socket.join('players');
         
         // Send acknowledgment
+        console.log(`[JOIN] Sending join_ack success to ${socket.id}`);
         socket.emit('join_ack', { 
           success: true,
           isReconnect: false
         });
         
         // Announce to the player they've joined successfully
+        console.log(`[JOIN] Sending game_joined to ${socket.id}`);
         socket.emit('game_joined', {
           playerName: playerName,
           initialCapital: result.initialCapital,
           initialOutput: result.initialOutput
         });
         
-        // Existing notification code...
+        // Notify others about this new player
+        console.log(`[JOIN] Notifying screens and instructor about new player`);
+        io.to('screens').emit('player_joined', { 
+          playerName,
+          isReconnect: false
+        });
+        
+        // Notify instructor if available
+        if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
+          gameLogic.game.instructorSocket.emit('player_joined', {
+            playerName,
+            isReconnect: false
+          });
+        }
       } else {
+        console.log(`[JOIN] Failed to add player ${playerName}: ${result.error}`);
         socket.emit('join_ack', result);
       }
     }
@@ -508,20 +588,36 @@ function setupSocketEvents(io) {
     
     // Notify other clients about reconnection
     function notifyAboutReconnection(socket, playerName, io) {
+      console.log(`Notifying others about player ${playerName} reconnection`);
+      
       // Notify screens
       socket.to('screens').emit('player_joined', { 
         playerName,
         isReconnect: true
       });
       
-      // Notify instructor
+      // Notify instructor - get a fresh reference to ensure we have the latest
       const gameLogic = require('./gameLogic');
-      if (gameLogic.game.instructorSocket && 
-          gameLogic.game.instructorSocket.connected) {
-        gameLogic.game.instructorSocket.emit('player_joined', { 
-          playerName,
-          isReconnect: true
-        });
+      
+      // If instructor socket exists, try to notify
+      if (gameLogic.game.instructorSocket) {
+        try {
+          console.log(`Attempting to notify instructor about ${playerName} reconnection`);
+          // Check if socket is connected before emitting
+          if (io.sockets.sockets.has(gameLogic.game.instructorSocket.id)) {
+            gameLogic.game.instructorSocket.emit('player_joined', { 
+              playerName,
+              isReconnect: true
+            });
+            console.log(`Successfully notified instructor about ${playerName} reconnection`);
+          } else {
+            console.log('Instructor socket exists but not in connected sockets list');
+          }
+        } catch (err) {
+          console.error('Error notifying instructor about player reconnection:', err);
+        }
+      } else {
+        console.log('No instructor socket available to notify about reconnection');
       }
     }
     
@@ -530,22 +626,67 @@ function setupSocketEvents(io) {
       try {
         console.log(`Disconnected: ${socket.id}`);
         
+        // Use our new connection handler for player disconnection
+        const connectionHandler = require('./connectionHandler');
+        connectionHandler.handlePlayerDisconnection(io, socket.id, require('./gameLogic'));
+        
         // Check if this was the instructor socket
         const gameLogic = require('./gameLogic');
         if (isInstructor && gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.id === socket.id) {
           console.log('Instructor disconnected');
-          gameLogic.game.instructorSocket = null;
+          // Don't clear the instructor socket, just mark as disconnected
+          // This way we can still keep track of which socket is the instructor
+          if (gameLogic.game.instructorSocket) {
+            gameLogic.game.instructorSocket.connected = false;
+            console.log('Instructor socket marked as disconnected, waiting for reconnect');
+          }
         }
         
         // Handle screen disconnect
         if (isScreen) {
           console.log('Screen disconnected');
+          io.emit('screen_disconnected');
         }
-        
-        // Mark player as disconnected
-        playerDisconnect(socket.id);
       } catch (error) {
         console.error('Error in disconnect handler:', error);
+      }
+    });
+    
+    // Add support for state snapshot requests
+    socket.on('request_state_snapshot', (data) => {
+      try {
+        const playerName = data.playerName;
+        if (!playerName) return;
+        
+        console.log(`State snapshot requested for ${playerName}`);
+        
+        const gameLogic = require('./gameLogic');
+        
+        // Check if this player exists
+        if (gameLogic.game && 
+            gameLogic.game.players && 
+            gameLogic.game.players[playerName]) {
+          
+          // Create a state snapshot for this player
+          const player = gameLogic.game.players[playerName];
+          
+          // Send the current state
+          const snapshot = {
+            roundNumber: gameLogic.game.round,
+            capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+            output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+            submitted: player.investment !== null,
+            timeRemaining: gameLogic.game.timeRemaining || 0,
+            gameState: gameLogic.game.roundActive ? 'active' : 'results',
+            lastInvestment: player.lastInvestment !== undefined 
+              ? parseFloat(player.lastInvestment.toFixed(CONSTANTS.DECIMAL_PRECISION)) 
+              : null
+          };
+          
+          socket.emit('state_snapshot', snapshot);
+        }
+      } catch (error) {
+        console.error('Error handling state snapshot request:', error);
       }
     });
   });

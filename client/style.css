@@ -530,3 +530,52 @@ body.screen-body .timer-display {
     grid-template-columns: 2fr 1fr;
   }
 }
+
+/* Connection status indicator */
+.connection-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.connection-indicator.connected {
+  background-color: #4CAF50;
+}
+
+.connection-indicator.disconnected {
+  background-color: #F44336;
+}
+
+.connection-indicator.connecting {
+  background-color: #FFC107;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Tooltip for connection status */
+.connection-indicator::after {
+  content: attr(data-status);
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px);
+  transition: opacity 0.2s;
+}
+
+.connection-indicator:hover::after {
+  opacity: 1;
+}

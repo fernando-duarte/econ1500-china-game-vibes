@@ -1,12 +1,30 @@
-// Connect to Socket.IO server with explicit reconnection settings
+// Initialize socket.io connection with improved reconnection settings
 const socket = io({
   reconnection: true,
-  reconnectionAttempts: Infinity,
+  reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  timeout: 20000,
-  autoConnect: true
+  timeout: 20000
 });
+
+// Check if connectionStatus component is available 
+if (!window.connectionStatus) {
+  console.error('ERROR: connectionStatus is not available in window. Check script loading order in HTML.');
+  // Create a fallback object with the same interface
+  window.connectionStatus = {
+    update: function(status, immediate, autohide) {
+      console.log(`Fallback connectionStatus.update called with: ${status}`);
+    }
+  };
+}
+
+// Use the global connectionStatus object
+const connectionStatus = window.connectionStatus;
+console.log('ConnectionStatus initialized:', !!connectionStatus);
+
+// Enhanced reconnect event tracking
+let reconnectAttempt = 0;
+let reconnectionTimer;
 
 // Storage utility with feature detection and fallbacks
 const Storage = {
@@ -290,6 +308,11 @@ const processedEvents = {
   }
 };
 
+// Enhanced debugging for socket events
+socket.onAny((eventName, ...args) => {
+  console.log(`Socket event received: ${eventName}`, args);
+});
+
 // Join game
 joinButton.addEventListener('click', () => {
   const name = playerName.value.trim();
@@ -299,10 +322,83 @@ joinButton.addEventListener('click', () => {
     return;
   }
   
+  console.log(`Attempting to join game as "${name}"`);
   joinError.textContent = '';
   joinButton.disabled = true;
   
+  // Add loading indicator
+  joinButton.textContent = 'Joining...';
+  
+  // Clear any previous errors
+  joinError.textContent = '';
+  
+  // Check if socket is connected before trying to join
+  if (!socket.connected) {
+    console.error('Socket is not connected. Cannot join game.');
+    joinError.textContent = 'Cannot connect to server. Please try again.';
+    joinButton.disabled = false;
+    joinButton.textContent = 'Join Game';
+    return;
+  }
+  
+  // Temp: Check which message handlers are defined
+  console.log('Registered socket event handlers:', Object.keys(socket._callbacks || {})
+    .filter(key => key.startsWith('$'))
+    .map(key => key.substring(1)));
+  
+  // Emit join event to server
+  console.log('Emitting join_game event with data:', { playerName: name });
+  
+  // Create a direct handler for this specific join attempt
+  // This ensures we get a response even if the main handler fails
+  const joinResponseHandler = (data) => {
+    console.log('One-time join_ack handler received:', data);
+    // Clean up one-time handler
+    socket.off('join_ack', joinResponseHandler);
+  };
+  socket.once('join_ack', joinResponseHandler);
+  
   socket.emit('join_game', { playerName: name });
+  
+  // Add a timeout to re-enable the button if no response
+  setTimeout(() => {
+    if (joinButton.disabled) {
+      console.warn('No response received from server after 5 seconds');
+      joinButton.disabled = false;
+      joinButton.textContent = 'Join Game';
+      joinError.textContent = 'Server did not respond. Please try again.';
+      
+      // Edge case: try to force a client-side state update based on this attempt
+      // This is a fallback for client/server sync issues
+      socket.off('join_ack', joinResponseHandler);
+      
+      console.warn('Testing if game_joined event handler works by forcing a client-side test event');
+      // This is for debugging only - simulate the game_joined event to see if handler works
+      const mockEvent = {
+        playerName: name,
+        initialCapital: 100,
+        initialOutput: 10
+      };
+      
+      // Do NOT enable this in production - this is just for testing
+      // if the handler works when the real event doesn't arrive
+      // We're commenting it out but keeping the code for debugging
+      /*
+      try {
+        // This directly calls the handler without needing the server to send it
+        const gameJoinedHandler = socket._callbacks['$game_joined']?.[0];
+        if (gameJoinedHandler) {
+          console.log('Manually triggering game_joined handler for debugging');
+          gameJoinedHandler(mockEvent);
+        } else {
+          console.error('Could not find game_joined handler');
+        }
+      } catch (err) {
+        console.error('Error simulating game_joined event:', err);
+      }
+      */
+    }
+  }, 5000);
 });
 
 // Function to handle reconnection attempts
@@ -352,13 +448,44 @@ investmentValue.addEventListener('input', () => {
 submitInvestment.addEventListener('click', () => {
   if (hasSubmittedInvestment) return;
   
-  const investment = parseFloat(investmentValue.value);
-  if (isNaN(investment)) {
-    investmentStatus.textContent = 'Please enter a valid number';
-    return;
+  const inputValue = parseFloat(document.getElementById('investmentValue').value);
+  
+  // Use shared validation if available
+  if (window.GameUtils && window.GameUtils.validateInvestment) {
+    const validation = window.GameUtils.validateInvestment(inputValue, {
+      output: currentOutput
+    });
+    
+    if (!validation.valid) {
+      // Show validation error
+      investmentStatus.textContent = validation.error;
+      return;
+    }
+    
+    // If value was adjusted, update the UI and show a notification
+    if (validation.value !== inputValue) {
+      document.getElementById('investmentValue').value = validation.value;
+      document.getElementById('investmentSlider').value = validation.value;
+      
+      if (validation.error) {
+        showNotification(validation.error, 'warning');
+      }
+    }
+    
+    // Send validated value
+    socket.emit('submit_investment', { investment: validation.value });
+  } else {
+    // Fallback basic validation
+    if (isNaN(inputValue)) {
+      investmentStatus.textContent = 'Please enter a valid number';
+      return;
+    }
+    
+    // Send the raw value and let server validate
+    socket.emit('submit_investment', { investment: inputValue });
   }
   
-  socket.emit('submit_investment', { investment });
+  // Disable controls
   submitInvestment.disabled = true;
   investmentSlider.disabled = true;
   investmentValue.disabled = true;
@@ -370,11 +497,13 @@ submitInvestment.addEventListener('click', () => {
 socket.on('connect', () => {
   console.log('Socket connected');
   isConnected = true;
-  updateConnectionStatus('connected', true);
+  connectionStatus.update('connected', true, true);
+  hideManualReconnectUI();
   
-  if (wasDisconnected) {
+  // Show notification of restored connection if reconnecting
+  if (reconnectAttempt > 0) {
     showNotification('Connection restored');
-    wasDisconnected = false;
+    reconnectAttempt = 0;
   }
   
   // Mark when first connection is fully established
@@ -387,21 +516,97 @@ socket.on('connect', () => {
       // Auto-fill form first without auto-reconnection
       playerName.value = storedData.playerName;
       
-      // Add a reconnect notice and button
-      const reconnectContainer = document.createElement('div');
-      reconnectContainer.className = 'reconnect-notice';
-      reconnectContainer.innerHTML = `
-        <p>You were previously playing as "${storedData.playerName}"</p>
-        <button id="reconnectBtn" class="button">Reconnect</button>
-      `;
-      joinForm.appendChild(reconnectContainer);
-      
-      // Add click handler for manual reconnection
-      document.getElementById('reconnectBtn').addEventListener('click', () => {
-        attemptReconnection(storedData.playerName);
-      });
+      // Add a reconnect notice and button if it doesn't already exist
+      if (!document.querySelector('.reconnect-notice')) {
+        const reconnectContainer = document.createElement('div');
+        reconnectContainer.className = 'reconnect-notice';
+        reconnectContainer.innerHTML = `
+          <p>You were previously playing as "${storedData.playerName}"</p>
+          <button id="reconnectBtn" class="button">Reconnect</button>
+        `;
+        joinForm.appendChild(reconnectContainer);
+        
+        // Add click handler for manual reconnection
+        document.getElementById('reconnectBtn').addEventListener('click', () => {
+          attemptReconnection(storedData.playerName);
+        });
+      }
     }
   });
+  
+  // Request current state if we were in a game
+  if (currentPlayerName) {
+    console.log('Requesting state snapshot after reconnection');
+    socket.emit('request_state_snapshot', { playerName: currentPlayerName });
+  }
+});
+
+// Add handler for join_ack event (server acknowledgment of join request)
+socket.on('join_ack', (response) => {
+  console.log('Received join acknowledgment:', response);
+  console.trace('join_ack event stack trace');
+  
+  // Re-enable the join button regardless of result
+  joinButton.disabled = false;
+  joinButton.textContent = 'Join Game';
+  
+  if (response.success) {
+    console.log('Join request accepted, waiting for game_joined event...');
+    
+    // If we don't receive a game_joined event within 2 seconds, manually show the game UI
+    const showGameTimeout = setTimeout(() => {
+      console.warn('No game_joined event received, manually showing game UI');
+      
+      // Extract the player name from the join request
+      const name = playerName.value.trim();
+      
+      // Store player name for reconnection
+      currentPlayerName = name;
+      
+      // Save player data to localStorage for reconnection
+      savePlayerData(name);
+      
+      // Update UI with player name
+      displayName.textContent = name;
+      
+      // Hide join form and show game interface
+      joinForm.classList.add('hidden');
+      gameUI.classList.remove('hidden');
+      
+      // Set default values if not provided
+      if (capital.textContent === '-') {
+        capital.textContent = CONSTANTS.INITIAL_CAPITAL || 100;
+        lastCapital = CONSTANTS.INITIAL_CAPITAL || 100;
+      }
+      
+      if (output.textContent === '-') {
+        const initialOutput = CONSTANTS.INITIAL_OUTPUT || 10;
+        output.textContent = initialOutput;
+        currentOutput = initialOutput;
+        lastOutput = initialOutput;
+      }
+      
+      // Show notification
+      showNotification('Successfully joined the game', 'info');
+    }, 2000);
+    
+    // If game_joined event is received, clear the timeout
+    const originalGameJoinedHandler = socket._callbacks['$game_joined']?.[0];
+    if (originalGameJoinedHandler) {
+      socket.off('game_joined', originalGameJoinedHandler);
+      
+      socket.on('game_joined', (data) => {
+        // Clear the timeout since we received the event
+        clearTimeout(showGameTimeout);
+        // Call the original handler
+        originalGameJoinedHandler(data);
+      });
+    }
+  } else {
+    // Show error message
+    joinError.textContent = response.error || 'Failed to join game';
+    showNotification(response.error || 'Failed to join game', 'error');
+  }
 });
 
 socket.on('game_joined', (data) => {
@@ -741,71 +946,55 @@ socket.on('error', (error) => {
   joinButton.disabled = false;
 });
 
-// Debounce reconnection attempts to prevent UI thrashing
-let lastReconnectTimestamp = 0;
+// Enhanced reconnection handling
 socket.on('reconnect_attempt', (attemptNumber) => {
-  // Limit updates to max once per second for multiple attempts
-  const now = Date.now();
-  if (now - lastReconnectTimestamp > 1000 || attemptNumber === 1) {
-    updateConnectionStatus(`Reconnecting (${attemptNumber})...`);
-    lastReconnectTimestamp = now;
+  reconnectAttempt = attemptNumber;
+  connectionStatus.update(`reconnecting (${attemptNumber})`, false);
+  
+  // Use backoff strategy
+  const backoffDelay = Math.min(1000 * Math.pow(1.5, attemptNumber - 1), 10000);
+  console.log(`Reconnection attempt ${attemptNumber} with backoff: ${backoffDelay}ms`);
+  
+  // Clear any existing timers
+  if (reconnectionTimer) {
+    clearTimeout(reconnectionTimer);
+  }
+  
+  // Set a timeout to show manual reconnect UI if too many attempts
+  if (attemptNumber >= 3) {
+    reconnectionTimer = setTimeout(() => {
+      showManualReconnectUI();
+    }, backoffDelay + 1000);
   }
 });
 
-// Replace redundant 'reconnect' handler with cleaner implementation
-// Socket.io emits this event directly, not on socket.io
-socket.on('reconnect', (attempt) => {
-  console.log(`Reconnected to server after ${attempt} attempts`);
-  updateConnectionStatus('connected', true);
-  wasDisconnected = false;
-  window.reconnectAttempts = 0;
-  showNotification('Connection restored!', 'info');
+socket.on('reconnect', () => {
+  reconnectAttempt = 0;
+  if (reconnectionTimer) {
+    clearTimeout(reconnectionTimer);
+    reconnectionTimer = null;
+  }
   
-  // Give Socket.io connection a moment to stabilize before trying to rejoin
-  setTimeout(() => {
-    // Try to rejoin the game after reconnection
-    const rejoined = tryRejoinGameAfterReconnect();
-    
-    if (!rejoined) {
-      console.log('No stored game session found to reconnect to');
-    }
-  }, 500);
-});
-
-socket.on('reconnect_error', () => {
-  updateConnectionStatus('reconnection error');
+  connectionStatus.update('connected', true, true);
+  hideManualReconnectUI();
+  
+  // Try to rejoin game after reconnection
+  tryRejoinGameAfterReconnect();
 });
 
 socket.on('reconnect_failed', () => {
-  updateConnectionStatus('reconnection failed', true);
-  showNotification('Failed to reconnect. Please try the reconnect button below.', 'error');
+  connectionStatus.update('failed', true);
+  showManualReconnectUI();
 });
 
 socket.on('disconnect', (reason) => {
   console.log(`Disconnected from server. Reason: ${reason}`);
-  updateConnectionStatus('disconnected', true);
-  wasDisconnected = true;
-  
-  // Different handling based on disconnect reason
-  if (reason === 'io server disconnect') {
-    // The server has forcefully disconnected the socket
-    showNotification('Disconnected from server. Connection closed by server.', 'warning');
-    // Need to manually reconnect
-    setTimeout(() => reconnectToServer(), 1000);
-  } else {
-    // All other reasons (transport close, io client disconnect, ping timeout)
-    showNotification('Connection lost. Attempting to reconnect...', 'warning');
-    // Socket.io will automatically try to reconnect
-  }
-  
-  if (timerInterval) {
-    clearInterval(timerInterval);
-  }
+  connectionStatus.update('disconnected', true);
   
   // Save current state before disconnect is complete
   if (currentPlayerName) {
     savePlayerState({
-      roundNumber: roundNumber.textContent,
+      roundNumber: roundNumber ? roundNumber.textContent : null,
       capital: lastCapital,
       output: lastOutput
     });
@@ -954,47 +1143,145 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Track if we were disconnected
-let wasDisconnected = false;
+// Add connection status elements
+const reconnectionUI = document.getElementById('reconnectionUI');
+const manualReconnectBtn = document.getElementById('manualReconnectBtn');
+const refreshPageBtn = document.getElementById('refreshPageBtn');
+const clearSessionBtn = document.getElementById('clearSessionBtn');
 
-// Attempt reconnection with exponential backoff
-function reconnectToServer() {
-  // Socket.io should handle reconnection automatically,
-  // but if needed we can manually try to reconnect
-  
-  if (!socket.connected) {
-    console.log('Manually attempting to reconnect...');
-    
-    try {
-      // First try using the Socket.io built-in reconnect
-      socket.connect();
-      
-      // After a short delay, check if connection attempt was successful
-      setTimeout(() => {
-        if (!socket.connected) {
-          console.log('Socket.io automatic reconnection failed, refreshing page...');
-          showNotification('Reconnection failed. Refreshing page...', 'warning');
-          
-          // As a last resort, refresh the page after a delay
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        }
-      }, 5000);
-    } catch (err) {
-      console.error('Error during manual reconnection:', err);
-    }
+// Show/hide connection status
+function updateConnectionStatus(status, showBriefly = false) {
+  connectionStatus.update(status, true, showBriefly);
+}
+
+// Show/hide reconnection UI
+function showManualReconnectUI() {
+  if (reconnectionUI) {
+    reconnectionUI.classList.remove('hidden');
+    // Use a timeout to trigger CSS transition
+    setTimeout(() => {
+      reconnectionUI.classList.add('visible');
+    }, 10);
   }
 }
 
+function hideManualReconnectUI() {
+  if (reconnectionUI) {
+    reconnectionUI.classList.remove('visible');
+    // Wait for transition before hiding
+    setTimeout(() => {
+      reconnectionUI.classList.add('hidden');
+    }, 300);
+  }
+}
+
+// Add button handlers for reconnection UI
+if (manualReconnectBtn) {
+  manualReconnectBtn.addEventListener('click', () => {
+    // Force a new connection attempt
+    updateConnectionStatus('Trying to reconnect...');
+    socket.connect();
+  });
+}
+
+if (refreshPageBtn) {
+  refreshPageBtn.addEventListener('click', () => {
+    window.location.reload();
+  });
+}
+
+if (clearSessionBtn) {
+  clearSessionBtn.addEventListener('click', () => {
+    // Clear stored data
+    clearStoredPlayerData();
+    // Reload the page
+    window.location.reload();
+  });
+}
+
+// Add handler for state snapshot
+socket.on('state_snapshot', (data) => {
+  console.log('Received state snapshot:', data);
+  
+  // Update game state from snapshot
+  if (data.roundNumber !== undefined) {
+    roundNumber.textContent = data.roundNumber;
+  }
+  
+  if (data.capital !== undefined) {
+    capital.textContent = data.capital;
+    lastCapital = data.capital;
+  }
+  
+  if (data.output !== undefined) {
+    output.textContent = data.output;
+    currentOutput = data.output;
+    lastOutput = data.output;
+  }
+  
+  // Update UI based on game state
+  if (data.gameState === 'active') {
+    roundStatus.textContent = 'Round in progress';
+    
+    // Update investment UI
+    investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
+    investmentSlider.max = data.output;
+    maxOutput.textContent = data.output;
+    
+    // Check if already submitted
+    if (data.submitted) {
+      submitInvestment.disabled = true;
+      investmentSlider.disabled = true;
+      investmentValue.disabled = true;
+      investmentStatus.textContent = 'Investment already submitted. Waiting for other players...';
+      hasSubmittedInvestment = true;
+    } else {
+      submitInvestment.disabled = false;
+      investmentSlider.disabled = false;
+      investmentValue.disabled = false;
+      investmentStatus.textContent = '';
+      hasSubmittedInvestment = false;
+    }
+    
+    // Set timer if provided
+    if (data.timeRemaining !== undefined) {
+      timer.textContent = data.timeRemaining;
+      startTimer(data.timeRemaining);
+    }
+    
+    // Show correct UI
+    roundResults.classList.add('hidden');
+    investmentUI.classList.remove('hidden');
+  } else if (data.gameState === 'results') {
+    roundStatus.textContent = 'Round completed';
+    
+    // If we have last investment data, show results
+    if (data.lastInvestment !== null) {
+      investmentResult.textContent = data.lastInvestment;
+      newCapital.textContent = data.capital;
+      newOutput.textContent = data.output;
+      
+      // Show results UI
+      investmentUI.classList.add('hidden');
+      roundResults.classList.remove('hidden');
+    }
+  }
+  
+  // Make game UI visible
+  if (joinForm && gameUI && currentPlayerName) {
+    joinForm.classList.add('hidden');
+    gameUI.classList.remove('hidden');
+  }
+});
+
+// Function to try rejoin game after reconnect
 function tryRejoinGameAfterReconnect() {
   // Only try to rejoin if we were previously in a game
   if (currentPlayerName) {
     console.log('Attempting to rejoin game as', currentPlayerName);
     socket.emit('join_game', { 
       playerName: currentPlayerName,
-      isReconnect: true,
-      socketId: socket.id // Use socketId for consistency
+      isReconnect: true
     });
     return true;
   }
@@ -1003,14 +1290,75 @@ function tryRejoinGameAfterReconnect() {
   const savedState = getStoredPlayerState();
   if (savedState && savedState.playerName) {
     console.log('Attempting to rejoin game with saved state:', savedState.playerName);
+    currentPlayerName = savedState.playerName;
     socket.emit('join_game', { 
       playerName: savedState.playerName,
-      isReconnect: true,
-      socketId: socket.id, // Always use current socket.id
-      previousSocketId: savedState.socketId // Include previous ID for the server
+      isReconnect: true
     });
     return true;
   }
   
   return false;
-} 
+}
+
+// Handle connection status messages from server
+socket.on('connection_status', (data) => {
+  console.log('Connection status update:', data);
+  connectionStatus.update(data.status, true);
+  
+  if (data.message) {
+    showNotification(data.message, data.status === 'error' ? 'error' : 'info');
+  }
+  
+  // Handle various connection status messages
+  switch (data.status) {
+    case 'replaced':
+      // Session moved to another device
+      showManualReconnectUI();
+      break;
+      
+    case 'server_restart':
+      // Server is restarting, prepare for reconnection
+      connectionStatus.update('server_restart', true);
+      
+      // Don't show reconnection UI immediately, wait for disconnect
+      showNotification('Server is restarting, please wait...', 'warning');
+      
+      // Save current state
+      if (currentPlayerName) {
+        savePlayerState({
+          roundNumber: roundNumber ? roundNumber.textContent : null,
+          capital: lastCapital,
+          output: lastOutput
+        });
+      }
+      break;
+  }
+});
+
+// Add notification handler
+socket.on('notification', (data) => {
+  console.log('Received notification:', data);
+  
+  // Show the notification
+  if (data.message) {
+    showNotification(data.message, data.type || 'info');
+  }
+  
+  // For investment validation warnings that affect the UI
+  if (data.type === 'warning' && data.message.includes('reduced to match')) {
+    // Extract the clamped value from message like: "Investment reduced to match available output (3.5)"
+    const valueMatch = data.message.match(/\(([0-9.]+)\)/);
+    if (valueMatch && valueMatch[1]) {
+      const clampedValue = parseFloat(valueMatch[1]);
+      
+      // Update the investment UI if needed
+      if (!isNaN(clampedValue) && investmentValue) {
+        investmentValue.value = clampedValue;
+        if (investmentSlider) {
+          investmentSlider.value = clampedValue;
+        }
+      }
+    }
+  }
+}); 

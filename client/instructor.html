@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solow Growth Model Game - Instructor View</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/styles/ConnectionStatus.css">
 </head>
 <body>
   <div class="container instructor-container">
@@ -24,6 +25,7 @@
     <!-- Game Controls -->
     <div id="gameControls" class="hidden card">
       <div class="game-status">
+        <span class="connection-indicator" id="connectionIndicator"></span>
         <h3>Game Status</h3>
         <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds"></span></p>
         <p id="roundStatus">Waiting for game to start...</p>

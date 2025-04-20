@@ -1,0 +1,84 @@
+/**
+ * client/styles/ConnectionStatus.css
+ * Styling for the connection status indicator
+ */
+
+.connection-status-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 900; /* High but not highest */
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none; /* Don't block clicks on elements below */
+}
+
+.connection-status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 200px;
+  opacity: 0.9;
+  pointer-events: auto; /* Allow clicks on the status itself */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dismiss-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 0 0 8px;
+  margin-left: 8px;
+}
+
+/* Use existing app color scheme */
+.status-connected {
+  background-color: rgba(76, 175, 80, 0.9);
+  color: white;
+}
+
+.status-connecting {
+  background-color: rgba(255, 152, 0, 0.9);
+  color: white;
+}
+
+.status-disconnected {
+  background-color: rgba(244, 67, 54, 0.9);
+  color: white;
+}
+
+.status-replaced {
+  background-color: rgba(103, 58, 183, 0.9);
+  color: white;
+}
+
+.status-failed {
+  background-color: rgba(33, 33, 33, 0.9);
+  color: white;
+}
+
+.status-server_restart {
+  background-color: rgba(33, 150, 243, 0.9);
+  color: white;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 576px) {
+  .connection-status-container {
+    top: 10px;
+    bottom: auto;
+    right: 10px;
+    left: 10px;
+    justify-content: center;
+  }
+  
+  .connection-status {
+    width: auto;
+    max-width: calc(100% - 20px);
+  }
+} 

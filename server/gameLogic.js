@@ -5,6 +5,8 @@ const {
 } = require('./model');
 
 const CONSTANTS = require('../shared/constants');
+const { Errors } = require('./errors');
+const socketManager = require('./socketManager');
 
 // In-memory game state - single game instead of multiple games
 let game = {
@@ -53,26 +55,28 @@ function createGame() {
  * Add a new player to the game
  */
 function addPlayer(playerName, socketId, io) {
-  // No longer require instructor to have joined first
-  // if (!game.instructorSocket) {
-  //   return { success: false, error: 'Instructor has not joined yet' };
-  // }
-
+  console.log(`[ADD_PLAYER] Attempting to add player: ${playerName}, socketId: ${socketId}`);
+  
   // Check if game is running
   if (game.isGameRunning) {
+    console.log(`[ADD_PLAYER] Failed: Game already in progress`);
     return { success: false, error: 'Game already in progress' };
   }
 
   // Check if player name is already taken
   if (game.players[playerName]) {
+    console.log(`[ADD_PLAYER] Failed: Player name ${playerName} already taken`);
     return { success: false, error: 'Player name already taken' };
   }
 
   // Check max players
   if (Object.keys(game.players).length >= CONSTANTS.MAX_PLAYERS) {
+    console.log(`[ADD_PLAYER] Failed: Maximum number of players (${CONSTANTS.MAX_PLAYERS}) reached`);
     return { success: false, error: 'Maximum number of players reached' };
   }
 
+  console.log(`[ADD_PLAYER] Adding player ${playerName} to game`);
+  
   // Add player to the game
   const initialCapital = CONSTANTS.INITIAL_CAPITAL;
   const initialOutput = calculateOutput(initialCapital);
@@ -86,8 +90,12 @@ function addPlayer(playerName, socketId, io) {
     isAutoSubmit: false // Track auto-submissions
   };
 
+  console.log(`[ADD_PLAYER] Player ${playerName} successfully added with capital: ${initialCapital}, output: ${initialOutput}`);
+  console.log(`[ADD_PLAYER] Current player count: ${Object.keys(game.players).length}`);
+
   // Check if the game should auto-start
   const autoStartResult = checkAutoStart(io); // Pass io here
+  console.log(`[ADD_PLAYER] Auto-start check result: ${autoStartResult}`);
 
   return { 
     success: true, 
@@ -258,17 +266,38 @@ function startRound(io) {
 function submitInvestment(playerName, investment, isAutoSubmit = false) {
   // Check if the game is running and in an active round
   if (!game.isGameRunning || game.round < CONSTANTS.FIRST_ROUND_NUMBER) {
-    return { success: false, error: 'Game not running' };
+    return { 
+      success: false, 
+      error: Errors.gameNotFound().message
+    };
   }
   
   // Check if player exists
   if (!game.players[playerName]) {
-    return { success: false, error: 'Player not found' };
+    return { 
+      success: false, 
+      error: Errors.playerNotFound(playerName).message
+    };
   }
   
   const player = game.players[playerName];
   
+  // Check if player already submitted
+  if (player.investment !== null) {
+    return { 
+      success: false, 
+      error: Errors.alreadySubmitted(playerName).message
+    };
+  }
+  
   // Validate investment
+  if (typeof investment !== 'number' || isNaN(investment)) {
+    return { 
+      success: false, 
+      error: Errors.invalidInput('investment', 'not a number').message
+    };
+  }
+  
   const validInvestment = validateInvestment(investment, player.output);
   
   // Store the player's investment
@@ -305,115 +334,145 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
  * End a round and process all investments
  */
 function endRound(io) {
-  // Reset pendingEndRound flag
-  game.pendingEndRound = false;
+  console.log(`Ending round ${game.round}`);
   
-  // Clear any existing timers
+  // Process investments for all players, including disconnected ones
+  const playerResults = [];
+  let allPlayersProcessed = true;
+  
   try {
-    if (game.roundTimer) {
-      clearTimeout(game.roundTimer);
-      game.roundTimer = null;
-    }
-    if (game.timerInterval) {
-      clearInterval(game.timerInterval);
-      game.timerInterval = null;
-    }
-  } catch (timerError) {
-    console.error('Error clearing timers in endRound:', timerError);
-  }
-  
-  console.log(`Ending round ${game.round}...`);
-  
-  // For players who didn't submit, set investment to their last slider value if available
-  // or 0 if no slider value was ever recorded (this shouldn't happen with the client changes)
-  Object.values(game.players).forEach(player => {
-    if (player.investment === null) {
-      // We use 0 as a fallback since we can't know the slider position from the server
-      // The client-side changes ensure auto-submission of current slider value
-      player.investment = 0;
-    }
-  });
-  
-  // Process all investments and calculate new capital and output
-  const results = [];
-  
-  Object.entries(game.players).forEach(([playerName, player]) => {
-    // Calculate new capital and output
-    const newCapital = calculateNewCapital(player.capital, player.investment);
-    const newOutput = calculateOutput(newCapital);
+    // Clear round end timer
+    clearRoundTimer();
     
-    // Update player stats
-    player.capital = newCapital;
-    player.output = newOutput;
+    // Set round as inactive
+    game.roundActive = false;
     
-    // Prepare result for this player
-    results.push({
-      playerName,
-      investment: player.investment,
-      newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-      newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-      isAutoSubmit: player.isAutoSubmit || false // Include auto-submit flag
+    // Reset pendingEndRound flag
+    game.pendingEndRound = false;
+    
+    // Process each player
+    Object.entries(game.players).forEach(([playerName, player]) => {
+      try {
+        // Handle players who haven't submitted an investment
+        if (player.investment === null) {
+          const isDisconnected = !player.connected;
+          // Default investment is 0
+          const defaultInvestment = 0;
+          
+          console.log(`Auto-investment for ${isDisconnected ? 'disconnected' : 'timed-out'} player ${playerName}: ${defaultInvestment}`);
+          
+          // Apply default investment
+          player.investment = defaultInvestment;
+          player.isAutoSubmit = true;
+        }
+        
+        // Process this player's investment
+        const result = processPlayerInvestment(playerName, player);
+        playerResults.push(result);
+      } catch (playerError) {
+        console.error(`Error processing player ${playerName}:`, playerError);
+        allPlayersProcessed = false;
+      }
     });
     
-    // Send round end event to the player
-    if (player.connected && io) {
-      io.to(player.socketId).emit('round_end', {
-        newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-        newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
-      });
-    }
-    
-    // Reset the auto-submit flag for next round
-    player.isAutoSubmit = false;
-  });
-  
-  // Send round summary to all instructor sockets
-  if (io) {
-    // Send to instructor using direct socket reference if available
-    if (game.instructorSocket && game.instructorSocket.connected) {
-      console.log(`Sending round_summary directly to instructor socket ${game.instructorSocket.id}`);
-      game.instructorSocket.emit('round_summary', {
-        roundNumber: game.round,
-        results
-      });
+    // If all processing succeeded, notify clients
+    if (allPlayersProcessed) {
+      notifyRoundResults(io, playerResults);
     } else {
-      // Fallback to broadcasting if no instructor socket
-      console.log('Broadcasting round_summary to all clients');
-      io.emit('round_summary', {
-        roundNumber: game.round,
-        results
-      });
+      console.error('Failed to process all players, round results may be incomplete');
+      notifyRoundResults(io, playerResults);
     }
     
-    // Also send round summary to screen clients
-    console.log('Sending round_summary to screens room');
+    // Check if the game is over
+    if (game.round >= CONSTANTS.ROUNDS) {
+      console.log('Game is over - final round reached.');
+      endGame(io);
+      return;
+    }
+    
+    // Increment the round
+    console.log(`Round ${game.round} completed. Advancing to round ${game.round + 1}`);
+    game.round++;
+    
+    // Start the next round
+    if (io) {
+      startRound(io);
+    } else {
+      console.error('Cannot start next round - no io object available!');
+    }
+  } catch (error) {
+    console.error('Critical error in endRound:', error);
+    // Still try to continue the game
+    if (game.round < CONSTANTS.ROUNDS) {
+      console.log('Attempting to continue despite errors');
+      game.round++;
+      startRound(io);
+    } else {
+      console.log('Final round reached despite errors, ending game');
+      endGame(io);
+    }
+  }
+}
+
+// Helper for fault-tolerant investment processing
+function processPlayerInvestment(playerName, player) {
+  // Save last investment for history
+  player.lastInvestment = player.investment;
+  
+  // Calculate new capital and output
+  const investment = player.investment;
+  player.capital = player.capital - investment + player.output;
+  
+  // Production function: Y = K^α
+  player.output = Math.pow(player.capital, CONSTANTS.ALPHA);
+  
+  // Account for depreciation
+  player.capital = player.capital * (1 - CONSTANTS.DEPRECIATION_RATE);
+  
+  // Reset for next round
+  player.investment = null;
+  player.isAutoSubmit = false;
+  
+  // Return this player's result for notification
+  return {
+    playerName,
+    investment: parseFloat(investment.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    newCapital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    newOutput: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    isAutoSubmit: player.isAutoSubmit || false
+  };
+}
+
+// Clear any existing round timer
+function clearRoundTimer() {
+  if (game.roundTimer) {
+    clearTimeout(game.roundTimer);
+    game.roundTimer = null;
+  }
+  
+  if (game.timerInterval) {
+    clearInterval(game.timerInterval);
+    game.timerInterval = null;
+  }
+}
+
+// Helper to notify clients about round results
+function notifyRoundResults(io, results) {
+  // Send to all clients
+  try {
+    io.emit('round_summary', {
+      roundNumber: game.round,
+      results
+    });
+    
+    // Also send to specific rooms
     io.to('screens').emit('round_summary', {
       roundNumber: game.round,
       results
     });
-  } else {
-    console.error('No io object available when ending round!');
+  } catch (err) {
+    console.error('Error sending round results:', err);
   }
-  
-  // Check if the game is over
-  if (game.round >= CONSTANTS.ROUNDS) {
-    console.log('Game is over - final round reached.');
-    endGame(io);
-    return { success: true, gameOver: true };
-  }
-  
-  // Increment the round
-  console.log(`Round ${game.round} completed. Advancing to round ${game.round + 1}`);
-  game.round++;
-  
-  // Start the next round
-  if (io) {
-    startRound(io);
-  } else {
-    console.error('Cannot start next round - no io object available!');
-  }
-  
-  return { success: true, gameOver: false };
 }
 
 /**
@@ -453,13 +512,33 @@ function endGame(io) {
     
     // Send directly to instructor if available
     if (game.instructorSocket && game.instructorSocket.connected) {
-      console.log(`Sending game_over directly to instructor socket ${game.instructorSocket.id}`);
-      game.instructorSocket.emit('game_over', {
-        finalResults,
-        winner
-      });
+      try {
+        // Verify the socket is still valid
+        const instructorSocketId = game.instructorSocket.id;
+        if (!instructorSocketId) {
+          console.error('Instructor socket is invalid (no ID) for game_over');
+          broadcastGameOver();
+        } else if (!io.sockets.sockets.has(instructorSocketId)) {
+          console.error(`Instructor socket ID ${instructorSocketId} not found in connected sockets for game_over`);
+          broadcastGameOver();
+        } else {
+          console.log(`Sending game_over directly to instructor socket ${game.instructorSocket.id}`);
+          game.instructorSocket.emit('game_over', {
+            finalResults,
+            winner
+          });
+        }
+      } catch (err) {
+        console.error('Error sending game_over to instructor:', err);
+        broadcastGameOver();
+      }
     } else {
       // Broadcast to everyone as fallback
+      broadcastGameOver();
+    }
+    
+    // Helper function to broadcast as fallback
+    function broadcastGameOver() {
       console.log('Broadcasting game_over to all clients');
       io.emit('game_over', {
         finalResults,
@@ -492,13 +571,19 @@ function playerReconnect(socketId, playerName) {
   // Check if game exists
   if (!game) {
     console.error('No game exists for reconnection');
-    return { success: false, error: 'No game exists' };
+    return { 
+      success: false, 
+      error: Errors.gameNotFound().message 
+    };
   }
   
   // Check if player exists
   if (!game.players[playerName]) {
     console.error(`Player ${playerName} not found in game for reconnection`);
-    return { success: false, error: 'Player not found' };
+    return { 
+      success: false, 
+      error: Errors.playerNotFound(playerName).message 
+    };
   }
   
   const player = game.players[playerName];
@@ -531,8 +616,8 @@ function playerReconnect(socketId, playerName) {
     playerName: playerName,
     gameState: gameState,
     roundNumber: game.round,
-    capital: parseFloat(player.capital.toFixed(2)),
-    output: parseFloat(player.output.toFixed(2)),
+    capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+    output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
     timeRemaining: timeRemaining,
     lastInvestment: lastInvestment,
     isGameRunning: game.isGameRunning,
