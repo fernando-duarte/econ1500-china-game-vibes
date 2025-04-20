@@ -30,6 +30,9 @@ const manualStartToggle = document.getElementById('manualStartToggle');
 const manualStartStatus = document.getElementById('manualStartStatus');
 const gameSetup = document.getElementById('gameSetup');
 
+// --- Local Constants ---
+const INVESTMENTS_TABLE_COLUMN_COUNT = 2;
+
 // Initialize values from constants
 document.addEventListener('DOMContentLoaded', () => {
   totalRounds.textContent = CONSTANTS.ROUNDS;
@@ -433,7 +436,7 @@ function updateCurrentInvestmentsTable() {
   if (investmentCount === 0) {
     // Add a placeholder row
     const row = document.createElement('tr');
-    row.innerHTML = '<td colspan="2" class="placeholder-text">No investments submitted yet</td>';
+    row.innerHTML = `<td colspan="${INVESTMENTS_TABLE_COLUMN_COUNT}" class="placeholder-text">No investments submitted yet</td>`;
     currentInvestmentsBody.appendChild(row);
     return;
   }
