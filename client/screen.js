@@ -1,0 +1,341 @@
+// Connect to Socket.IO server
+const socket = io();
+
+// Debug socket connection
+socket.on('connect', () => {
+  console.log('Screen connected to server with socket ID:', socket.id);
+  // Announce this client as a screen
+  socket.emit('screen_connect');
+  addEvent('connect', 'Connected to server');
+});
+
+// DOM Elements
+const gameStatus = document.getElementById('gameStatus');
+const roundNumber = document.getElementById('roundNumber');
+const totalRounds = document.getElementById('totalRounds');
+const timer = document.getElementById('timer');
+const eventLog = document.getElementById('eventLog');
+const playerList = document.getElementById('playerList');
+const playerCount = document.getElementById('playerCount');
+const submissionCount = document.getElementById('submissionCount');
+const avgCapital = document.getElementById('avgCapital');
+const avgOutput = document.getElementById('avgOutput');
+
+// Initialize values from constants
+document.addEventListener('DOMContentLoaded', () => {
+  if (CONSTANTS && CONSTANTS.ROUNDS) {
+    totalRounds.textContent = CONSTANTS.ROUNDS;
+  }
+});
+
+// Game state
+let players = [];
+let submittedPlayers = [];
+let autoSubmittedPlayers = [];
+let roundInvestments = {};
+let gameState = 'waiting';
+let timerInterval = null;
+let capitalValues = [];
+let outputValues = [];
+
+// Helper function to add an event to the log
+function addEvent(type, message, highlight = false) {
+  const eventElement = document.createElement('div');
+  eventElement.classList.add('event');
+  if (highlight) {
+    eventElement.classList.add('highlight');
+  }
+  
+  // Format timestamp
+  const now = new Date();
+  const timeString = now.toLocaleTimeString();
+  
+  eventElement.innerHTML = `
+    <div class="event-time">${timeString}</div>
+    <div class="event-message">${message}</div>
+  `;
+  
+  // Add the event to the top of the log
+  eventLog.insertBefore(eventElement, eventLog.firstChild);
+  
+  // Auto-scroll to the top
+  eventLog.scrollTop = 0;
+  
+  // Cleanup old events if there are too many
+  if (eventLog.children.length > 50) {
+    eventLog.removeChild(eventLog.lastChild);
+  }
+}
+
+// Helper function to update player list
+function updatePlayerList() {
+  // Clear existing player list
+  playerList.innerHTML = '';
+  
+  // Update player count
+  playerCount.textContent = players.length;
+  
+  // Update submission count
+  submissionCount.textContent = `${submittedPlayers.length}/${players.length}`;
+  
+  // Add all players to the list
+  players.forEach(player => {
+    const playerElement = document.createElement('div');
+    playerElement.classList.add('player-item');
+    
+    const isSubmitted = submittedPlayers.includes(player);
+    const isAutoSubmitted = autoSubmittedPlayers.includes(player);
+    
+    // Add submitted class if the player has submitted their investment
+    if (isSubmitted) {
+      playerElement.classList.add('player-submitted');
+      
+      // Add auto-submitted class if the player's investment was auto-submitted
+      if (isAutoSubmitted) {
+        playerElement.classList.add('player-auto-submitted');
+        playerElement.title = 'Auto-submitted';
+      }
+    }
+    
+    // Add player name
+    playerElement.textContent = player;
+    
+    playerList.appendChild(playerElement);
+  });
+}
+
+// Helper function to calculate averages
+function updateAverages() {
+  // Calculate average capital
+  if (capitalValues.length > 0) {
+    const total = capitalValues.reduce((sum, value) => sum + parseFloat(value), 0);
+    const average = total / capitalValues.length;
+    avgCapital.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);
+  }
+  
+  // Calculate average output
+  if (outputValues.length > 0) {
+    const total = outputValues.reduce((sum, value) => sum + parseFloat(value), 0);
+    const average = total / outputValues.length;
+    avgOutput.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);
+  }
+}
+
+// Helper function to start timer
+function startTimer(seconds) {
+  // Clear existing timer
+  clearInterval(timerInterval);
+  
+  // Set initial time
+  timer.textContent = seconds;
+  
+  // Start the countdown
+  timerInterval = setInterval(() => {
+    const currentTime = parseInt(timer.textContent);
+    if (currentTime <= 0) {
+      clearInterval(timerInterval);
+      timer.textContent = '0';
+    } else {
+      timer.textContent = currentTime - 1;
+    }
+  }, CONSTANTS.MILLISECONDS_PER_SECOND);
+}
+
+// Socket event handlers
+socket.on('disconnect', () => {
+  console.log('Disconnected from server');
+  gameStatus.textContent = 'Disconnected';
+  addEvent('disconnect', 'Disconnected from server', true);
+});
+
+socket.on('player_joined', (data) => {
+  console.log('Player joined:', data);
+  
+  // Add player to the list if not already there
+  if (!players.includes(data.playerName)) {
+    players.push(data.playerName);
+  }
+  
+  // Update player list
+  updatePlayerList();
+  
+  // Log event
+  addEvent('player_joined', `Player joined: ${data.playerName}`);
+});
+
+socket.on('game_created', () => {
+  console.log('Game created');
+  gameStatus.textContent = 'Waiting for Players';
+  gameState = 'waiting';
+  
+  // Reset state
+  players = [];
+  submittedPlayers = [];
+  autoSubmittedPlayers = [];
+  roundInvestments = {};
+  capitalValues = [];
+  outputValues = [];
+  
+  // Update display
+  updatePlayerList();
+  updateAverages();
+  
+  // Log event
+  addEvent('game_created', 'Game has been created', true);
+});
+
+socket.on('game_started', () => {
+  console.log('Game started');
+  gameStatus.textContent = 'Game Starting';
+  gameState = 'active';
+  
+  // Reset for new game
+  submittedPlayers = [];
+  autoSubmittedPlayers = [];
+  roundInvestments = {};
+  
+  // Update display
+  updatePlayerList();
+  
+  // Log event
+  addEvent('game_started', 'Game has started', true);
+});
+
+socket.on('round_start', (data) => {
+  console.log('Round started:', data);
+  
+  // Update round number
+  roundNumber.textContent = data.roundNumber;
+  
+  // Update game status
+  gameStatus.textContent = 'Round in Progress';
+  
+  // Reset submitted players for this round
+  submittedPlayers = [];
+  autoSubmittedPlayers = [];
+  roundInvestments = {};
+  
+  // Start timer
+  startTimer(data.timeRemaining || CONSTANTS.ROUND_DURATION_SECONDS);
+  
+  // Update display
+  updatePlayerList();
+  
+  // Log event
+  addEvent('round_start', `Round ${data.roundNumber} started`, true);
+});
+
+socket.on('investment_received', (data) => {
+  console.log('Investment received:', data);
+  
+  // Make sure we have the data we need
+  if (!data || !data.playerName) {
+    return;
+  }
+  
+  // Store the investment
+  if (data.investment !== undefined) {
+    roundInvestments[data.playerName] = {
+      investment: data.investment,
+      isAutoSubmit: data.isAutoSubmit || false
+    };
+  }
+  
+  // Mark player as submitted
+  if (!submittedPlayers.includes(data.playerName)) {
+    submittedPlayers.push(data.playerName);
+    
+    // Track auto-submitted investments
+    if (data.isAutoSubmit) {
+      autoSubmittedPlayers.push(data.playerName);
+    }
+  }
+  
+  // Update display
+  updatePlayerList();
+  
+  // Log event
+  const autoText = data.isAutoSubmit ? ' (auto-submitted)' : '';
+  addEvent('investment', `${data.playerName} invested ${data.investment}${autoText}`);
+});
+
+socket.on('all_submitted', (data) => {
+  console.log('All students have submitted:', data);
+  
+  // Update game status
+  gameStatus.textContent = 'All Submitted - Round Ending';
+  
+  // Log event
+  addEvent('all_submitted', data.message, true);
+});
+
+socket.on('round_summary', (data) => {
+  console.log('Round summary:', data);
+  
+  // Update round number
+  roundNumber.textContent = data.roundNumber;
+  
+  // Update game status
+  gameStatus.textContent = `Round ${data.roundNumber} Completed`;
+  
+  // Clear timer
+  clearInterval(timerInterval);
+  timer.textContent = '-';
+  
+  // Collect capital and output values for averaging
+  capitalValues = [];
+  outputValues = [];
+  data.results.forEach(result => {
+    capitalValues.push(result.newCapital);
+    outputValues.push(result.newOutput);
+  });
+  
+  // Update averages
+  updateAverages();
+  
+  // Log event
+  addEvent('round_end', `Round ${data.roundNumber} completed`, true);
+});
+
+socket.on('game_over', (data) => {
+  console.log('Game over:', data);
+  
+  // Update game status
+  gameStatus.textContent = 'Game Over';
+  gameState = 'completed';
+  
+  // Clear timer
+  clearInterval(timerInterval);
+  timer.textContent = '-';
+  
+  // Log event
+  addEvent('game_over', `Game over! Winner: ${data.winner}`, true);
+});
+
+socket.on('state_snapshot', (data) => {
+  console.log('Received state snapshot:', data);
+  
+  // Update round number
+  if (data.roundNumber) {
+    roundNumber.textContent = data.roundNumber;
+  }
+  
+  // Update game status based on round
+  if (data.roundNumber > 0) {
+    gameStatus.textContent = 'Round in Progress';
+    gameState = 'active';
+  }
+  
+  // If there's time remaining, start the timer
+  if (data.timeRemaining) {
+    startTimer(data.timeRemaining);
+  }
+});
+
+socket.on('error', (data) => {
+  console.error('Socket error:', data.message);
+  addEvent('error', `Error: ${data.message}`, true);
+});
+
+// Add initial event when page loads
+addEvent('init', 'Screen dashboard initialized', true); 
