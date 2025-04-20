@@ -151,7 +151,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, () => {
   console.log('Game created');
-  gameStatus.textContent = 'Waiting for Players';
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_PLAYERS;
   gameState = CONSTANTS.GAME_STATES.WAITING;
 
   // Reset state
@@ -172,7 +172,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, () => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, () => {
   console.log('Game started');
-  gameStatus.textContent = 'Game Starting';
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTING;
   gameState = CONSTANTS.GAME_STATES.ACTIVE;
 
   // Reset for new game
@@ -339,3 +339,6 @@ socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (data) => {
 
 // Add initial event when page loads
 addEvent('init', 'Screen dashboard initialized', true);
+
+// Initialize game status text
+gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME;
