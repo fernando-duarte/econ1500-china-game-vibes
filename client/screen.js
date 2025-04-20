@@ -151,7 +151,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, () => {
   console.log('Game created');
-  gameStatus.textContent = 'Waiting for Players';
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_PLAYERS;
   gameState = CONSTANTS.GAME_STATES.WAITING;
 
   // Reset state
@@ -172,7 +172,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, () => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, () => {
   console.log('Game started');
-  gameStatus.textContent = 'Game Starting';
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTING;
   gameState = CONSTANTS.GAME_STATES.ACTIVE;
 
   // Reset for new game
@@ -268,10 +268,10 @@ socket.on(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, (data) => {
   roundNumber.textContent = nextRound;
 
   // Update game status
-  gameStatus.textContent = `Round ${data.roundNumber} Completed`;
+  gameStatus.textContent = CONSTANTS.UI_TEXT.ROUND_COMPLETED_FORMAT.replace('{0}', data.roundNumber);
 
   // Reset timer display
-  timer.textContent = '-';
+  timer.textContent = CONSTANTS.UI_TEXT.TIMER_PLACEHOLDER;
 
   // Collect capital and output values for averaging
   capitalValues = [];
@@ -300,7 +300,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
 
   // Clear timer
   clearInterval(timerInterval);
-  timer.textContent = '-';
+  timer.textContent = CONSTANTS.UI_TEXT.TIMER_PLACEHOLDER;
 
   // Log event
   addEvent('game_over', `Game over! Winner: ${data.winner}`, true);
@@ -334,8 +334,11 @@ socket.on(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, (data) => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (data) => {
   console.error('Socket error:', data.message);
-  addEvent('error', `Error: ${data.message}`, true);
+  addEvent('error', `${CONSTANTS.UI_TEXT.ERROR_PREFIX}${data.message}`, true);
 });
 
 // Add initial event when page loads
 addEvent('init', 'Screen dashboard initialized', true);
+
+// Initialize game status text
+gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME;
