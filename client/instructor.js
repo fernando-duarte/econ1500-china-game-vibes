@@ -7,7 +7,6 @@ socket.on('connect', () => {
 });
 
 // DOM Elements
-const createGameButton = document.getElementById('createGameButton');
 const gameStatus = document.getElementById('gameStatus');
 const playerCount = document.getElementById('playerCount');
 const startGameButton = document.getElementById('startGameButton');
@@ -45,12 +44,6 @@ let submittedPlayers = [];
 let autoSubmittedPlayers = [];
 let currentRoundInvestments = {};
 
-// Create a new game
-createGameButton.addEventListener('click', () => {
-  socket.emit('create_game');
-  createGameButton.disabled = true;
-});
-
 // Start the game
 startGameButton.addEventListener('click', () => {
   socket.emit('start_game');
@@ -65,9 +58,6 @@ resetGameButton.addEventListener('click', () => {
 // Socket event handlers
 socket.on('game_created', () => {
   console.log('Game created event received by instructor client');
-  
-  // Update UI
-  gameStatus.classList.remove('hidden');
   
   // Enable start button once players join
   updateStartButton();

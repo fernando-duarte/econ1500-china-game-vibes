@@ -21,6 +21,10 @@ function setupSocketEvents(io) {
   gameLogic.game.currentIo = io;
   console.log('Stored IO instance for game functions');
   
+  // Create a game automatically on server start
+  createGame();
+  console.log('Game created automatically on server start');
+  
   // Handle new socket connections
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
@@ -28,22 +32,46 @@ function setupSocketEvents(io) {
     let playerName = null;
     let isInstructor = false;
     
-    // Instructor creates a new game
+    // Check if connection is from instructor page
+    const isInstructorPage = socket.handshake.headers.referer && 
+                            socket.handshake.headers.referer.endsWith('/instructor');
+    
+    // Automatically set up instructor socket if it's from instructor page
+    if (isInstructorPage) {
+      isInstructor = true;
+      
+      // Store a direct reference to the instructor socket if not already set
+      if (!gameLogic.game.instructorSocket) {
+        gameLogic.game.instructorSocket = socket;
+        console.log(`Saved instructor socket with ID ${socket.id}`);
+      }
+      
+      // Map this socket to "instructor" role
+      socket.instructor = true;
+      socket.gameRole = 'instructor';
+      
+      // Notify the instructor client that a game is already created
+      socket.emit('game_created');
+    }
+    
+    // Instructor creates a new game (keeping for backward compatibility)
     socket.on('create_game', () => {
       try {
-        createGame();
-        isInstructor = true;
-        
-        // Store a direct reference to the instructor socket
-        const gameLogic = require('./gameLogic');
-        gameLogic.game.instructorSocket = socket;
-        console.log(`Saved instructor socket with ID ${socket.id} in ${typeof gameLogic.game.instructorSocket}`);
-        
-        // Map this socket to "instructor" role
-        socket.instructor = true;
-        socket.gameRole = 'instructor';
-        
-        console.log('Game created');
+        // Only recreate the game if necessary
+        if (!gameLogic.game.instructorSocket) {
+          createGame();
+          isInstructor = true;
+          
+          // Store a direct reference to the instructor socket
+          gameLogic.game.instructorSocket = socket;
+          console.log(`Saved instructor socket with ID ${socket.id}`);
+          
+          // Map this socket to "instructor" role
+          socket.instructor = true;
+          socket.gameRole = 'instructor';
+          
+          console.log('Game created');
+        }
         socket.emit('game_created');
       } catch (error) {
         console.error('Error in create_game:', error);
@@ -207,28 +235,16 @@ function setupSocketEvents(io) {
           console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
           socket.emit('investment_received', { investment: result.investment, isAutoSubmit });
           
-          // Directly send to instructor socket
+          // Directly send to instructor socket if available
           if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
             try {
               // Verify the socket is still valid
               const instructorSocketId = gameLogic.game.instructorSocket.id;
               if (!instructorSocketId) {
                 console.error('Instructor socket is invalid (no ID)');
+                broadcastInvestment();
               } else {
                 console.log(`Sending investment_received directly to instructor socket ${instructorSocketId}`);
-                
-                // Log active connections for debugging
-                const activeSockets = Object.keys(io.sockets.sockets).length;
-                console.log(`Active socket connections: ${activeSockets}`);
-                
-                // Broadcast to all connected sockets for testing
-                console.log('Broadcasting investment_received to all sockets as a test');
-                io.emit('investment_received', { 
-                  playerName, 
-                  investment: result.investment,
-                  isAutoSubmit,
-                  isTestBroadcast: true
-                });
                 
                 // Direct send to instructor
                 gameLogic.game.instructorSocket.emit('investment_received', { 
@@ -240,16 +256,20 @@ function setupSocketEvents(io) {
               }
             } catch (err) {
               console.error('Error sending to instructor socket:', err);
+              broadcastInvestment();
             }
           } else {
-            console.error('Cannot notify instructor: No valid instructor socket reference found');
-            // Fallback to broadcasting
-            console.log('Broadcasting investment_received as fallback');
+            console.log('No instructor socket available, broadcasting investment');
+            broadcastInvestment();
+          }
+          
+          // Function to broadcast investment as fallback
+          function broadcastInvestment() {
+            console.log('Broadcasting investment_received to all clients');
             io.emit('investment_received', { 
               playerName, 
               investment: result.investment,
-              isAutoSubmit,
-              isFallback: true
+              isAutoSubmit
             });
           }
           
