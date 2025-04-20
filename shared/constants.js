@@ -22,6 +22,10 @@ const GAME_CONSTANTS = {
   MILLISECONDS_PER_SECOND: 1000,
   AUTO_SUBMIT_THRESHOLD_SECONDS: 1,
   
+  // Auto-start feature
+  AUTO_START_ENABLED: true,
+  AUTO_START_PLAYERS: 1,  // Start game automatically when this many players have joined
+  
   // Server defaults
   DEFAULT_PORT: 3000,
   

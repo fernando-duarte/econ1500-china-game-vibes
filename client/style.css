@@ -380,6 +380,18 @@ th {
   animation: pulsate 1.5s infinite;
 }
 
+/* Auto-start message */
+.auto-start-msg {
+  background-color: var(--color-warning);
+  color: var(--color-text-dark);
+  font-weight: bold;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  text-align: center;
+  animation: pulsate 2s infinite alternate;
+}
+
 /* Screen Dashboard Styles */
 .screen-container {
   max-width: 100%;
@@ -517,4 +529,4 @@ body.screen-body .timer-display {
   body.screen-body .dashboard {
     grid-template-columns: 2fr 1fr;
   }
-} 
+}
