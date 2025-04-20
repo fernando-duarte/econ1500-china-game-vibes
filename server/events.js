@@ -74,13 +74,11 @@ function setupSocketEvents(io) {
     const isInstructorPage = socket.handshake.headers.referer &&
                             socket.handshake.headers.referer.endsWith('/instructor');
 
-    // Automatically set up instructor socket if it's from instructor page
+    // Add instructor to instructor room if from instructor page
     if (isInstructorPage) {
       isInstructor = true;
 
-      // Always update the instructor socket reference when an instructor connects
-      gameLogic.game.instructorSocket = socket;
-      console.log(`Saved instructor socket with ID ${socket.id}`);
+      console.log(`Instructor with ID ${socket.id} joined instructor room`);
 
       // Map this socket to "instructor" role
       socket.instructor = true;
@@ -100,9 +98,8 @@ function setupSocketEvents(io) {
         createGame();
         isInstructor = true;
 
-        // Update instructor socket reference
-        gameLogic.game.instructorSocket = socket;
-        console.log(`Saved instructor socket with ID ${socket.id}`);
+        // No need to update socket reference, just add to room
+        console.log(`Instructor with ID ${socket.id} joined instructor room`);
 
         // Map this socket to "instructor" role
         socket.instructor = true;
@@ -157,23 +154,13 @@ function setupSocketEvents(io) {
             manualStartEnabled: result.manualStartEnabled
           });
 
-          // Send player_joined directly to instructor if available
-          if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
-            console.log(`Sending player_joined directly to instructor socket ${gameLogic.game.instructorSocket.id}`);
-            gameLogic.game.instructorSocket.emit('player_joined', {
-              playerName: playerName,
-              initialCapital: result.initialCapital,
-              initialOutput: result.initialOutput
-            });
-          } else {
-            console.log('No direct instructor socket, broadcasting to instructor room');
-            // Broadcast to instructor room as fallback
-            io.to('instructor').emit('player_joined', {
-              playerName: playerName,
-              initialCapital: result.initialCapital,
-              initialOutput: result.initialOutput
-            });
-          }
+          // Send player_joined to the instructor room
+          console.log('Sending player_joined to instructor room');
+          io.to('instructor').emit('player_joined', {
+            playerName: playerName,
+            initialCapital: result.initialCapital,
+            initialOutput: result.initialOutput
+          });
 
           // Also notify screens
           io.to('screens').emit('player_joined', { playerName });
@@ -335,7 +322,7 @@ function setupSocketEvents(io) {
           isGameRunning: gameLogic.game.isGameRunning,
           round: gameLogic.game.round,
           playerCount: Object.keys(gameLogic.game.players).length,
-          hasInstructorSocket: !!gameLogic.game.instructorSocket
+          instructorRoomSize: io.sockets.adapter.rooms.get('instructor')?.size || 0
         });
 
         const result = gameLogic.submitInvestment(playerName, investment, isAutoSubmit);
@@ -344,57 +331,13 @@ function setupSocketEvents(io) {
           console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
           socket.emit('investment_received', { investment: result.investment, isAutoSubmit });
 
-          // Directly send to instructor socket if available
-          if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
-            try {
-              // Verify the socket is still valid
-              const instructorSocketId = gameLogic.game.instructorSocket.id;
-              if (!instructorSocketId) {
-                console.error('Instructor socket is invalid (no ID)');
-                broadcastInvestment();
-              } else {
-                console.log(`Sending investment_received directly to instructor socket ${instructorSocketId}`);
-
-                // Log active connections for debugging
-                try {
-                  // This method is more compatible with newer Socket.IO versions
-                  const roomSizes = {
-                    players: io.sockets.adapter.rooms.get('players')?.size || 0,
-                    instructor: io.sockets.adapter.rooms.get('instructor')?.size || 0,
-                    screens: io.sockets.adapter.rooms.get('screens')?.size || 0
-                  };
-                  console.log(`Active connections by room: `, roomSizes);
-                } catch (err) {
-                  console.error('Error counting active connections:', err);
-                }
-
-                 // Direct send to instructor
-                gameLogic.game.instructorSocket.emit('investment_received', {
-                  playerName,
-                  investment: result.investment,
-                  isAutoSubmit
-                });
-                console.log('Successfully sent investment_received to instructor');
-              }
-            } catch (err) {
-              console.error('Error sending to instructor socket:', err);
-              broadcastInvestment();
-            }
-          } else {
-            console.log('No instructor socket available, broadcasting investment');
-            broadcastInvestment();
-          }
-
-          // Function to broadcast investment as fallback
-          function broadcastInvestment() {
-            console.log('Broadcasting investment_received to all clients');
-            // Send specifically to instructor room
-            io.to('instructor').emit('investment_received', {
-              playerName,
-              investment: result.investment,
-              isAutoSubmit
-            });
-          }
+          // Always broadcast to instructor room
+          console.log('Sending investment_received to instructor room');
+          io.to('instructor').emit('investment_received', {
+            playerName,
+            investment: result.investment,
+            isAutoSubmit
+          });
 
           // Also notify screens about the investment
           io.to('screens').emit('investment_received', {
@@ -417,10 +360,8 @@ function setupSocketEvents(io) {
               // Send notification to all students
               io.to('players').emit('all_submitted', notificationData);
 
-              // Send notification to instructor if available
-              if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
-                gameLogic.game.instructorSocket.emit('all_submitted', notificationData);
-              }
+              // Send notification to instructor room
+              io.to('instructor').emit('all_submitted', notificationData);
 
               // Send notification to screens
               io.to('screens').emit('all_submitted', notificationData);
@@ -467,11 +408,9 @@ function setupSocketEvents(io) {
       try {
         console.log(`Disconnected: ${socket.id}`);
 
-        // Check if this was the instructor socket
-        const gameLogic = require('./gameLogic');
-        if (isInstructor && gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.id === socket.id) {
+        // Socket.IO automatically handles room membership on disconnect
+        if (isInstructor) {
           console.log('Instructor disconnected');
-          gameLogic.game.instructorSocket = null;
         }
 
         // Handle screen disconnect

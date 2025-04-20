@@ -18,7 +18,6 @@ let game = {
   roundEndTime: null,
   currentIo: null,
   pendingEndRound: false,
-  instructorSocket: null, // Add reference to instructor socket
   allSubmittedTime: null, // Time when all players have submitted
   manualStartEnabled: false // Add flag for manual start mode
 };
@@ -39,7 +38,6 @@ function createGame() {
     roundEndTime: null,
     currentIo: null,
     pendingEndRound: false,
-    instructorSocket: null,
     allSubmittedTime: null,
     manualStartEnabled: !CONSTANTS.AUTO_START_ENABLED // Initialize based on constants
   });
@@ -229,12 +227,8 @@ function startRound(io) {
   
   // Notify instructor of round start
   const instructorData = { roundNumber: game.round, timeRemaining: game.timeRemaining };
-  if (game.instructorSocket && game.instructorSocket.connected) {
-    game.instructorSocket.emit('round_start', instructorData);
-  } else {
-    // Just broadcast to everyone if no instructor socket available
-    io.emit('round_start', instructorData);
-  }
+  // Always broadcast to the instructor room
+  io.to('instructor').emit('round_start', instructorData);
   
   return { success: true };
 }
@@ -359,23 +353,14 @@ function endRound(io) {
     player.isAutoSubmit = false;
   });
   
-  // Send round summary to all instructor sockets
+  // Send round summary to instructor room
   if (io) {
-    // Send to instructor using direct socket reference if available
-    if (game.instructorSocket && game.instructorSocket.connected) {
-      console.log(`Sending round_summary directly to instructor socket ${game.instructorSocket.id}`);
-      game.instructorSocket.emit('round_summary', {
-        roundNumber: game.round,
-        results
-      });
-    } else {
-      // Fallback to broadcasting if no instructor socket
-      console.log('Broadcasting round_summary to all clients');
-      io.emit('round_summary', {
-        roundNumber: game.round,
-        results
-      });
-    }
+    // Send to instructor room
+    console.log('Sending round_summary to instructor room');
+    io.to('instructor').emit('round_summary', {
+      roundNumber: game.round,
+      results
+    });
     
     // Also send round summary to screen clients
     console.log('Sending round_summary to screens room');
@@ -445,21 +430,12 @@ function endGame(io) {
       winner
     });
     
-    // Send directly to instructor if available
-    if (game.instructorSocket && game.instructorSocket.connected) {
-      console.log(`Sending game_over directly to instructor socket ${game.instructorSocket.id}`);
-      game.instructorSocket.emit('game_over', {
-        finalResults,
-        winner
-      });
-    } else {
-      // Broadcast to everyone as fallback
-      console.log('Broadcasting game_over to all clients');
-      io.emit('game_over', {
-        finalResults,
-        winner
-      });
-    }
+    // Send to instructor room
+    console.log('Sending game_over to instructor room');
+    io.to('instructor').emit('game_over', {
+      finalResults,
+      winner
+    });
     
     // Send to screen clients
     console.log(`Sending game_over to screens room`);
