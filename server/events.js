@@ -283,7 +283,7 @@ function setupSocketEvents(io) {
         }
       } catch (error) {
         console.error('Error in force_end_game:', error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error processing force end game request' });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_FORCE_END_GAME });
       }
     });
 
