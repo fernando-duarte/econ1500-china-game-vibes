@@ -34,7 +34,7 @@ app.use('/shared', express.static(path.join(__dirname, '../shared')));
 
 // Serve constants to client
 app.get('/constants.js', (req, res) => {
-  res.set('Content-Type', 'application/javascript');
+  res.set('Content-Type', CONSTANTS.CONTENT_TYPES.JAVASCRIPT);
   res.send(`const CONSTANTS = ${JSON.stringify(CONSTANTS)};`);
 });
 

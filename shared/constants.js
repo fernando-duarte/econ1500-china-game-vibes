@@ -51,6 +51,16 @@ const GAME_CONSTANTS = {
     COMPLETED: 'completed'
   },
   
+  // Content type constants
+  CONTENT_TYPES: {
+    JAVASCRIPT: 'application/javascript'
+  },
+  
+  // Environment constants
+  ENVIRONMENT: {
+    TYPEOF_UNDEFINED: 'undefined'
+  },
+  
   // CSS layout constant for stat-box width
   STAT_BOX_MIN_WIDTH: 150,
   
@@ -150,7 +160,7 @@ const ALL_CONSTANTS = {
 };
 
 // Export for server-side use
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== GAME_CONSTANTS.ENVIRONMENT.TYPEOF_UNDEFINED && module.exports) {
   module.exports = {
     ...ALL_CONSTANTS
   };
