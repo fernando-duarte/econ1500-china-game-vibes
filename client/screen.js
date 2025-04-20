@@ -62,7 +62,7 @@ function addEvent(type, message, highlight = false) {
   eventLog.scrollTop = 0;
   
   // Cleanup old events if there are too many
-  if (eventLog.children.length > 50) {
+  if (eventLog.children.length > CONSTANTS.MAX_EVENT_LOG_SIZE) {
     eventLog.removeChild(eventLog.lastChild);
   }
 }

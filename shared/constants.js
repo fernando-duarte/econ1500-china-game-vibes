@@ -15,6 +15,7 @@ const GAME_CONSTANTS = {
   DECIMAL_PRECISION: 1,
   DISPLAY_INDEX_OFFSET: 1,
   TIMER_WARNING_THRESHOLD_SECONDS: 5, // When to show timer warning
+  MAX_EVENT_LOG_SIZE: 50, // Maximum number of events in event log
   
   // Investment constants
   INVESTMENT_STEP: 0.1,
