@@ -22,6 +22,22 @@ let game = {
   manualStartEnabled: false // Add flag for manual start mode
 };
 
+// Export game object for other modules to use
+module.exports = {
+  game,
+  createGame,
+  addPlayer,
+  startGame,
+  startRound,
+  submitInvestment,
+  playerReconnect,
+  playerDisconnect,
+  endRound,
+  endGame,
+  forceEndGame,
+  setManualStartMode
+};
+
 /**
  * Create a new game session
  */
@@ -75,6 +91,7 @@ function addPlayer(playerName, socketId, io) {
   
   game.players[playerName] = {
     socketId,
+    name: playerName, // Store player name to use with player-specific rooms
     capital: initialCapital,
     output: initialOutput,
     investment: null, // Initialize investment to null
@@ -108,7 +125,7 @@ function checkAutoStart(io) { // Accept io here
     if (startResult.success && io) { // Check if io exists
       console.log('Game started successfully via auto-start');
       // Broadcast game started to all players and instructors
-      io.emit('game_started'); // <<< ADDED THIS LINE
+      io.to('all').emit('game_started');
       
       // Start the first round immediately instead of scheduling it
       console.log('Starting first round immediately due to auto-start');
@@ -180,7 +197,7 @@ function startRound(io) {
         
         // Emit timer update to all clients
         if (io) {
-          io.emit('timer_update', { timeRemaining: game.timeRemaining });
+          io.to('all').emit('timer_update', { timeRemaining: game.timeRemaining });
         }
         
         // If time has run out, end the round
@@ -216,7 +233,7 @@ function startRound(io) {
   // Emit round start event to all players with the initial timeRemaining
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.connected) {
-      io.to(player.socketId).emit('round_start', {
+      io.to(`player:${playerName}`).emit('round_start', {
         roundNumber: game.round,
         capital: parseFloat(player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         output: parseFloat(player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)),
@@ -343,7 +360,7 @@ function endRound(io) {
     
     // Send round end event to the player
     if (player.connected && io) {
-      io.to(player.socketId).emit('round_end', {
+      io.to(`player:${playerName}`).emit('round_end', {
         newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
         newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       });
@@ -487,7 +504,7 @@ function forceEndGame(io) {
   
   // Send notification to all clients
   if (io) {
-    io.emit('admin_notification', { 
+    io.to('all').emit('admin_notification', { 
       message: 'Game is being ended by the instructor...',
       type: 'warning'
     });
@@ -503,11 +520,6 @@ function forceEndGame(io) {
  * Handle player reconnection
  */
 function playerReconnect(playerName, socketId) {
-  // Check if game is inactive
-  if (game.state === CONSTANTS.GAME_STATES.INACTIVE) {
-    return { success: false, error: 'No active game' };
-  }
-  
   // Check if player exists
   if (!game.players[playerName]) {
     return { success: false, error: 'Player not found' };
@@ -515,11 +527,10 @@ function playerReconnect(playerName, socketId) {
   
   const player = game.players[playerName];
   
-  // Update socket ID and connection status
+  // Update player's socket ID and connection status
   player.socketId = socketId;
   player.connected = true;
   
-  // Return current game state for the player
   return {
     success: true,
     isGameRunning: game.isGameRunning,
@@ -531,37 +542,23 @@ function playerReconnect(playerName, socketId) {
 }
 
 /**
- * Mark player as disconnected
+ * Handle player disconnection
  */
 function playerDisconnect(socketId) {
-  // Find player with this socket ID
-  Object.entries(game.players).forEach(([playerName, player]) => {
+  // Find player by socket ID
+  for (const [playerName, player] of Object.entries(game.players)) {
     if (player.socketId === socketId) {
+      console.log(`Player ${playerName} disconnected`);
       player.connected = false;
+      break;
     }
-  });
+  }
 }
 
 /**
- * Set the game to manual start mode
+ * Set manual start mode
  */
 function setManualStartMode(enabled) {
   game.manualStartEnabled = enabled;
   return { success: true, manualStartEnabled: game.manualStartEnabled };
-}
-
-// Export the game functions
-module.exports = {
-  createGame,
-  addPlayer,
-  startGame,
-  startRound,
-  submitInvestment,
-  endRound,
-  endGame,
-  forceEndGame,
-  playerReconnect,
-  playerDisconnect,
-  setManualStartMode,
-  game  // Export the game object for external use
-}; 
+} 
