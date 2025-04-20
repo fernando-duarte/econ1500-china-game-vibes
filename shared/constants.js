@@ -35,6 +35,7 @@ const GAME_CONSTANTS = {
 
   // UI Hacks
   REPAINT_HACK_OPACITY: '0.99', // Temporary opacity to force browser repaint
+  OPACITY_FULL: '1', // Full opacity value for restoring after repaint
 
   // Auto-start feature
   AUTO_START_ENABLED: false,  // Disabled - use manual start instead
@@ -79,7 +80,9 @@ const GAME_CONSTANTS = {
     CONFIRM_FORCE_END: 'Are you sure you want to force end the game? This will end the current round and declare a winner immediately.',
     CONFIRM_START_GAME_PREFIX: 'Start the game with ',
     CONFIRM_START_GAME_SUFFIX: ' player(s)?',
-    ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.'
+    ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.',
+    PLAYER_PLURAL_SUFFIX: 's',
+    PLAYER_JOINED_SUFFIX: ' have joined'
   },
 
   // CSS Class Constants
