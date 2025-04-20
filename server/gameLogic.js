@@ -381,25 +381,27 @@ function endRound(io) {
   } else {
     console.error('No io object available when ending round!');
   }
-  
-  // Check if the game is over
-  if (game.round >= CONSTANTS.ROUNDS) {
+
+  // Increment the round counter first
+  game.round++;
+
+  // Check if the game is over (next round would exceed max rounds)
+  if (game.round > CONSTANTS.ROUNDS) {
     console.log('Game is over - final round reached.');
     endGame(io);
     return { success: true, gameOver: true };
   }
-  
-  // Increment the round
-  console.log(`Round ${game.round} completed. Advancing to round ${game.round + 1}`);
-  game.round++;
-  
+
+  // We haven't reached the last round yet, so start the next round
+  console.log(`Round ${game.round - 1} completed. Advancing to round ${game.round}`);
+
   // Start the next round
   if (io) {
     startRound(io);
   } else {
     console.error('Cannot start next round - no io object available!');
   }
-  
+
   return { success: true, gameOver: false };
 }
 
