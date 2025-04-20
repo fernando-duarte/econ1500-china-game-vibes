@@ -1336,6 +1336,9 @@ if (clearSessionBtn) {
   });
 }
 
+// Modified tryRejoinGameAfterReconnect function
+let reconnectionInProgress = false;
+let reconnectionTimer = null;
 
 function tryRejoinGameAfterReconnect() {
   // Prevent duplicate reconnection attempts 

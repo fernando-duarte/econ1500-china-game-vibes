@@ -565,11 +565,42 @@ function setupSocketEvents(io) {
         const reconnectName = name.trim();
         console.log(`Received legacy player_reconnect for ${reconnectName}`);
         
-        // Re-use the join_game handler with isReconnect flag
-        socket.emit('join_game', { 
-          playerName: reconnectName,
-          isReconnect: true
-        });
+        // Process the reconnection directly instead of emitting to self
+        // Call the connection handler with reconnect flag set to true
+        const connectionHandler = require('./connectionHandler');
+        const gameLogic = require('./gameLogic');
+        
+        const result = await connectionHandler.handlePlayerReconnection(io, socket, reconnectName, gameLogic);
+        
+        if (result.success) {
+          // Send acknowledgment with reconnect flag
+          socket.emit('join_ack', { 
+            success: true,
+            playerName: result.playerName,
+            isReconnect: true,
+            capital: result.capital,
+            output: result.output,
+            roundNumber: result.roundNumber,
+            hasSubmitted: result.hasSubmitted,
+            isGameRunning: result.isGameRunning
+          });
+          
+          // Also send game_joined for client compatibility
+          socket.emit('game_joined', {
+            playerName: result.playerName,
+            initialCapital: result.capital,
+            initialOutput: result.output,
+            isReconnect: true
+          });
+          
+          // Notify others about the reconnection
+          notifyAboutReconnection(socket, reconnectName, io);
+        } else {
+          socket.emit('join_ack', {
+            success: false,
+            error: result.error || 'Failed to reconnect'
+          });
+        }
       } catch (error) {
         console.error('Error in player_reconnect:', error);
         socket.emit('join_ack', { 
@@ -715,3 +746,29 @@ function setupSocketEvents(io) {
 }
 
 module.exports = { setupSocketEvents }; 
+
+/**
+ * Notifies other players about a player reconnection
+ * @param {Object} socket - The socket of the reconnected player
+ * @param {string} playerName - The name of the reconnected player
+ * @param {Object} io - The Socket.IO instance
+ */
+function notifyAboutReconnection(socket, playerName, io) {
+  try {
+    // Broadcast to all other players
+    socket.broadcast.emit('player_reconnected', {
+      playerName: playerName,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Also broadcast to the screen if present
+    io.to('screen').emit('player_reconnected', {
+      playerName: playerName,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log(`Notified others about ${playerName}'s reconnection`);
+  } catch (error) {
+    console.error('Error notifying about reconnection:', error);
+  }
+} 
