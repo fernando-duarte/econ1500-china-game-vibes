@@ -28,6 +28,7 @@ const forceEndGameButton = document.getElementById('forceEndGameButton');
 const startGameButton = document.getElementById('startGameButton');
 const manualStartToggle = document.getElementById('manualStartToggle');
 const manualStartStatus = document.getElementById('manualStartStatus');
+const gameSetup = document.getElementById('gameSetup');
 
 // Initialize values from constants
 document.addEventListener('DOMContentLoaded', () => {
@@ -50,6 +51,9 @@ let currentRoundInvestments = {};
 
 // Reset the game
 resetGameButton.addEventListener('click', () => {
+  // Show the game setup section again before reloading
+  gameSetup.classList.remove('hidden');
+  
   location.reload();
 });
 
@@ -127,6 +131,9 @@ socket.on('player_joined', (data) => {
 
 socket.on('game_started', () => {
   console.log('Game started');
+  
+  // Hide game setup section (auto-start toggle and start game button)
+  gameSetup.classList.add('hidden');
   
   // Show game controls and player list
   gameControls.classList.remove('hidden');
