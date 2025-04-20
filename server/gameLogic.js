@@ -317,12 +317,12 @@ function endRound(io) {
   console.log(`Ending round ${game.round}...`);
   
   // For players who didn't submit, set investment to their last slider value if available
-  // or 0 if no slider value was ever recorded (this shouldn't happen with the client changes)
+  // or INVESTMENT_MIN if no slider value was ever recorded (this shouldn't happen with the client changes)
   Object.values(game.players).forEach(player => {
     if (player.investment === null) {
-      // We use 0 as a fallback since we can't know the slider position from the server
+      // We use INVESTMENT_MIN as a fallback since we can't know the slider position from the server
       // The client-side changes ensure auto-submission of current slider value
-      player.investment = 0;
+      player.investment = CONSTANTS.INVESTMENT_MIN;
     }
   });
   
@@ -502,10 +502,10 @@ function forceEndGame(io) {
   }
   
   // For any players who haven't submitted investments in this round, 
-  // set investment to 0 to avoid null values
+  // set investment to INVESTMENT_MIN to avoid null values
   Object.values(game.players).forEach(player => {
     if (player.investment === null) {
-      player.investment = 0;
+      player.investment = CONSTANTS.INVESTMENT_MIN;
     }
   });
   
