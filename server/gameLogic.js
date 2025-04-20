@@ -40,24 +40,30 @@ function createGame() {
 }
 
 /**
- * Add a player to a game
+ * Add a new player to the game
  */
-function addPlayer(playerName, socketId) {
-  // Don't allow joins if no game exists or game is already running
-  if (game.state === CONSTANTS.GAME_STATES.INACTIVE) {
-    return { success: false, error: 'No active game' };
+function addPlayer(playerName, socketId, io) {
+  // Check if game already has an instructor
+  if (!game.instructorSocket) {
+    return { success: false, error: 'Instructor has not joined yet' };
   }
-  
+
+  // Check if game is running
   if (game.isGameRunning) {
-    return { success: false, error: 'Game already started' };
+    return { success: false, error: 'Game already in progress' };
   }
-  
+
   // Check if player name is already taken
-  if (Object.keys(game.players).some(name => name.toLowerCase() === playerName.toLowerCase())) {
+  if (game.players[playerName]) {
     return { success: false, error: 'Player name already taken' };
   }
-  
-  // Add the player to the game
+
+  // Check max players
+  if (Object.keys(game.players).length >= CONSTANTS.MAX_PLAYERS) {
+    return { success: false, error: 'Maximum number of players reached' };
+  }
+
+  // Add player to the game
   const initialCapital = CONSTANTS.INITIAL_CAPITAL;
   const initialOutput = calculateOutput(initialCapital);
   
@@ -65,16 +71,17 @@ function addPlayer(playerName, socketId) {
     socketId,
     capital: initialCapital,
     output: initialOutput,
-    investment: null,
-    connected: true
+    investment: null, // Initialize investment to null
+    connected: true,
+    isAutoSubmit: false // Track auto-submissions
   };
-  
-  // Check if auto-start is enabled and enough players have joined
-  const autoStartResult = checkAutoStart();
-  
+
+  // Check if the game should auto-start
+  const autoStartResult = checkAutoStart(io); // Pass io here
+
   return { 
     success: true, 
-    initialCapital, 
+    initialCapital: parseFloat(initialCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)), 
     initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
     autoStart: autoStartResult
   };
@@ -83,7 +90,7 @@ function addPlayer(playerName, socketId) {
 /**
  * Check if the game should auto-start and start it if conditions are met
  */
-function checkAutoStart() {
+function checkAutoStart(io) { // Accept io here
   if (CONSTANTS.AUTO_START_ENABLED && 
       Object.keys(game.players).length >= CONSTANTS.AUTO_START_PLAYERS && 
       !game.isGameRunning) {
@@ -91,11 +98,19 @@ function checkAutoStart() {
     console.log('Auto-starting game with', Object.keys(game.players).length, 'players');
     const startResult = startGame();
     
-    if (startResult.success && game.currentIo) {
+    if (startResult.success && io) { // Check if io exists
+      console.log('Game started successfully via auto-start');
+      // Broadcast game started to all players and instructors
+      io.emit('game_started'); // <<< ADDED THIS LINE
+      
       // Start the first round immediately instead of scheduling it
       console.log('Starting first round immediately due to auto-start');
-      startRound(game.currentIo);
+      startRound(io);
       return true;
+    } else if (!startResult.success) {
+      console.error('Auto-start failed:', startResult.error);
+    } else if (!io) {
+      console.error('Auto-start failed: io object is missing');
     }
   }
   

@@ -54,61 +54,55 @@ function setupSocketEvents(io) {
     // Student joins a game
     socket.on('join_game', ({ playerName: name }) => {
       try {
-        // Validate input
-        if (!name || typeof name !== 'string' || name.trim() === '') {
-          socket.emit('join_ack', { 
-            success: false, 
-            error: 'Invalid input' 
-          });
+        if (!name) {
+          socket.emit('error', { message: 'Player name is required' });
           return;
         }
-        
+
+        // Assign to the outer scope variable
         playerName = name.trim();
-        
-        // Try to add the player to the game
-        const result = addPlayer(playerName, socket.id);
-        
+
+        // Store player name and role on socket
+        socket.playerName = playerName;
+        socket.gameRole = 'player';
+        socket.join('players');
+
+        console.log(`Player ${playerName} attempting to join`);
+
+        // Use the io instance from the outer scope
+        const result = addPlayer(playerName, socket.id, io); // Pass io here
+
         if (result.success) {
-          // Join the players room
-          socket.join('players');
-          
-          // Mark this socket as a student
-          socket.student = true;
-          socket.gameRole = 'student';
-          socket.playerName = playerName;
-          
           console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
-          
-          // Notify all players about the new player
-          io.to('players').emit('player_joined', { playerName });
-          
-          // Notify instructor directly if available
-          const gameLogic = require('./gameLogic');
+          socket.emit('game_joined', {
+            playerName: playerName,
+            initialCapital: result.initialCapital,
+            initialOutput: result.initialOutput,
+            isGameRunning: gameLogic.game.isGameRunning,
+            round: gameLogic.game.round,
+            autoStart: result.autoStart
+          });
+
+          // Send player_joined directly to instructor if available
           if (gameLogic.game.instructorSocket && gameLogic.game.instructorSocket.connected) {
             console.log(`Sending player_joined directly to instructor socket ${gameLogic.game.instructorSocket.id}`);
-            gameLogic.game.instructorSocket.emit('player_joined', { playerName });
+            gameLogic.game.instructorSocket.emit('player_joined', {
+              playerName: playerName,
+              initialCapital: result.initialCapital,
+              initialOutput: result.initialOutput
+            });
           } else {
-            console.log('No instructor socket available for player_joined notification');
-          }
-          
-          // Send acknowledgment to the client
-          socket.emit('join_ack', result);
-          
-          // If game auto-started, broadcast game_started event AFTER the join acknowledgment
-          if (result.autoStart) {
-            console.log('Broadcasting game_started due to auto-start');
-            io.emit('game_started');
+            console.warn('Cannot send player_joined to instructor: No valid instructor socket.');
+            // Optional: Broadcast to instructor room as fallback, though direct is preferred
+            // io.to('instructor').emit('player_joined', { ... });
           }
         } else {
-          // Send acknowledgment to the client for failed join
-          socket.emit('join_ack', result);
+          console.error(`Player join failed for ${playerName}:`, result.error);
+          socket.emit('error', { message: result.error });
         }
       } catch (error) {
         console.error('Error in join_game:', error);
-        socket.emit('join_ack', { 
-          success: false, 
-          error: 'Server error joining game' 
-        });
+        socket.emit('error', { message: 'Error joining game' });
       }
     });
     
