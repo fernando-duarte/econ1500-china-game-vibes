@@ -95,6 +95,17 @@ socket.on('player_joined', (data) => {
   
   // Enable start button if at least one player has joined
   updateStartButton();
+  
+  // Display auto-start message if enabled and threshold met
+  if (CONSTANTS.AUTO_START_ENABLED && players.length >= CONSTANTS.AUTO_START_PLAYERS) {
+    startGameButton.disabled = true;
+    const autoStartMsg = document.createElement('p');
+    autoStartMsg.textContent = 'Game auto-start triggered';
+    autoStartMsg.classList.add('auto-start-msg');
+    if (!document.querySelector('.auto-start-msg')) {
+      gameStatus.appendChild(autoStartMsg);
+    }
+  }
 });
 
 socket.on('game_started', () => {
