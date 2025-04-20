@@ -52,7 +52,91 @@ const GAME_CONSTANTS = {
   },
   
   // CSS layout constant for stat-box width
-  STAT_BOX_MIN_WIDTH: 150
+  STAT_BOX_MIN_WIDTH: 150,
+  
+  // UI Text Constants
+  UI_TEXT: {
+    STATUS_ENABLED: 'Enabled',
+    STATUS_DISABLED: 'Disabled',
+    STATUS_ROUND_IN_PROGRESS: 'Round in progress',
+    STATUS_GAME_OVER: 'Game over',
+    STATUS_ALL_SUBMITTED_ENDING: 'All students submitted. Round ending...',
+    STATUS_PLAYER_SUBMITTED: '✓ Submitted',
+    STATUS_PLAYER_PENDING: 'Pending',
+    TITLE_AUTO_SUBMITTED: 'Auto-submitted (current slider value)',
+    AUTO_SUBMIT_SUFFIX: ' (auto)',
+    PLACEHOLDER_INVESTMENT_SUBMITTED: 'No investments submitted yet',
+    CONFIRM_FORCE_END: 'Are you sure you want to force end the game? This will end the current round and declare a winner immediately.',
+    CONFIRM_START_GAME_PREFIX: 'Start the game with ',
+    CONFIRM_START_GAME_SUFFIX: ' player(s)?',
+    ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.'
+  },
+  
+  // CSS Class Constants
+  CSS: {
+    HIDDEN: 'hidden',
+    PLAYER_ITEM: 'player-item',
+    PLAYER_SUBMITTED: 'player-submitted',
+    PLAYER_AUTO_SUBMITTED: 'player-auto-submitted',
+    AUTO_SUBMITTED_ROW: 'auto-submitted-row',
+    ADMIN_NOTIFICATION: 'admin-notification',
+    ADMIN_NOTIFICATION_PREFIX: 'admin-notification-',
+    PLACEHOLDER_TEXT: 'placeholder-text',
+    STATUS_MESSAGE: 'status-message',
+    ALL_SUBMITTED_STATUS: 'all-submitted-status',
+    PLAYER_NAME: 'player-name',
+    PLAYER_STATUS: 'player-status',
+    PLAYER_STATUS_PENDING: 'pending'
+  },
+  
+  // Socket.IO Events
+  SOCKET: {
+    // Connection events
+    EVENT_CONNECT: 'connect',
+    EVENT_DISCONNECT: 'disconnect',
+    EVENT_ERROR: 'error',
+    
+    // Game state events (server → client)
+    EVENT_GAME_CREATED: 'game_created',
+    EVENT_PLAYER_JOINED: 'player_joined',
+    EVENT_GAME_STARTED: 'game_started',
+    EVENT_ROUND_START: 'round_start',
+    EVENT_INVESTMENT_RECEIVED: 'investment_received',
+    EVENT_ALL_SUBMITTED: 'all_submitted',
+    EVENT_ROUND_SUMMARY: 'round_summary',
+    EVENT_GAME_OVER: 'game_over',
+    EVENT_MANUAL_START_MODE: 'manual_start_mode',
+    EVENT_ADMIN_NOTIFICATION: 'admin_notification',
+    EVENT_TIMER_UPDATE: 'timer_update',
+    
+    // Control events (client → server)
+    EVENT_FORCE_END_GAME: 'force_end_game',
+    EVENT_SET_MANUAL_START: 'set_manual_start',
+    EVENT_START_GAME: 'start_game',
+    EVENT_SUBMIT_INVESTMENT: 'submit_investment',
+    EVENT_JOIN_GAME: 'join_game'
+  },
+  
+  // Notification Types
+  NOTIFICATION: {
+    TYPE_INFO: 'info',
+    TYPE_WARNING: 'warning',
+    TYPE_ERROR: 'error',
+    DEFAULT_TYPE: 'info'
+  },
+  
+  // HTTP Routes
+  ROUTES: {
+    ROOT: '/',
+    INSTRUCTOR: '/instructor',
+    STUDENT: '/',
+    SCREEN: '/screen',
+    SHARED: '/shared',
+    CONSTANTS: '/constants.js'
+  },
+  
+  // Table columns
+  INVESTMENTS_TABLE_COLUMN_COUNT: 2
 };
 
 // Calculated constants (derived from the above)

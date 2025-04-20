@@ -2,7 +2,7 @@
 const socket = io();
 
 // Debug socket connection
-socket.on('connect', () => {
+socket.on(CONSTANTS.SOCKET.EVENT_CONNECT, () => {
   console.log('Instructor connected to server with socket ID:', socket.id);
 });
 
@@ -31,7 +31,7 @@ const manualStartStatus = document.getElementById('manualStartStatus');
 const gameSetup = document.getElementById('gameSetup');
 
 // --- Local Constants ---
-const INVESTMENTS_TABLE_COLUMN_COUNT = 2;
+// Now defined in shared/constants.js as CONSTANTS.INVESTMENTS_TABLE_COLUMN_COUNT
 
 // Initialize values from constants
 document.addEventListener('DOMContentLoaded', () => {
@@ -55,15 +55,15 @@ let currentRoundInvestments = {};
 // Reset the game
 resetGameButton.addEventListener('click', () => {
   // Show the game setup section again before reloading
-  gameSetup.classList.remove('hidden');
+  gameSetup.classList.remove(CONSTANTS.CSS.HIDDEN);
   
   location.reload();
 });
 
 // Force end game button
 forceEndGameButton.addEventListener('click', () => {
-  if (confirm('Are you sure you want to force end the game? This will end the current round and declare a winner immediately.')) {
-    socket.emit('force_end_game');
+  if (confirm(CONSTANTS.UI_TEXT.CONFIRM_FORCE_END)) {
+    socket.emit(CONSTANTS.SOCKET.EVENT_FORCE_END_GAME);
     console.log('Force end game request sent');
   }
 });
@@ -71,40 +71,40 @@ forceEndGameButton.addEventListener('click', () => {
 // Manual start toggle
 manualStartToggle.addEventListener('change', () => {
   const enabled = manualStartToggle.checked;
-  socket.emit('set_manual_start', { enabled });
+  socket.emit(CONSTANTS.SOCKET.EVENT_SET_MANUAL_START, { enabled });
   
   // Update UI immediately for responsiveness
-  manualStartStatus.textContent = enabled ? 'Enabled' : 'Disabled';
+  manualStartStatus.textContent = enabled ? CONSTANTS.UI_TEXT.STATUS_ENABLED : CONSTANTS.UI_TEXT.STATUS_DISABLED;
   startGameButton.disabled = !enabled;
 });
 
 // Start game button
 startGameButton.addEventListener('click', () => {
   if (players.length === 0) {
-    alert('No players have joined yet. Wait for at least one player to join before starting the game.');
+    alert(CONSTANTS.UI_TEXT.ALERT_NO_PLAYERS);
     return;
   }
   
-  if (confirm(`Start the game with ${players.length} player(s)?`)) {
-    socket.emit('start_game');
+  if (confirm(`${CONSTANTS.UI_TEXT.CONFIRM_START_GAME_PREFIX}${players.length}${CONSTANTS.UI_TEXT.CONFIRM_START_GAME_SUFFIX}`)) {
+    socket.emit(CONSTANTS.SOCKET.EVENT_START_GAME);
     console.log('Start game request sent');
     startGameButton.disabled = true;
   }
 });
 
 // Socket event handlers
-socket.on('game_created', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, (data) => {
   console.log('Game created event received by instructor client', data);
   
   // Update manual start controls if info is provided
   if (data && data.manualStartEnabled !== undefined) {
     manualStartToggle.checked = data.manualStartEnabled;
-    manualStartStatus.textContent = data.manualStartEnabled ? 'Enabled' : 'Disabled';
+    manualStartStatus.textContent = data.manualStartEnabled ? CONSTANTS.UI_TEXT.STATUS_ENABLED : CONSTANTS.UI_TEXT.STATUS_DISABLED;
     startGameButton.disabled = !data.manualStartEnabled;
   }
 });
 
-socket.on('player_joined', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
   console.log('Player joined event received:', data);
   
   // Add player to the list if not already there
@@ -127,39 +127,39 @@ socket.on('player_joined', (data) => {
   // If data includes manual start info, update the controls
   if (data.manualStartEnabled !== undefined) {
     manualStartToggle.checked = data.manualStartEnabled;
-    manualStartStatus.textContent = data.manualStartEnabled ? 'Enabled' : 'Disabled';
+    manualStartStatus.textContent = data.manualStartEnabled ? CONSTANTS.UI_TEXT.STATUS_ENABLED : CONSTANTS.UI_TEXT.STATUS_DISABLED;
     startGameButton.disabled = !data.manualStartEnabled;
   }
 });
 
-socket.on('game_started', () => {
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, () => {
   console.log('Game started');
   
   // Hide game setup section (auto-start toggle and start game button)
-  gameSetup.classList.add('hidden');
+  gameSetup.classList.add(CONSTANTS.CSS.HIDDEN);
   
   // Show game controls and player list
-  gameControls.classList.remove('hidden');
-  playerListSection.classList.remove('hidden');
+  gameControls.classList.remove(CONSTANTS.CSS.HIDDEN);
+  playerListSection.classList.remove(CONSTANTS.CSS.HIDDEN);
   
   // Make sure current investments section is visible
-  currentInvestmentsSection.classList.remove('hidden');
+  currentInvestmentsSection.classList.remove(CONSTANTS.CSS.HIDDEN);
   console.log('Made current investments section visible');
   console.log('Current investments section classes:', currentInvestmentsSection.className);
 
   // Display first round immediately when game starts
   roundNumber.textContent = CONSTANTS.FIRST_ROUND_NUMBER;
-  roundStatus.textContent = 'Round in progress';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
 });
 
-socket.on('round_start', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ROUND_START, (data) => {
   console.log('Round started:', data);
   
   // Update round number
   roundNumber.textContent = data.roundNumber;
   
   // Update round status - change from "Game starting..." to "Round in progress" for any round ≥ 1
-  roundStatus.textContent = 'Round in progress';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
   
   // Initialize timer with server time
   if (roundTimer) {
@@ -175,14 +175,14 @@ socket.on('round_start', (data) => {
   
   // Show round results section if it's not the first round
   if (data.roundNumber > CONSTANTS.FIRST_ROUND_NUMBER) {
-    roundResultsSection.classList.remove('hidden');
+    roundResultsSection.classList.remove(CONSTANTS.CSS.HIDDEN);
   }
   
   // Show current investments section
-  currentInvestmentsSection.classList.remove('hidden');
+  currentInvestmentsSection.classList.remove(CONSTANTS.CSS.HIDDEN);
 });
 
-socket.on('investment_received', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, (data) => {
   console.log('Investment received event on instructor client:', data);
   
   // Make sure we have the data we need
@@ -193,7 +193,7 @@ socket.on('investment_received', (data) => {
   
   // Debugging
   console.log('Before update - currentRoundInvestments:', JSON.stringify(currentRoundInvestments));
-  console.log('Current investments section visibility:', !currentInvestmentsSection.classList.contains('hidden'));
+  console.log('Current investments section visibility:', !currentInvestmentsSection.classList.contains(CONSTANTS.CSS.HIDDEN));
   
   // Store the investment value for the current round
   if (data.investment !== undefined) {
@@ -204,9 +204,9 @@ socket.on('investment_received', (data) => {
     console.log('Updated currentRoundInvestments:', JSON.stringify(currentRoundInvestments));
     
     // Ensure investments section is visible
-    if (currentInvestmentsSection.classList.contains('hidden')) {
+    if (currentInvestmentsSection.classList.contains(CONSTANTS.CSS.HIDDEN)) {
       console.log('Current investments section was hidden, making visible');
-      currentInvestmentsSection.classList.remove('hidden');
+      currentInvestmentsSection.classList.remove(CONSTANTS.CSS.HIDDEN);
     }
     
     // Call function to update the table with a slight delay to ensure DOM updates
@@ -239,7 +239,7 @@ socket.on('investment_received', (data) => {
   // Add an indicator message to confirm submission was received
   const statusElement = document.createElement('div');
   statusElement.textContent = `${data.playerName} submitted their investment: ${formattedInvestment}`;
-  statusElement.classList.add('status-message');
+  statusElement.classList.add(CONSTANTS.CSS.STATUS_MESSAGE);
   document.body.appendChild(statusElement);
   
   // Remove the message after a specified time
@@ -254,32 +254,32 @@ socket.on('investment_received', (data) => {
     // If we're in round 0 and all players submitted, update the UI to "Round 1" proactively
     if (roundNumber.textContent === '0') {
       roundNumber.textContent = '1';
-      roundStatus.textContent = 'Round in progress';
+      roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
     }
   }
 });
 
-socket.on('all_submitted', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, (data) => {
   console.log('All students have submitted, round ending early:', data);
   
   // Update round status
   const oldText = roundStatus.textContent;
-  roundStatus.textContent = 'All students submitted. Round ending...';
-  roundStatus.classList.add('all-submitted-status');
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ALL_SUBMITTED_ENDING;
+  roundStatus.classList.add(CONSTANTS.CSS.ALL_SUBMITTED_STATUS);
   
   // Restore previous status after the early end
   setTimeout(() => {
-    roundStatus.classList.remove('all-submitted-status');
+    roundStatus.classList.remove(CONSTANTS.CSS.ALL_SUBMITTED_STATUS);
   }, data.timeRemaining * CONSTANTS.MILLISECONDS_PER_SECOND);
 });
 
-socket.on('round_summary', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, (data) => {
   console.log('Round summary:', data);
   
   // Update numeric round display
   roundNumber.textContent = data.roundNumber;
   // Update round status
-  roundStatus.textContent = `Round ${data.roundNumber} completed`;
+  roundStatus.textContent = `${CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED_PREFIX}${data.roundNumber}${CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED_SUFFIX}`;
   
   // Clear existing rows
   roundResultsBody.innerHTML = '';
@@ -290,8 +290,8 @@ socket.on('round_summary', (data) => {
     
     // Add auto-submitted class if needed
     if (result.isAutoSubmit) {
-      row.classList.add('auto-submitted-row');
-      row.title = 'Auto-submitted (current slider value)';
+      row.classList.add(CONSTANTS.CSS.AUTO_SUBMITTED_ROW);
+      row.title = CONSTANTS.UI_TEXT.TITLE_AUTO_SUBMITTED;
     }
     
     // Format investment with consistent decimal precision
@@ -299,7 +299,7 @@ socket.on('round_summary', (data) => {
     
     row.innerHTML = `
       <td>${result.playerName}</td>
-      <td>${formattedInvestment}${result.isAutoSubmit ? ' (auto)' : ''}</td>
+      <td>${formattedInvestment}${result.isAutoSubmit ? CONSTANTS.UI_TEXT.AUTO_SUBMIT_SUFFIX : ''}</td>
       <td>${result.newCapital}</td>
       <td>${result.newOutput}</td>
     `;
@@ -307,10 +307,10 @@ socket.on('round_summary', (data) => {
   });
   
   // Show round results section
-  roundResultsSection.classList.remove('hidden');
+  roundResultsSection.classList.remove(CONSTANTS.CSS.HIDDEN);
 });
 
-socket.on('game_over', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   console.log('Game over:', data);
   
   // Update winner
@@ -331,33 +331,33 @@ socket.on('game_over', (data) => {
   });
   
   // Show game over section
-  gameOverSection.classList.remove('hidden');
+  gameOverSection.classList.remove(CONSTANTS.CSS.HIDDEN);
   
   // Update round status
-  roundStatus.textContent = 'Game over';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
 });
 
-socket.on('error', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (data) => {
   console.error('Socket error:', data.message);
   alert('Error: ' + data.message);
 });
 
 // Handle manual start mode updates
-socket.on('manual_start_mode', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE, (data) => {
   console.log('Manual start mode update:', data);
   manualStartToggle.checked = data.enabled;
-  manualStartStatus.textContent = data.enabled ? 'Enabled' : 'Disabled';
+  manualStartStatus.textContent = data.enabled ? CONSTANTS.UI_TEXT.STATUS_ENABLED : CONSTANTS.UI_TEXT.STATUS_DISABLED;
   startGameButton.disabled = !data.enabled;
 });
 
 // Add handler for admin notifications
-socket.on('admin_notification', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ADMIN_NOTIFICATION, (data) => {
   console.log('Admin notification:', data);
   
   // Display notification to user
   const notification = document.createElement('div');
   notification.textContent = data.message;
-  notification.classList.add('admin-notification', `admin-notification-${data.type || 'info'}`);
+  notification.classList.add(CONSTANTS.CSS.ADMIN_NOTIFICATION, `${CONSTANTS.CSS.ADMIN_NOTIFICATION_PREFIX}${data.type || CONSTANTS.NOTIFICATION.DEFAULT_TYPE}`);
   document.body.appendChild(notification);
   
   // Remove notification after specified time
@@ -367,7 +367,7 @@ socket.on('admin_notification', (data) => {
 });
 
 // Add handler for timer updates from the server
-socket.on('timer_update', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, (data) => {
   // Update timer display if element exists
   if (roundTimer) {
     roundTimer.textContent = data.timeRemaining;
@@ -386,7 +386,7 @@ function updatePlayerList() {
   // Add all players to the list
   players.forEach(player => {
     const playerElement = document.createElement('div');
-    playerElement.classList.add('player-item');
+    playerElement.classList.add(CONSTANTS.CSS.PLAYER_ITEM);
     
     const isSubmitted = submittedPlayers.includes(player);
     const isAutoSubmitted = autoSubmittedPlayers.includes(player);
@@ -394,20 +394,22 @@ function updatePlayerList() {
     // Add submitted class if the player has submitted their investment
     if (isSubmitted) {
       console.log(`Marking player ${player} as submitted`);
-      playerElement.classList.add('player-submitted');
+      playerElement.classList.add(CONSTANTS.CSS.PLAYER_SUBMITTED);
       
       // Add auto-submitted class if the player's investment was auto-submitted
       if (isAutoSubmitted) {
         console.log(`Marking player ${player} as auto-submitted`);
-        playerElement.classList.add('player-auto-submitted');
-        playerElement.title = 'Auto-submitted (current slider value)';
+        playerElement.classList.add(CONSTANTS.CSS.PLAYER_AUTO_SUBMITTED);
+        playerElement.title = CONSTANTS.UI_TEXT.TITLE_AUTO_SUBMITTED;
       }
     }
     
     // Create a more informative player display
     playerElement.innerHTML = `
-      <span class="player-name">${player}</span>
-      ${isSubmitted ? '<span class="player-status">✓ Submitted</span>' : '<span class="player-status pending">Pending</span>'}
+      <span class="${CONSTANTS.CSS.PLAYER_NAME}">${player}</span>
+      ${isSubmitted ? 
+          `<span class="${CONSTANTS.CSS.PLAYER_STATUS}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_SUBMITTED}</span>` : 
+          `<span class="${CONSTANTS.CSS.PLAYER_STATUS} ${CONSTANTS.CSS.PLAYER_STATUS_PENDING}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_PENDING}</span>`}
     `;
     
     playerList.appendChild(playerElement);
@@ -424,7 +426,7 @@ function updateCurrentInvestmentsTable() {
   console.log('Updating current investments table');
   
   // Ensure the section is visible
-  currentInvestmentsSection.classList.remove('hidden');
+  currentInvestmentsSection.classList.remove(CONSTANTS.CSS.HIDDEN);
   
   // Clear existing rows
   currentInvestmentsBody.innerHTML = '';
@@ -436,7 +438,7 @@ function updateCurrentInvestmentsTable() {
   if (investmentCount === 0) {
     // Add a placeholder row
     const row = document.createElement('tr');
-    row.innerHTML = `<td colspan="${INVESTMENTS_TABLE_COLUMN_COUNT}" class="placeholder-text">No investments submitted yet</td>`;
+    row.innerHTML = `<td colspan="${CONSTANTS.INVESTMENTS_TABLE_COLUMN_COUNT}" class="${CONSTANTS.CSS.PLACEHOLDER_TEXT}">${CONSTANTS.UI_TEXT.PLACEHOLDER_INVESTMENT_SUBMITTED}</td>`;
     currentInvestmentsBody.appendChild(row);
     return;
   }
@@ -447,8 +449,8 @@ function updateCurrentInvestmentsTable() {
     
     // Add auto-submitted class if needed
     if (data.isAutoSubmit) {
-      row.classList.add('auto-submitted-row');
-      row.title = 'Auto-submitted (current slider value)';
+      row.classList.add(CONSTANTS.CSS.AUTO_SUBMITTED_ROW);
+      row.title = CONSTANTS.UI_TEXT.TITLE_AUTO_SUBMITTED;
     }
     
     // Format investment with consistent decimal precision
@@ -456,7 +458,7 @@ function updateCurrentInvestmentsTable() {
     
     row.innerHTML = `
       <td>${playerName}</td>
-      <td>${formattedInvestment}${data.isAutoSubmit ? ' (auto)' : ''}</td>
+      <td>${formattedInvestment}${data.isAutoSubmit ? CONSTANTS.UI_TEXT.AUTO_SUBMIT_SUFFIX : ''}</td>
     `;
     currentInvestmentsBody.appendChild(row);
   });
