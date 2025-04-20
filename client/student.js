@@ -46,6 +46,8 @@ let currentPlayerName = '';
 let timerInterval = null;
 let currentOutput = 0;
 let hasSubmittedInvestment = false;
+let lastCapital = 0;
+let lastOutput = 0;
 
 // Join game
 joinButton.addEventListener('click', () => {
@@ -103,21 +105,36 @@ socket.on('game_joined', (data) => {
   // Update UI with player name
   displayName.textContent = currentPlayerName;
   
-  // Set initial capital and output (can be useful before first round_start)
-  capital.textContent = data.initialCapital;
-  output.textContent = data.initialOutput;
+  // Set initial capital and output
+  if (data.initialCapital !== undefined) {
+    capital.textContent = data.initialCapital;
+    lastCapital = data.initialCapital;
+  }
+  
+  if (data.initialOutput !== undefined) {
+    output.textContent = data.initialOutput;
+    currentOutput = data.initialOutput;
+    lastOutput = data.initialOutput;
+  }
   
   console.log(`Successfully joined game as ${currentPlayerName}`);
+  
+  // Hide join form and show game interface
+  joinForm.classList.add('hidden');
+  gameUI.classList.remove('hidden');
 });
 
 socket.on('game_started', () => {
   console.log('Game has started event received');
   roundStatus.textContent = 'Game has started. Waiting for first round...';
   
-  // Hide join form and show game interface
-  joinForm.classList.add('hidden');
-  gameUI.classList.remove('hidden');
-  console.log('UI updated for game start');
+  // Ensure K and Y are still displayed
+  if (capital.textContent === '-' && lastCapital) {
+    capital.textContent = lastCapital;
+  }
+  if (output.textContent === '-' && lastOutput) {
+    output.textContent = lastOutput;
+  }
 });
 
 socket.on('round_start', (data) => {
@@ -125,9 +142,18 @@ socket.on('round_start', (data) => {
   
   // Update round number and capital/output
   roundNumber.textContent = data.roundNumber;
-  capital.textContent = data.capital;
-  output.textContent = data.output;
-  currentOutput = data.output;
+  
+  // Make sure we update capital and output values clearly
+  if (data.capital !== undefined) {
+    capital.textContent = data.capital;
+    lastCapital = data.capital;
+  }
+  
+  if (data.output !== undefined) {
+    output.textContent = data.output;
+    currentOutput = data.output;
+    lastOutput = data.output;
+  }
   
   // Update round status
   roundStatus.textContent = 'Round in progress';
@@ -184,7 +210,19 @@ socket.on('round_end', (data) => {
   // Stop the timer
   clearInterval(timerInterval);
   
-  // Update capital and output
+  // Update capital and output with new values
+  if (data.newCapital !== undefined) {
+    capital.textContent = data.newCapital;
+    lastCapital = data.newCapital;
+  }
+  
+  if (data.newOutput !== undefined) {
+    output.textContent = data.newOutput;
+    currentOutput = data.newOutput;
+    lastOutput = data.newOutput;
+  }
+  
+  // Also update the results section
   newCapital.textContent = data.newCapital;
   newOutput.textContent = data.newOutput;
   
@@ -203,6 +241,17 @@ socket.on('game_over', (data) => {
   const playerResult = data.finalResults.find(r => r.playerName === currentPlayerName);
   if (playerResult) {
     finalOutput.textContent = playerResult.finalOutput;
+    
+    // Also update the main capital/output display
+    if (playerResult.finalCapital || playerResult.capital) {
+      capital.textContent = playerResult.finalCapital || playerResult.capital;
+      lastCapital = playerResult.finalCapital || playerResult.capital;
+    }
+    
+    if (playerResult.finalOutput) {
+      output.textContent = playerResult.finalOutput;
+      lastOutput = playerResult.finalOutput;
+    }
   }
   
   // Update winner
@@ -230,9 +279,17 @@ socket.on('state_snapshot', (data) => {
   
   // Update round number and capital/output
   roundNumber.textContent = data.roundNumber;
-  capital.textContent = data.capital;
-  output.textContent = data.output;
-  currentOutput = data.output;
+  
+  if (data.capital !== undefined) {
+    capital.textContent = data.capital;
+    lastCapital = data.capital;
+  }
+  
+  if (data.output !== undefined) {
+    output.textContent = data.output;
+    currentOutput = data.output;
+    lastOutput = data.output;
+  }
   
   // If the player has already submitted their investment
   if (data.submitted) {
@@ -253,43 +310,48 @@ socket.on('state_snapshot', (data) => {
 });
 
 socket.on('error', (data) => {
-  console.error('Socket error:', data.message);
-  
-  // Show error message
-  if (joinForm.classList.contains('hidden')) {
-    investmentStatus.textContent = data.message;
-  } else {
-    joinError.textContent = data.message;
+  joinError.textContent = data.message;
+  joinButton.disabled = false;
+});
+
+socket.on('disconnect', () => {
+  console.log('Disconnected from server');
+  if (timerInterval) {
+    clearInterval(timerInterval);
   }
 });
 
-// Utility functions
+// Function to start the round timer
 function startTimer(seconds) {
-  // Clear existing timer
-  clearInterval(timerInterval);
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
   
-  // Set initial time
+  timer.classList.remove('timer-ending');
   timer.textContent = seconds;
   
-  // Start the countdown
   timerInterval = setInterval(() => {
-    const currentTime = parseInt(timer.textContent);
-    if (currentTime <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS) {
+    seconds--;
+    timer.textContent = seconds;
+    
+    // When 5 seconds or less are left, add warning class
+    if (seconds <= 5) {
+      timer.classList.add('timer-warning');
+    }
+    
+    if (seconds <= 0) {
       clearInterval(timerInterval);
-      timer.textContent = '0';
       
-      // Auto-submit if not submitted yet
+      // Auto-submit if not already submitted
       if (!hasSubmittedInvestment) {
-        const currentInvestment = parseFloat(investmentSlider.value);
-        socket.emit('submit_investment', { investment: currentInvestment, isAutoSubmit: true });
+        const investment = parseFloat(investmentValue.value) || 0;
+        socket.emit('submit_investment', { investment, isAutoSubmit: true });
+        investmentStatus.textContent = 'Time\'s up! Your investment was auto-submitted.';
         submitInvestment.disabled = true;
         investmentSlider.disabled = true;
         investmentValue.disabled = true;
-        investmentStatus.textContent = 'Time expired. Current investment value submitted automatically.';
         hasSubmittedInvestment = true;
       }
-    } else {
-      timer.textContent = currentTime - 1;
     }
-  }, CONSTANTS.MILLISECONDS_PER_SECOND);
+  }, 1000);
 } 
