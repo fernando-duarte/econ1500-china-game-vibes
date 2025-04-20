@@ -2,7 +2,7 @@
 const socket = io();
 
 // Debug socket connection
-socket.on('connect', () => {
+socket.on(CONSTANTS.SOCKET.EVENT_CONNECT, () => {
   console.log('Screen connected to server with socket ID:', socket.id);
   // Announce this client as a screen
   socket.emit('screen_connect');
@@ -45,22 +45,22 @@ function addEvent(type, message, highlight = false) {
   if (highlight) {
     eventElement.classList.add('highlight');
   }
-  
+
   // Format timestamp
   const now = new Date();
   const timeString = now.toLocaleTimeString();
-  
+
   eventElement.innerHTML = `
     <div class="event-time">${timeString}</div>
     <div class="event-message">${message}</div>
   `;
-  
+
   // Add the event to the top of the log
   eventLog.insertBefore(eventElement, eventLog.firstChild);
-  
+
   // Auto-scroll to the top
   eventLog.scrollTop = 0;
-  
+
   // Cleanup old events if there are too many
   if (eventLog.children.length > CONSTANTS.MAX_EVENT_LOG_SIZE) {
     eventLog.removeChild(eventLog.lastChild);
@@ -71,35 +71,35 @@ function addEvent(type, message, highlight = false) {
 function updatePlayerList() {
   // Clear existing player list
   playerList.innerHTML = '';
-  
+
   // Update player count
   playerCount.textContent = players.length;
-  
+
   // Update submission count
   submissionCount.textContent = `${submittedPlayers.length}/${players.length}`;
-  
+
   // Add all players to the list
   players.forEach(player => {
     const playerElement = document.createElement('div');
-    playerElement.classList.add('player-item');
-    
+    playerElement.classList.add(CONSTANTS.CSS.PLAYER_ITEM);
+
     const isSubmitted = submittedPlayers.includes(player);
     const isAutoSubmitted = autoSubmittedPlayers.includes(player);
-    
+
     // Add submitted class if the player has submitted their investment
     if (isSubmitted) {
-      playerElement.classList.add('player-submitted');
-      
+      playerElement.classList.add(CONSTANTS.CSS.PLAYER_SUBMITTED);
+
       // Add auto-submitted class if the player's investment was auto-submitted
       if (isAutoSubmitted) {
-        playerElement.classList.add('player-auto-submitted');
-        playerElement.title = 'Auto-submitted';
+        playerElement.classList.add(CONSTANTS.CSS.PLAYER_AUTO_SUBMITTED);
+        playerElement.title = CONSTANTS.UI_TEXT.TITLE_AUTO_SUBMITTED;
       }
     }
-    
+
     // Add player name
     playerElement.textContent = player;
-    
+
     playerList.appendChild(playerElement);
   });
 }
@@ -112,7 +112,7 @@ function updateAverages() {
     const average = total / capitalValues.length;
     avgCapital.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);
   }
-  
+
   // Calculate average output
   if (outputValues.length > 0) {
     const total = outputValues.reduce((sum, value) => sum + parseFloat(value), 0);
@@ -128,32 +128,32 @@ function startTimer(seconds) {
 }
 
 // Socket event handlers
-socket.on('disconnect', () => {
+socket.on(CONSTANTS.SOCKET.EVENT_DISCONNECT, () => {
   console.log('Disconnected from server');
   gameStatus.textContent = 'Disconnected';
   addEvent('disconnect', 'Disconnected from server', true);
 });
 
-socket.on('player_joined', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, (data) => {
   console.log('Player joined:', data);
-  
+
   // Add player to the list if not already there
   if (!players.includes(data.playerName)) {
     players.push(data.playerName);
   }
-  
+
   // Update player list
   updatePlayerList();
-  
+
   // Log event
   addEvent('player_joined', `Player joined: ${data.playerName}`);
 });
 
-socket.on('game_created', () => {
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_CREATED, () => {
   console.log('Game created');
   gameStatus.textContent = 'Waiting for Players';
-  gameState = 'waiting';
-  
+  gameState = CONSTANTS.GAME_STATES.WAITING;
+
   // Reset state
   players = [];
   submittedPlayers = [];
@@ -161,67 +161,67 @@ socket.on('game_created', () => {
   roundInvestments = {};
   capitalValues = [];
   outputValues = [];
-  
+
   // Update display
   updatePlayerList();
   updateAverages();
-  
+
   // Log event
   addEvent('game_created', 'Game has been created', true);
 });
 
-socket.on('game_started', () => {
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, () => {
   console.log('Game started');
   gameStatus.textContent = 'Game Starting';
-  gameState = 'active';
-  
+  gameState = CONSTANTS.GAME_STATES.ACTIVE;
+
   // Reset for new game
   submittedPlayers = [];
   autoSubmittedPlayers = [];
   roundInvestments = {};
-  
+
   // Set initial round number to 1 when the game starts
   roundNumber.textContent = CONSTANTS.FIRST_ROUND_NUMBER;
-  
+
   // Update display
   updatePlayerList();
-  
+
   // Log event
   addEvent('game_started', 'Game has started', true);
 });
 
-socket.on('round_start', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ROUND_START, (data) => {
   console.log('Round started:', data);
-  
+
   // Update round number
   roundNumber.textContent = data.roundNumber;
-  
+
   // Update game status
-  gameStatus.textContent = 'Round in Progress';
-  
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
+
   // Reset submitted players for this round
   submittedPlayers = [];
   autoSubmittedPlayers = [];
   roundInvestments = {};
-  
+
   // Initialize timer with the server's time remaining
   timer.textContent = data.timeRemaining;
-  
+
   // Update display
   updatePlayerList();
-  
+
   // Log event
   addEvent('round_start', `Round ${data.roundNumber} started`, true);
 });
 
-socket.on('investment_received', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, (data) => {
   console.log('Investment received:', data);
-  
+
   // Make sure we have the data we need
   if (!data || !data.playerName) {
     return;
   }
-  
+
   // Store the investment
   if (data.investment !== undefined) {
     roundInvestments[data.playerName] = {
@@ -229,50 +229,50 @@ socket.on('investment_received', (data) => {
       isAutoSubmit: data.isAutoSubmit || false
     };
   }
-  
+
   // Mark player as submitted
   if (!submittedPlayers.includes(data.playerName)) {
     submittedPlayers.push(data.playerName);
-    
+
     // Track auto-submitted investments
     if (data.isAutoSubmit) {
       autoSubmittedPlayers.push(data.playerName);
     }
   }
-  
+
   // Update display
   updatePlayerList();
-  
+
   // Log event
   const autoText = data.isAutoSubmit ? ' (auto-submitted)' : '';
   addEvent('investment', `${data.playerName} invested ${data.investment}${autoText}`);
 });
 
-socket.on('all_submitted', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, (data) => {
   console.log('All students have submitted:', data);
-  
+
   // Update game status
-  gameStatus.textContent = 'All Submitted - Round Ending';
-  
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ALL_SUBMITTED_ENDING;
+
   // Log event
   addEvent('all_submitted', data.message, true);
 });
 
-socket.on('round_summary', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, (data) => {
   console.log('Round summary:', data);
-  
+
   // Get the next round number (making sure not to exceed max rounds)
   const nextRound = Math.min(data.roundNumber + 1, CONSTANTS.ROUNDS);
-  
+
   // Update round number - making sure not to exceed max rounds
   roundNumber.textContent = nextRound;
-  
+
   // Update game status
   gameStatus.textContent = `Round ${data.roundNumber} Completed`;
-  
+
   // Reset timer display
   timer.textContent = '-';
-  
+
   // Collect capital and output values for averaging
   capitalValues = [];
   outputValues = [];
@@ -280,46 +280,46 @@ socket.on('round_summary', (data) => {
     capitalValues.push(result.newCapital);
     outputValues.push(result.newOutput);
   });
-  
+
   // Update averages
   updateAverages();
-  
+
   // Log event
   addEvent('round_end', `Round ${data.roundNumber} completed`, true);
 });
 
-socket.on('game_over', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   console.log('Game over:', data);
-  
+
   // Ensure round number shows the final round
   roundNumber.textContent = CONSTANTS.ROUNDS;
-  
+
   // Update game status
-  gameStatus.textContent = 'Game Over';
-  gameState = 'completed';
-  
+  gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
+  gameState = CONSTANTS.GAME_STATES.COMPLETED;
+
   // Clear timer
   clearInterval(timerInterval);
   timer.textContent = '-';
-  
+
   // Log event
   addEvent('game_over', `Game over! Winner: ${data.winner}`, true);
 });
 
-socket.on('state_snapshot', (data) => {
+socket.on('state_snapshot', (data) => { // TODO: Add constant for this event
   console.log('Received state snapshot:', data);
-  
+
   // Update round number
   if (data.roundNumber) {
     roundNumber.textContent = data.roundNumber;
   }
-  
+
   // Update game status based on round
   if (data.roundNumber > 0) {
-    gameStatus.textContent = 'Round in Progress';
-    gameState = 'active';
+    gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
+    gameState = CONSTANTS.GAME_STATES.ACTIVE;
   }
-  
+
   // If there's time remaining, initialize timer display
   if (data.timeRemaining) {
     timer.textContent = data.timeRemaining;
@@ -327,15 +327,15 @@ socket.on('state_snapshot', (data) => {
 });
 
 // Add handler for timer updates from the server
-socket.on('timer_update', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, (data) => {
   // Update timer display with the server's time
   timer.textContent = data.timeRemaining;
 });
 
-socket.on('error', (data) => {
+socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (data) => {
   console.error('Socket error:', data.message);
   addEvent('error', `Error: ${data.message}`, true);
 });
 
 // Add initial event when page loads
-addEvent('init', 'Screen dashboard initialized', true); 
+addEvent('init', 'Screen dashboard initialized', true);
