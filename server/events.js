@@ -255,6 +255,29 @@ function setupSocketEvents(io) {
       }
     });
     
+    // Instructor forces the game to end
+    socket.on('force_end_game', () => {
+      try {
+        if (!isInstructor) {
+          socket.emit('error', { message: 'Not authorized' });
+          return;
+        }
+        
+        console.log('Instructor requested force end game');
+        
+        // Force end current round and game
+        const gameLogic = require('./gameLogic');
+        const result = gameLogic.forceEndGame(io);
+        
+        if (!result.success) {
+          socket.emit('error', { message: result.error || 'Failed to force end game' });
+        }
+      } catch (error) {
+        console.error('Error in force_end_game:', error);
+        socket.emit('error', { message: 'Error processing force end game request' });
+      }
+    });
+    
     // Student submits investment
     socket.on('submit_investment', ({ investment, isAutoSubmit }) => {
       try {

@@ -24,6 +24,7 @@ const winnerName = document.getElementById('winnerName');
 const finalResultsBody = document.getElementById('finalResultsBody');
 const resetGameButton = document.getElementById('resetGameButton');
 const roundTimer = document.getElementById('roundTimer');
+const forceEndGameButton = document.getElementById('forceEndGameButton');
 
 // Initialize values from constants
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,6 +48,14 @@ let currentRoundInvestments = {};
 // Reset the game
 resetGameButton.addEventListener('click', () => {
   location.reload();
+});
+
+// Force end game button
+forceEndGameButton.addEventListener('click', () => {
+  if (confirm('Are you sure you want to force end the game? This will end the current round and declare a winner immediately.')) {
+    socket.emit('force_end_game');
+    console.log('Force end game request sent');
+  }
 });
 
 // Socket event handlers
@@ -280,6 +289,22 @@ socket.on('game_over', (data) => {
 socket.on('error', (data) => {
   console.error('Socket error:', data.message);
   alert('Error: ' + data.message);
+});
+
+// Add handler for admin notifications
+socket.on('admin_notification', (data) => {
+  console.log('Admin notification:', data);
+  
+  // Display notification to user
+  const notification = document.createElement('div');
+  notification.textContent = data.message;
+  notification.classList.add('admin-notification', `admin-notification-${data.type || 'info'}`);
+  document.body.appendChild(notification);
+  
+  // Remove notification after a few seconds
+  setTimeout(() => {
+    notification.remove();
+  }, 5000);
 });
 
 // Add handler for timer updates from the server
