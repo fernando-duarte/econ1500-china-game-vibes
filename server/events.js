@@ -40,7 +40,7 @@ function setupSocketEvents(io) {
         if (gameLogic.game) {
           const stateData = {
             isGameRunning: gameLogic.game.isGameRunning,
-            round: gameLogic.game.round
+            roundNumber: gameLogic.game.round
           };
           
           // If the game is running and a round is active, send more data

@@ -194,6 +194,9 @@ socket.on('game_started', () => {
   autoSubmittedPlayers = [];
   roundInvestments = {};
   
+  // Set initial round number to 1 when the game starts
+  roundNumber.textContent = CONSTANTS.FIRST_ROUND_NUMBER;
+  
   // Update display
   updatePlayerList();
   
@@ -272,8 +275,8 @@ socket.on('all_submitted', (data) => {
 socket.on('round_summary', (data) => {
   console.log('Round summary:', data);
   
-  // Update round number
-  roundNumber.textContent = data.roundNumber;
+  // Update round number - fix: increment by 1 to show next round like other clients
+  roundNumber.textContent = data.roundNumber + 1;
   
   // Update game status
   gameStatus.textContent = `Round ${data.roundNumber} Completed`;
