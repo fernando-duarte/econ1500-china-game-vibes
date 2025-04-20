@@ -96,7 +96,7 @@ submitInvestment.addEventListener('click', () => {
 });
 
 // Socket event handlers
-socket.on('join_ack', (data) => {
+socket.on('game_joined', (data) => {
   joinButton.disabled = false;
   
   if (!data.success) {
@@ -130,7 +130,13 @@ socket.on('join_ack', (data) => {
 });
 
 socket.on('game_started', () => {
+  console.log('Game has started event received');
   roundStatus.textContent = 'Game has started. Waiting for first round...';
+  
+  // Hide join form and show game interface
+  joinForm.classList.add('hidden');
+  gameUI.classList.remove('hidden');
+  console.log('UI updated for game start');
 });
 
 socket.on('round_start', (data) => {
