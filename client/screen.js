@@ -268,10 +268,10 @@ socket.on(CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY, (data) => {
   roundNumber.textContent = nextRound;
 
   // Update game status
-  gameStatus.textContent = `Round ${data.roundNumber} Completed`;
+  gameStatus.textContent = CONSTANTS.UI_TEXT.ROUND_COMPLETED_FORMAT.replace('{0}', data.roundNumber);
 
   // Reset timer display
-  timer.textContent = '-';
+  timer.textContent = CONSTANTS.UI_TEXT.TIMER_PLACEHOLDER;
 
   // Collect capital and output values for averaging
   capitalValues = [];
@@ -300,7 +300,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
 
   // Clear timer
   clearInterval(timerInterval);
-  timer.textContent = '-';
+  timer.textContent = CONSTANTS.UI_TEXT.TIMER_PLACEHOLDER;
 
   // Log event
   addEvent('game_over', `Game over! Winner: ${data.winner}`, true);
@@ -334,7 +334,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_TIMER_UPDATE, (data) => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (data) => {
   console.error('Socket error:', data.message);
-  addEvent('error', `Error: ${data.message}`, true);
+  addEvent('error', `${CONSTANTS.UI_TEXT.ERROR_PREFIX}${data.message}`, true);
 });
 
 // Add initial event when page loads

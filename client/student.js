@@ -39,6 +39,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Input constraints from constants
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
   investmentValue.min = CONSTANTS.INVESTMENT_MIN;
+
+  // Initialize placeholder values
+  capital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  output.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  roundNumber.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  maxOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  investmentResult.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  newCapital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  newOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  finalOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  winner.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+
+  // Initialize status messages
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+  waitingNextRound.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
+
+  // Initialize input placeholders
+  playerName.placeholder = CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
 });
 
 // Game state
@@ -126,7 +144,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, (data) => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, () => {
   console.log('Game has started event received');
-  roundStatus.textContent = 'Game has started. Waiting for first round...';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTED;
 
   // Ensure K and Y are still displayed
   if (capital.textContent === '-' && lastCapital) {
@@ -156,7 +174,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ROUND_START, (data) => {
   }
 
   // Update round status
-  roundStatus.textContent = 'Round in progress';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
 
   // Reset investment UI
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
@@ -198,7 +216,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, (data) => {
 
   // Adjust timer display
   timer.classList.add('timer-ending');
-  timer.textContent = 'Ending...';
+  timer.textContent = CONSTANTS.UI_TEXT.STATUS_ENDING;
 
   // Stop the current timer
   clearInterval(timerInterval);
@@ -271,7 +289,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   gameOverUI.classList.remove('hidden');
 
   // Update round status
-  roundStatus.textContent = 'Game over';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
 
   // Disable all investment controls
   submitInvestment.disabled = true;
@@ -299,7 +317,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
 
   // If the player has already submitted their investment
   if (data.submitted) {
-    investmentStatus.textContent = 'You have already submitted your investment for this round';
+    investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ALREADY_SUBMITTED;
     submitInvestment.disabled = true;
     investmentSlider.disabled = true;
     investmentValue.disabled = true;
@@ -327,7 +345,7 @@ socket.on('timer_update', (data) => {
     submitInvestment.disabled = true;
     investmentSlider.disabled = true;
     investmentValue.disabled = true;
-    investmentStatus.textContent = 'Time expired. Current investment value submitted automatically.';
+    investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_TIME_EXPIRED;
     hasSubmittedInvestment = true;
   }
 });
