@@ -97,36 +97,17 @@ submitInvestment.addEventListener('click', () => {
 
 // Socket event handlers
 socket.on('game_joined', (data) => {
-  joinButton.disabled = false;
+  // Store player name from server data
+  currentPlayerName = data.playerName;
   
-  if (!data.success) {
-    joinError.textContent = data.error || 'Failed to join the game';
-    return;
-  }
-  
-  // Store player name
-  currentPlayerName = playerName.value.trim();
-  
-  // Update UI
+  // Update UI with player name
   displayName.textContent = currentPlayerName;
   
-  // Set initial capital and output
+  // Set initial capital and output (can be useful before first round_start)
   capital.textContent = data.initialCapital;
   output.textContent = data.initialOutput;
   
-  // Switch from join form to game UI
-  joinForm.classList.add('hidden');
-  gameUI.classList.remove('hidden');
-  
-  // If game is auto-starting, update the UI accordingly
-  if (data.autoStart) {
-    console.log('Game is auto-starting');
-    roundStatus.textContent = 'Game is starting automatically...';
-  } else {
-    roundStatus.textContent = 'Waiting for instructor to start the game...';
-  }
-  
-  console.log('Successfully joined the game');
+  console.log(`Successfully joined game as ${currentPlayerName}`);
 });
 
 socket.on('game_started', () => {
