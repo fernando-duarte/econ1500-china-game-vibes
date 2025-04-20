@@ -39,6 +39,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Input constraints from constants
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
   investmentValue.min = CONSTANTS.INVESTMENT_MIN;
+
+  // Initialize placeholder values
+  capital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  output.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  roundNumber.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  maxOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  investmentResult.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  newCapital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  newOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  finalOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+  winner.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+
+  // Initialize status messages
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+  waitingNextRound.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
+
+  // Initialize input placeholders
+  playerName.placeholder = CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
 });
 
 // Game state
@@ -54,7 +72,7 @@ joinButton.addEventListener('click', () => {
   const name = playerName.value.trim();
 
   if (!name) {
-    joinError.textContent = 'Please enter your name';
+    joinError.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_NAME;
     return;
   }
 
@@ -85,7 +103,7 @@ submitInvestment.addEventListener('click', () => {
 
   const investment = parseFloat(investmentValue.value);
   if (isNaN(investment)) {
-    investmentStatus.textContent = 'Please enter a valid number';
+    investmentStatus.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_VALID_NUMBER;
     return;
   }
 
@@ -93,7 +111,7 @@ submitInvestment.addEventListener('click', () => {
   submitInvestment.disabled = true;
   investmentSlider.disabled = true;
   investmentValue.disabled = true;
-  investmentStatus.textContent = 'Investment submitted. Waiting for other players...';
+  investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED;
   hasSubmittedInvestment = true;
 });
 
@@ -126,7 +144,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, (data) => {
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, () => {
   console.log('Game has started event received');
-  roundStatus.textContent = 'Game has started. Waiting for first round...';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTED;
 
   // Ensure K and Y are still displayed
   if (capital.textContent === '-' && lastCapital) {
@@ -156,7 +174,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ROUND_START, (data) => {
   }
 
   // Update round status
-  roundStatus.textContent = 'Round in progress';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
 
   // Reset investment UI
   investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
@@ -198,7 +216,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, (data) => {
 
   // Adjust timer display
   timer.classList.add('timer-ending');
-  timer.textContent = 'Ending...';
+  timer.textContent = CONSTANTS.UI_TEXT.STATUS_ENDING;
 
   // Stop the current timer
   clearInterval(timerInterval);
@@ -231,7 +249,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ROUND_END, (data) => {
   roundResults.classList.remove('hidden');
 
   // Update round status
-  roundStatus.textContent = 'Round completed';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED;
 });
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
@@ -271,13 +289,13 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   gameOverUI.classList.remove('hidden');
 
   // Update round status
-  roundStatus.textContent = 'Game over';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
 
   // Disable all investment controls
   submitInvestment.disabled = true;
   investmentSlider.disabled = true;
   investmentValue.disabled = true;
-  investmentStatus.textContent = 'Game is over. No more investments can be made.';
+  investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS;
 });
 
 socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
@@ -299,7 +317,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
 
   // If the player has already submitted their investment
   if (data.submitted) {
-    investmentStatus.textContent = 'You have already submitted your investment for this round';
+    investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ALREADY_SUBMITTED;
     submitInvestment.disabled = true;
     investmentSlider.disabled = true;
     investmentValue.disabled = true;
@@ -327,7 +345,7 @@ socket.on('timer_update', (data) => {
     submitInvestment.disabled = true;
     investmentSlider.disabled = true;
     investmentValue.disabled = true;
-    investmentStatus.textContent = 'Time expired. Current investment value submitted automatically.';
+    investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_TIME_EXPIRED;
     hasSubmittedInvestment = true;
   }
 });
@@ -385,7 +403,7 @@ function startTimer(seconds) {
       if (!hasSubmittedInvestment) {
         const investment = parseFloat(investmentValue.value) || CONSTANTS.INVESTMENT_MIN;
         socket.emit(CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT, { investment, isAutoSubmit: true });
-        investmentStatus.textContent = 'Time\'s up! Your investment was auto-submitted.';
+        investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_TIMES_UP_AUTO_SUBMIT;
         submitInvestment.disabled = true;
         investmentSlider.disabled = true;
         investmentValue.disabled = true;

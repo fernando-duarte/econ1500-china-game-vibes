@@ -6,8 +6,14 @@
   <title>Solow Growth Model Game</title>
   <link rel="stylesheet" href="/style.css">
   <script>
-    // Redirect to student view by default
-    window.location.href = '/student.html';
+    // Load constants first
+    const script = document.createElement('script');
+    script.src = '/constants.js';
+    script.onload = function() {
+      // Redirect to student view by default
+      window.location.href = CONSTANTS.ROUTES.STUDENT + 'student.html';
+    };
+    document.head.appendChild(script);
   </script>
 </head>
 <body>
@@ -17,8 +23,8 @@
     <p>If you are not redirected, please choose a view:</p>
     <div class="button-container">
       <a href="/student.html" class="button">Student View</a>
-      <a href="/instructor.html" class="button">Instructor View</a>
+      <a href="/instructor" class="button">Instructor View</a>
     </div>
   </div>
 </body>
-</html> 
+</html>
