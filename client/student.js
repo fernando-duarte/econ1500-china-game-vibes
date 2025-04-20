@@ -54,7 +54,7 @@ joinButton.addEventListener('click', () => {
   const name = playerName.value.trim();
 
   if (!name) {
-    joinError.textContent = 'Please enter your name';
+    joinError.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_NAME;
     return;
   }
 
@@ -85,7 +85,7 @@ submitInvestment.addEventListener('click', () => {
 
   const investment = parseFloat(investmentValue.value);
   if (isNaN(investment)) {
-    investmentStatus.textContent = 'Please enter a valid number';
+    investmentStatus.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_VALID_NUMBER;
     return;
   }
 
@@ -93,7 +93,7 @@ submitInvestment.addEventListener('click', () => {
   submitInvestment.disabled = true;
   investmentSlider.disabled = true;
   investmentValue.disabled = true;
-  investmentStatus.textContent = 'Investment submitted. Waiting for other players...';
+  investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED;
   hasSubmittedInvestment = true;
 });
 
@@ -231,7 +231,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_ROUND_END, (data) => {
   roundResults.classList.remove('hidden');
 
   // Update round status
-  roundStatus.textContent = 'Round completed';
+  roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED;
 });
 
 socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
@@ -277,7 +277,7 @@ socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, (data) => {
   submitInvestment.disabled = true;
   investmentSlider.disabled = true;
   investmentValue.disabled = true;
-  investmentStatus.textContent = 'Game is over. No more investments can be made.';
+  investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS;
 });
 
 socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, (data) => {
@@ -385,7 +385,7 @@ function startTimer(seconds) {
       if (!hasSubmittedInvestment) {
         const investment = parseFloat(investmentValue.value) || CONSTANTS.INVESTMENT_MIN;
         socket.emit(CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT, { investment, isAutoSubmit: true });
-        investmentStatus.textContent = 'Time\'s up! Your investment was auto-submitted.';
+        investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_TIMES_UP_AUTO_SUBMIT;
         submitInvestment.disabled = true;
         investmentSlider.disabled = true;
         investmentValue.disabled = true;

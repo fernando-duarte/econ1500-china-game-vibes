@@ -73,13 +73,25 @@ const GAME_CONSTANTS = {
     STATUS_ALL_SUBMITTED_ENDING: 'All students submitted. Round ending...',
     STATUS_PLAYER_SUBMITTED: '✓ Submitted',
     STATUS_PLAYER_PENDING: 'Pending',
+    STATUS_ROUND_COMPLETED: 'Round completed',
+    STATUS_ROUND_COMPLETED_PREFIX: 'Round ',
+    STATUS_ROUND_COMPLETED_SUFFIX: ' completed',
+    STATUS_WAITING_FOR_PLAYERS: 'Waiting for Players',
+    STATUS_GAME_STARTING: 'Game Starting',
+    STATUS_WAITING_FOR_GAME: 'Waiting for Game',
     TITLE_AUTO_SUBMITTED: 'Auto-submitted (current slider value)',
     AUTO_SUBMIT_SUFFIX: ' (auto)',
     PLACEHOLDER_INVESTMENT_SUBMITTED: 'No investments submitted yet',
     CONFIRM_FORCE_END: 'Are you sure you want to force end the game? This will end the current round and declare a winner immediately.',
     CONFIRM_START_GAME_PREFIX: 'Start the game with ',
     CONFIRM_START_GAME_SUFFIX: ' player(s)?',
-    ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.'
+    ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.',
+    ERROR_ENTER_NAME: 'Please enter your name',
+    ERROR_ENTER_VALID_NUMBER: 'Please enter a valid number',
+    STATUS_INVESTMENT_SUBMITTED: 'Investment submitted. Waiting for other players...',
+    STATUS_TIMES_UP_AUTO_SUBMIT: 'Time\'s up! Your investment was auto-submitted.',
+    STATUS_GAME_OVER_NO_INVESTMENTS: 'Game is over. No more investments can be made.',
+    ALL_SUBMITTED_NOTIFICATION: 'All players have submitted their investments. Round ending early...'
   },
 
   // CSS Class Constants
