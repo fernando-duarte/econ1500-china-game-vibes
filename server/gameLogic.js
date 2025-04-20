@@ -43,10 +43,10 @@ function createGame() {
  * Add a new player to the game
  */
 function addPlayer(playerName, socketId, io) {
-  // Check if game already has an instructor
-  if (!game.instructorSocket) {
-    return { success: false, error: 'Instructor has not joined yet' };
-  }
+  // No longer require instructor to have joined first
+  // if (!game.instructorSocket) {
+  //   return { success: false, error: 'Instructor has not joined yet' };
+  // }
 
   // Check if game is running
   if (game.isGameRunning) {
@@ -169,7 +169,7 @@ function startRound(io) {
   if (game.instructorSocket && game.instructorSocket.connected) {
     game.instructorSocket.emit('round_start', instructorData);
   } else {
-    console.error('Cannot notify instructor: No valid instructor socket for round_start');
+    // Just broadcast to everyone if no instructor socket available
     io.emit('round_start', instructorData);
   }
   
@@ -287,9 +287,9 @@ function endRound(io) {
         results
       });
     } else {
-      // Fallback to room-based messaging
-      console.log('Sending round_summary to instructor room');
-      io.to('instructor').emit('round_summary', {
+      // Fallback to broadcasting if no instructor socket
+      console.log('Broadcasting round_summary to all clients');
+      io.emit('round_summary', {
         roundNumber: game.round,
         results
       });
@@ -358,6 +358,13 @@ function endGame(io) {
     if (game.instructorSocket && game.instructorSocket.connected) {
       console.log(`Sending game_over directly to instructor socket ${game.instructorSocket.id}`);
       game.instructorSocket.emit('game_over', {
+        finalResults,
+        winner
+      });
+    } else {
+      // Broadcast to everyone as fallback
+      console.log('Broadcasting game_over to all clients');
+      io.emit('game_over', {
         finalResults,
         winner
       });
