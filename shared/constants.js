@@ -35,6 +35,7 @@ const GAME_CONSTANTS = {
 
   // UI Hacks
   REPAINT_HACK_OPACITY: '0.99', // Temporary opacity to force browser repaint
+  OPACITY_FULL: '1', // Full opacity value for restoring after repaint
 
   // Auto-start feature
   AUTO_START_ENABLED: false,  // Disabled - use manual start instead
@@ -102,7 +103,9 @@ const GAME_CONSTANTS = {
     TIMER_PLACEHOLDER: '-',
     ROUND_COMPLETED_FORMAT: 'Round {0} Completed',
     PLACEHOLDER_TEXT: '-',
-    PLAYER_NAME_PLACEHOLDER: 'Enter your name'
+    PLAYER_NAME_PLACEHOLDER: 'Enter your name',
+    PLAYER_PLURAL_SUFFIX: 's',
+    PLAYER_JOINED_SUFFIX: ' have joined'
   },
 
   // CSS Class Constants
