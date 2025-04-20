@@ -91,16 +91,10 @@ function checkAutoStart() {
     console.log('Auto-starting game with', Object.keys(game.players).length, 'players');
     const startResult = startGame();
     
-    if (startResult.success) {
-      // Schedule start round on next event loop to allow clients to receive game_started first
-      setTimeout(() => {
-        if (game.currentIo) {
-          startRound(game.currentIo);
-        } else {
-          console.error('Cannot auto-start round: No IO instance available');
-        }
-      }, 100);
-      
+    if (startResult.success && game.currentIo) {
+      // Start the first round immediately instead of scheduling it
+      console.log('Starting first round immediately due to auto-start');
+      startRound(game.currentIo);
       return true;
     }
   }

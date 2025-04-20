@@ -16,7 +16,10 @@ const CONSTANTS = require('../shared/constants');
 function setupSocketEvents(io) {
   // Store io instance in gameLogic for auto-start functionality
   const gameLogic = require('./gameLogic');
+  
+  // Save IO instance for game functions
   gameLogic.game.currentIo = io;
+  console.log('Stored IO instance for game functions');
   
   // Handle new socket connections
   io.on('connection', (socket) => {
@@ -88,15 +91,18 @@ function setupSocketEvents(io) {
             console.log('No instructor socket available for player_joined notification');
           }
           
-          // If game auto-started, broadcast game_started event
+          // Send acknowledgment to the client
+          socket.emit('join_ack', result);
+          
+          // If game auto-started, broadcast game_started event AFTER the join acknowledgment
           if (result.autoStart) {
             console.log('Broadcasting game_started due to auto-start');
             io.emit('game_started');
           }
+        } else {
+          // Send acknowledgment to the client for failed join
+          socket.emit('join_ack', result);
         }
-        
-        // Send acknowledgment to the client
-        socket.emit('join_ack', result);
       } catch (error) {
         console.error('Error in join_game:', error);
         socket.emit('join_ack', { 
