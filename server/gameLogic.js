@@ -19,7 +19,8 @@ let game = {
   currentIo: null,
   pendingEndRound: false,
   instructorSocket: null, // Add reference to instructor socket
-  allSubmittedTime: null // Time when all players have submitted
+  allSubmittedTime: null, // Time when all players have submitted
+  manualStartEnabled: false // Add flag for manual start mode
 };
 
 /**
@@ -39,7 +40,8 @@ function createGame() {
     currentIo: null,
     pendingEndRound: false,
     instructorSocket: null,
-    allSubmittedTime: null
+    allSubmittedTime: null,
+    manualStartEnabled: !CONSTANTS.AUTO_START_ENABLED // Initialize based on constants
   });
 
   return true;
@@ -82,14 +84,15 @@ function addPlayer(playerName, socketId, io) {
     isAutoSubmit: false // Track auto-submissions
   };
 
-  // Check if the game should auto-start
-  const autoStartResult = checkAutoStart(io); // Pass io here
+  // Only check for auto-start if manual start is not enabled
+  const autoStartResult = game.manualStartEnabled ? false : checkAutoStart(io);
 
   return { 
     success: true, 
     initialCapital: parseFloat(initialCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)), 
     initialOutput: parseFloat(initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-    autoStart: autoStartResult
+    autoStart: autoStartResult,
+    manualStartEnabled: game.manualStartEnabled // Send manual start mode status to client
   };
 }
 
@@ -556,6 +559,14 @@ function playerDisconnect(socketId) {
   });
 }
 
+/**
+ * Set the game to manual start mode
+ */
+function setManualStartMode(enabled) {
+  game.manualStartEnabled = enabled;
+  return { success: true, manualStartEnabled: game.manualStartEnabled };
+}
+
 // Export the game functions
 module.exports = {
   createGame,
@@ -568,5 +579,6 @@ module.exports = {
   forceEndGame,
   playerReconnect,
   playerDisconnect,
+  setManualStartMode,
   game  // Export the game object for external use
 }; 
