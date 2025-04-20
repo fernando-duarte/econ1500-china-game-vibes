@@ -267,7 +267,7 @@ socket.on('all_submitted', (data) => {
   // Restore previous status after the early end
   setTimeout(() => {
     roundStatus.classList.remove('all-submitted-status');
-  }, data.timeRemaining * 1000);
+  }, data.timeRemaining * CONSTANTS.MILLISECONDS_PER_SECOND);
 });
 
 socket.on('round_summary', (data) => {
