@@ -10,24 +10,32 @@ const CONSTANTS = require('../shared/constants');
 let game = {
   isGameRunning: false,
   state: CONSTANTS.GAME_STATES.INACTIVE,
-  round: 0,
+  round: CONSTANTS.FIRST_ROUND_NUMBER - 1,
   players: {},
-  roundTimer: null
+  roundTimer: null,
+  currentIo: null,
+  pendingEndRound: false,
+  instructorSocket: null, // Add reference to instructor socket
+  allSubmittedTime: null // Time when all players have submitted
 };
 
 /**
  * Create a new game session
  */
 function createGame() {
-  // Reset game to initial state
-  game = {
+  // Reset game to initial state without reassigning the object
+  Object.assign(game, {
     isGameRunning: false,
     state: CONSTANTS.GAME_STATES.WAITING,
-    round: 0,
+    round: CONSTANTS.FIRST_ROUND_NUMBER - 1,
     players: {},
-    roundTimer: null
-  };
-  
+    roundTimer: null,
+    currentIo: null,
+    pendingEndRound: false,
+    instructorSocket: null,
+    allSubmittedTime: null
+  });
+
   return true;
 }
 
@@ -94,6 +102,9 @@ function startRound(io) {
     player.investment = null;
   });
   
+  // Store the io reference for this round
+  game.currentIo = io;
+  
   // Emit round start event to all players
   Object.entries(game.players).forEach(([playerName, player]) => {
     if (player.connected) {
@@ -108,8 +119,18 @@ function startRound(io) {
   
   // Start the round timer
   game.roundTimer = setTimeout(() => {
-    endRound(io);
+    // When timer expires, use the stored io reference
+    endRound(game.currentIo);
   }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
+  
+  // Notify instructor of round start
+  const instructorData = { roundNumber: game.round, timeRemaining: CONSTANTS.ROUND_DURATION_SECONDS };
+  if (game.instructorSocket && game.instructorSocket.connected) {
+    game.instructorSocket.emit('round_start', instructorData);
+  } else {
+    console.error('Cannot notify instructor: No valid instructor socket for round_start');
+    io.emit('round_start', instructorData);
+  }
   
   return { success: true };
 }
@@ -117,7 +138,7 @@ function startRound(io) {
 /**
  * Process a player's investment
  */
-function submitInvestment(playerName, investment) {
+function submitInvestment(playerName, investment, isAutoSubmit = false) {
   // Check if the game is running and in an active round
   if (!game.isGameRunning || game.round < CONSTANTS.FIRST_ROUND_NUMBER) {
     return { success: false, error: 'Game not running' };
@@ -135,28 +156,49 @@ function submitInvestment(playerName, investment) {
   
   // Store the player's investment
   player.investment = validInvestment;
+  player.isAutoSubmit = isAutoSubmit; // Track whether this was auto-submitted
   
-  // Check if all players have submitted their investments
-  const allSubmitted = Object.values(game.players).every(
-    player => player.investment !== null || !player.connected
-  );
+  // Count connected players and submitted investments
+  const connectedPlayers = Object.values(game.players).filter(p => p.connected).length;
+  const submittedPlayers = Object.values(game.players).filter(p => p.connected && p.investment !== null).length;
+  
+  console.log(`Investment submission status: ${submittedPlayers}/${connectedPlayers} players have submitted`);
+  
+  // Check if all connected players have submitted their investments
+  const allSubmitted = submittedPlayers === connectedPlayers;
   
   // If all players have submitted, end the round early
   if (allSubmitted) {
+    console.log('All players have submitted investments - preparing to end round early');
     clearTimeout(game.roundTimer);
-    endRound(null); // Will be called with io in the actual implementation
+    // Set the flag to end the round on next IO event
+    game.pendingEndRound = true;
+    // Store when all submissions were completed (for potential auto-advance timeout)
+    game.allSubmittedTime = Date.now();
   }
   
-  return { success: true, investment: validInvestment };
+  return { 
+    success: true, 
+    investment: validInvestment,
+    allSubmitted: allSubmitted  // Return this flag to the caller
+  };
 }
 
 /**
  * End a round and process all investments
  */
 function endRound(io) {
-  // For players who didn't submit, set investment to 0
+  // Reset pendingEndRound flag
+  game.pendingEndRound = false;
+  
+  console.log(`Ending round ${game.round}...`);
+  
+  // For players who didn't submit, set investment to their last slider value if available
+  // or 0 if no slider value was ever recorded (this shouldn't happen with the client changes)
   Object.values(game.players).forEach(player => {
     if (player.investment === null) {
+      // We use 0 as a fallback since we can't know the slider position from the server
+      // The client-side changes ensure auto-submission of current slider value
       player.investment = 0;
     }
   });
@@ -178,7 +220,8 @@ function endRound(io) {
       playerName,
       investment: player.investment,
       newCapital: parseFloat(newCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)),
-      newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
+      newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)),
+      isAutoSubmit: player.isAutoSubmit || false // Include auto-submit flag
     });
     
     // Send round end event to the player
@@ -188,28 +231,48 @@ function endRound(io) {
         newOutput: parseFloat(newOutput.toFixed(CONSTANTS.DECIMAL_PRECISION))
       });
     }
+    
+    // Reset the auto-submit flag for next round
+    player.isAutoSubmit = false;
   });
   
   // Send round summary to all instructor sockets
   if (io) {
-    io.to('instructor').emit('round_summary', {
-      roundNumber: game.round,
-      results
-    });
+    // Send to instructor using direct socket reference if available
+    if (game.instructorSocket && game.instructorSocket.connected) {
+      console.log(`Sending round_summary directly to instructor socket ${game.instructorSocket.id}`);
+      game.instructorSocket.emit('round_summary', {
+        roundNumber: game.round,
+        results
+      });
+    } else {
+      // Fallback to room-based messaging
+      console.log('Sending round_summary to instructor room');
+      io.to('instructor').emit('round_summary', {
+        roundNumber: game.round,
+        results
+      });
+    }
+  } else {
+    console.error('No io object available when ending round!');
   }
   
   // Check if the game is over
   if (game.round >= CONSTANTS.ROUNDS) {
+    console.log('Game is over - final round reached.');
     endGame(io);
     return { success: true, gameOver: true };
   }
   
   // Increment the round
+  console.log(`Round ${game.round} completed. Advancing to round ${game.round + 1}`);
   game.round++;
   
   // Start the next round
   if (io) {
     startRound(io);
+  } else {
+    console.error('Cannot start next round - no io object available!');
   }
   
   return { success: true, gameOver: false };
@@ -244,10 +307,20 @@ function endGame(io) {
   
   // Send game over event to all sockets
   if (io) {
+    // Send to all players
     io.to('players').emit('game_over', {
       finalResults,
       winner
     });
+    
+    // Send directly to instructor if available
+    if (game.instructorSocket && game.instructorSocket.connected) {
+      console.log(`Sending game_over directly to instructor socket ${game.instructorSocket.id}`);
+      game.instructorSocket.emit('game_over', {
+        finalResults,
+        winner
+      });
+    }
   }
   
   // Reset game state
@@ -309,5 +382,6 @@ module.exports = {
   endRound,
   endGame,
   playerReconnect,
-  playerDisconnect
+  playerDisconnect,
+  game
 }; 
