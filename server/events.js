@@ -410,7 +410,7 @@ function setupSocketEvents(io) {
             // Prepare notification message
             const notificationData = { 
               message: 'All players have submitted their investments. Round ending early...',
-              timeRemaining: 2 // Show message for 2 seconds
+              timeRemaining: CONSTANTS.ALL_SUBMITTED_NOTIFICATION_SECONDS // Show message for specified time
             };
             
             try {

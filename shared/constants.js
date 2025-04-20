@@ -14,6 +14,7 @@ const GAME_CONSTANTS = {
   // Display constants
   DECIMAL_PRECISION: 1,
   DISPLAY_INDEX_OFFSET: 1,
+  TIMER_WARNING_THRESHOLD_SECONDS: 5, // When to show timer warning
   
   // Investment constants
   INVESTMENT_STEP: 0.1,
@@ -23,6 +24,12 @@ const GAME_CONSTANTS = {
   MILLISECONDS_PER_SECOND: 1000,
   AUTO_SUBMIT_THRESHOLD_SECONDS: 1,
   ALL_SUBMITTED_UI_DELAY_MS: 2000, // Delay before ending round after all players submitted (for UI updates)
+  ALL_SUBMITTED_NOTIFICATION_SECONDS: 2, // How long to show all-submitted notification
+  NOTIFICATION_DISPLAY_MS: 5000, // How long to show notifications
+  STATUS_MESSAGE_DISPLAY_MS: 3000, // How long to show status messages
+  SHORT_UI_DELAY_MS: 10, // Very short delay for UI repaints
+  MEDIUM_UI_DELAY_MS: 50, // Medium delay for UI updates
+  CSS_ANIMATION_DURATION_SECONDS: 0.5, // Duration for UI animations
   
   // Auto-start feature
   AUTO_START_ENABLED: false,  // Disabled - use manual start instead
