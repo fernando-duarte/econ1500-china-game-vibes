@@ -1,4 +1,4 @@
-const { waitForGameEvents } = require('./e2eUtils');
+const { launchBrowser, waitForGameEvents } = require('./e2eUtils');
 const selectors = require('../selectors');
 const { gameSelector, pageSelector } = require('../selectors');
 
@@ -19,7 +19,7 @@ describe('Screen Dashboard', () => {
       waitUntil: 'networkidle0',
       timeout: 30000
     });
-    await page.waitForTimeout(1000);
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }, 60000);
   
   afterAll(async () => {
@@ -37,7 +37,7 @@ describe('Screen Dashboard', () => {
   
   it('Screen can display game information and update with broadcasts', async () => {
     // Wait for dashboard to be visible
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Check if we're on the screen dashboard page
     const pageTitle = await page.title();
