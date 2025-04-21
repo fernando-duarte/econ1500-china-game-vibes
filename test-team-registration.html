@@ -23,7 +23,7 @@
       // First, let's create Team1
       document.getElementById('createTeam1Button').addEventListener('click', () => {
         const teamName = 'Team1';
-        const students = ['John Smith', 'Jane Doe', 'Michael Johnson'];
+        const students = ['Aidan Wang', 'Alek Karagozyan', 'Alexander Ong'];
 
         socket.emit('register_team', { teamName, students });
         console.log('Sent register_team request for Team1:', { teamName, students });
@@ -32,7 +32,7 @@
       // Then try to create Team2 with some of the same students
       document.getElementById('createTeam2Button').addEventListener('click', () => {
         const teamName = 'Team2';
-        const students = ['John Smith', 'William Davis', 'Elizabeth Martinez'];
+        const students = ['Aidan Wang', 'Alexander Vertikov', 'Aminata Davis'];
 
         socket.emit('register_team', { teamName, students });
         console.log('Sent register_team request for Team2:', { teamName, students });
@@ -76,8 +76,8 @@
 
   <div class="button-group">
     <h3>Test Scenario: Students Already in Teams</h3>
-    <button id="createTeam1Button">1. Create Team1 with John, Jane, Michael</button>
-    <button id="createTeam2Button">2. Try to Create Team2 with John (already in Team1)</button>
+    <button id="createTeam1Button">1. Create Team1 with Aidan, Alek, Alexander O.</button>
+    <button id="createTeam2Button">2. Try to Create Team2 with Aidan (already in Team1)</button>
   </div>
 
   <div class="button-group">
@@ -88,7 +88,7 @@
     </div>
     <div>
       <label for="students">Students (comma-separated):</label>
-      <input type="text" id="students" value="Thomas Walker,Margaret Hall,Barbara Lewis" style="width: 300px;">
+      <input type="text" id="students" value="Andrew Zhong,Ashley Ganesh,Bennett Galin" style="width: 300px;">
     </div>
     <button id="registerButton">Register Custom Team</button>
   </div>
