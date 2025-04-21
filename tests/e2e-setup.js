@@ -49,8 +49,8 @@ expect.extend({
       return {
         message: () => 
           isVisible 
-            ? `Expected element not to be visible, but it is`
-            : `Expected element to be visible, but it isn't`,
+            ? 'Expected element not to be visible, but it is'
+            : 'Expected element to be visible, but it isn\'t',
         pass: isVisible
       };
     } catch (error) {

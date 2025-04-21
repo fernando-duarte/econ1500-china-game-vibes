@@ -1,5 +1,4 @@
 // @ts-nocheck
-const { spawn } = require('child_process');
 const puppeteer = require('puppeteer');
 const waitOn = require('wait-on');
 const path = require('path');
@@ -162,7 +161,7 @@ async function launchBrowser() {
 // Wait for Socket.IO events in the browser
 async function waitForGameEvents(page, eventTypes, timeout = 5000) {
   return page.evaluate((eventTypes, timeout) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       const events = [];
       const timeoutId = setTimeout(() => {
         // Clean up listeners before resolving

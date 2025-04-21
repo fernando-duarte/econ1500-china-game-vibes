@@ -42,7 +42,7 @@ describe('Socket Performance', () => {
     }
     
     // Setup promise to wait for all clients to receive message
-    const receivePromises = clients.map((client, index) => {
+    const receivePromises = clients.map(client => {
       return new Promise(resolve => {
         client.client.on('broadcastTest', (data) => {
           resolve(data);
@@ -74,7 +74,7 @@ describe('Socket Performance', () => {
     }
     
     // Setup promise to wait for client responses
-    const responsePromises = clients.slice(0, 10).map((client, index) => {
+    const responsePromises = clients.slice(0, 10).map(client => {
       return new Promise(resolve => {
         client.client.on(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, (data) => {
           resolve(data);

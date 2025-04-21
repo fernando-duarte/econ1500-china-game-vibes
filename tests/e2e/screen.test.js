@@ -1,6 +1,5 @@
 const { launchBrowser, waitForGameEvents, startTestServer } = require('./e2eUtils');
-const selectors = require('../selectors');
-const { gameSelector, pageSelector } = require('../selectors');
+const { gameSelector } = require('../selectors');
 
 describe('Screen Dashboard', () => {
   let browser;
