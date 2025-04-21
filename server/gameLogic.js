@@ -470,7 +470,7 @@ function endGame(io) {
     });
     
     // Send to screen clients
-    console.log(`Sending game_over to screens room`);
+    console.log('Sending game_over to screens room');
     io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_GAME_OVER, {
       finalResults,
       winner

@@ -1,40 +1,41 @@
-const fs = require('fs');
-const path = require('path');
+// These imports are not currently used since readHTMLFile function was commented out
+// const fs = require('fs');
+// const path = require('path');
 const { JSDOM } = require('jsdom');
 
-// Helper to safely read HTML
-const readHTMLFile = (filePath) => {
-  try {
-    return fs.readFileSync(path.resolve(__dirname, filePath), 'utf8');
-  } catch (error) {
-    console.log(`Could not read file: ${filePath}. Creating mock HTML.`);
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Mock HTML</title>
-        </head>
-        <body>
-          <form id="mockForm">
-            <input id="mockInput" type="text" name="mockName" />
-            <button id="mockButton" type="submit">Submit</button>
-          </form>
-          <div id="gameUI" class="hidden"></div>
-          <div id="gameScreen"></div>
-          <table id="playerTable">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </body>
-      </html>
-    `;
-  }
-};
+// Helper to safely read HTML - not currently used but kept for future tests
+// const readHTMLFile = (filePath) => {
+//   try {
+//     return fs.readFileSync(path.resolve(__dirname, filePath), 'utf8');
+//   } catch (error) {
+//     console.log(`Could not read file: ${filePath}. Creating mock HTML.`);
+//     return `
+//       <!DOCTYPE html>
+//       <html>
+//         <head>
+//           <title>Mock HTML</title>
+//         </head>
+//         <body>
+//           <form id="mockForm">
+//             <input id="mockInput" type="text" name="mockName" />
+//             <button id="mockButton" type="submit">Submit</button>
+//           </form>
+//           <div id="gameUI" class="hidden"></div>
+//           <div id="gameScreen"></div>
+//           <table id="playerTable">
+//             <thead>
+//               <tr>
+//                 <th>Name</th>
+//                 <th>Score</th>
+//               </tr>
+//             </thead>
+//             <tbody></tbody>
+//           </table>
+//         </body>
+//       </html>
+//     `;
+//   }
+// };
 
 // Mock HTML for testing
 const createMockStudentHTML = () => `
@@ -203,18 +204,18 @@ describe('UI Components', () => {
     const dom = new JSDOM(createMockScreenHTML());
     const { document } = dom.window;
     
-    // Extract structure
-    const structure = {
-      title: document.title,
-      divs: Array.from(document.querySelectorAll('div[id]')).map(d => ({
-        id: d.id,
-        classes: Array.from(d.classList)
-      })),
-      tables: Array.from(document.querySelectorAll('table')).map(t => ({
-        id: t.id,
-        headers: Array.from(t.querySelectorAll('th')).map(th => th.textContent.trim())
-      }))
-    };
+    // Structure variable - currently unused but kept for future tests
+    // const structure = {
+    //   title: document.title,
+    //   divs: Array.from(document.querySelectorAll('div[id]')).map(d => ({
+    //     id: d.id,
+    //     classes: Array.from(d.classList)
+    //   })),
+    //   tables: Array.from(document.querySelectorAll('table')).map(t => ({
+    //     id: t.id,
+    //     headers: Array.from(t.querySelectorAll('th')).map(th => th.textContent.trim())
+    //   }))
+    // };
     
     // Check for key dashboard elements
     const gameScreen = document.getElementById('gameScreen');

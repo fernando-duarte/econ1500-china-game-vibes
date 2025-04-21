@@ -1,6 +1,7 @@
 // @ts-nocheck
 const { createSocketServer, createSocketClient } = require('./socketUtils');
-const { createTestGame, createTestPlayer } = require('../factories');
+// Factory functions not currently used in this test file
+// const { createTestGame, createTestPlayer } = require('../factories/game');
 const CONSTANTS = require('../../shared/constants');
 
 // Mock dependencies
@@ -33,8 +34,9 @@ jest.mock('../../server/gameLogic', () => ({
 
 // Enable only the first Socket.IO integration test
 describe('Socket.IO Events', () => {
-  let socketServer;
-  let socketClient;
+  // These variables are currently not used but kept for potential future tests
+  // let socketServer;
+  // let socketClient;
   let clientSocket;
   
   // Disable global hooks; we'll handle setup/teardown inside our single test

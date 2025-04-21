@@ -80,8 +80,8 @@
         playerElement.innerHTML = `
           <span class="${CONSTANTS.CSS.PLAYER_NAME}">${player}</span>
           ${isSubmitted ?
-              `<span class="${CONSTANTS.CSS.PLAYER_STATUS}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_SUBMITTED}</span>` :
-              `<span class="${CONSTANTS.CSS.PLAYER_STATUS} ${CONSTANTS.CSS.PLAYER_STATUS_PENDING}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_PENDING}</span>`}
+    `<span class="${CONSTANTS.CSS.PLAYER_STATUS}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_SUBMITTED}</span>` :
+    `<span class="${CONSTANTS.CSS.PLAYER_STATUS} ${CONSTANTS.CSS.PLAYER_STATUS_PENDING}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_PENDING}</span>`}
         `;
         
         playerList.appendChild(playerElement);
