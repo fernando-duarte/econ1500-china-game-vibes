@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
+const gameSelector = require('./game-selectors');
 
 /**
  * Extract all element IDs from an HTML file
@@ -33,10 +34,37 @@ const studentIds = extractIds('client/student.html');
 const instructorIds = extractIds('client/instructor.html');
 const screenIds = extractIds('client/screen.html');
 
+// Page selectors for easier test element identification
+const pageSelector = {
+  // Student page selectors
+  student: {
+    ...studentIds,
+    ...gameSelector.student
+  },
+  
+  // Instructor page selectors 
+  instructor: {
+    ...instructorIds,
+    ...gameSelector.instructor
+  },
+  
+  // Screen dashboard selectors
+  screen: {
+    ...screenIds,
+    ...gameSelector.screen
+  }
+};
+
 module.exports = {
+  // Legacy exports
   student: studentIds,
   instructor: instructorIds,
   screen: screenIds,
+  
+  // New exports with game selectors
+  gameSelector,
+  pageSelector,
+  
   // Fallbacks for common elements if not found in the extracted IDs
   fallbacks: {
     student: {
