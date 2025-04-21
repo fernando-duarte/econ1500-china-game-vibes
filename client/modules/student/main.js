@@ -8,6 +8,27 @@
     initializeDOMEventHandlers: function () {
       const elements = StudentDom.elements;
 
+      // Team registration button click event
+      elements.registerTeamButton.addEventListener('click', () => {
+        const teamName = elements.teamName.value.trim();
+        if (!teamName) {
+          elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_TEAM_NAME;
+          return;
+        }
+
+        // Get selected students from our tracked selections
+        const selectedStudents = Array.from(StudentDom.studentData.selectedStudents);
+
+        if (selectedStudents.length === 0) {
+          elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_SELECT_STUDENTS;
+          return;
+        }
+
+        elements.teamRegistrationError.textContent = '';
+        elements.registerTeamButton.disabled = true;
+
+        StudentSocket.registerTeam(teamName, selectedStudents);
+      });
       // Join game button click event
       elements.joinButton.addEventListener('click', () => {
         const name = elements.playerName.value.trim();
@@ -58,8 +79,7 @@
         );
       });
     },
-
-    init: function () {
+    init: function() {
       // Initialize UI
       StudentDom.initializeUI();
 
@@ -68,6 +88,12 @@
 
       // Initialize DOM event handlers
       this.initializeDOMEventHandlers();
+
+      // Show team registration UI first
+      StudentDom.showTeamRegistrationUI();
+
+      // Request student list
+      StudentSocket.getStudentList();
 
       console.log('Student app initialized');
     },

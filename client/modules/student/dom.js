@@ -6,6 +6,14 @@
   const StudentDom = {
     // DOM Elements
     elements: {
+      // Team registration elements
+      teamRegistrationForm: document.getElementById('teamRegistrationForm'),
+      teamName: document.getElementById('teamName'),
+      studentSearch: document.getElementById('studentSearch'),
+      studentSelectionContainer: document.getElementById('studentSelectionContainer'),
+      registerTeamButton: document.getElementById('registerTeamButton'),
+      teamRegistrationError: document.getElementById('teamRegistrationError'),
+
       // Join form elements
       joinForm: document.getElementById('joinForm'),
       playerName: document.getElementById('playerName'),
@@ -76,31 +84,176 @@
         CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
 
       // Initialize input placeholders
-      elements.playerName.placeholder =
-        CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
+      elements.playerName.placeholder = CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
+      elements.teamName.placeholder = CONSTANTS.UI_TEXT.TEAM_NAME_PLACEHOLDER;
+      elements.studentSelectionContainer.innerHTML = CONSTANTS.UI_TEXT.LOADING_STUDENT_LIST;
     },
 
-    showGameUI: function () {
+    // Store student data for filtering
+    studentData: {
+      allStudents: [],
+      studentsInTeams: [],
+      teamInfo: {},
+      unavailableCount: 0,
+      selectedStudents: new Set() // Track selected students
+    },
+
+    /**
+     * Populate the student selection container with checkboxes
+     * @param {Array} students - Array of all student names
+     * @param {Array} studentsInTeams - Array of student names already in teams
+     * @param {Object} teamInfo - Map of student names to team names
+     * @param {number} unavailableCount - Number of students already in teams
+     */
+    populateStudentList: function(students, studentsInTeams, teamInfo, unavailableCount) {
+      // Store the data for filtering
+      this.studentData.allStudents = students || [];
+      this.studentData.studentsInTeams = studentsInTeams || [];
+      this.studentData.teamInfo = teamInfo || {};
+      this.studentData.unavailableCount = unavailableCount || 0;
+
+      // Initialize search functionality if not already done
+      this.initializeStudentSearch();
+
+      // Render the student list with the current filter
+      this.renderStudentList();
+    },
+
+    /**
+     * Initialize the student search functionality
+     */
+    initializeStudentSearch: function() {
+      // Only initialize once
+      if (this.searchInitialized) return;
+
+      const searchInput = this.elements.studentSearch;
+
+      // Add event listener for search input
+      searchInput.addEventListener('input', () => {
+        this.renderStudentList(searchInput.value.trim().toLowerCase());
+      });
+
+      this.searchInitialized = true;
+    },
+
+    /**
+     * Render the student list with optional search filter
+     * @param {string} searchQuery - Optional search query to filter students
+     */
+    renderStudentList: function(searchQuery = '') {
+      const container = this.elements.studentSelectionContainer;
+      const { allStudents, studentsInTeams, teamInfo, unavailableCount, selectedStudents } = this.studentData;
+
+      container.innerHTML = '';
+
+      if (!allStudents || allStudents.length === 0) {
+        container.innerHTML = '<p>No students available</p>';
+        return;
+      }
+
+      // Add info about unavailable students if any
+      if (unavailableCount > 0) {
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'student-info';
+        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${unavailableCount > 1 ? 's' : ''} already in teams.</p>`;
+        container.appendChild(infoDiv);
+      }
+
+      // Convert studentsInTeams array to a Set for faster lookups
+      const studentsInTeamsSet = new Set(studentsInTeams);
+
+      // Filter students based on search query
+      const filteredStudents = searchQuery ?
+        allStudents.filter(student => student.toLowerCase().includes(searchQuery)) :
+        allStudents;
+
+      // Show message if no students match the search
+      if (filteredStudents.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-results';
+        noResults.textContent = 'No students match your search.';
+        container.appendChild(noResults);
+        return;
+      }
+
+      filteredStudents.forEach(student => {
+        const checkbox = document.createElement('div');
+        const isInTeam = studentsInTeamsSet.has(student);
+
+        // Add class if student is already in a team
+        checkbox.className = isInTeam ? 'student-checkbox student-in-team' : 'student-checkbox';
+
+        // Check if this student was previously selected
+        const isSelected = selectedStudents.has(student);
+
+        // Create the checkbox HTML
+        let checkboxHtml = `
+          <input type="checkbox" id="student-${student}" name="student" value="${student}"${isInTeam ? ' disabled' : ''}${isSelected ? ' checked' : ''}>
+          <label for="student-${student}">${student}</label>
+        `;
+
+        // Add team info if student is in a team
+        if (isInTeam && teamInfo && teamInfo[student]) {
+          checkboxHtml += `<span class="team-info">(in team ${teamInfo[student]})</span>`;
+        }
+
+        checkbox.innerHTML = checkboxHtml;
+        container.appendChild(checkbox);
+
+        // Add event listener to track checkbox changes
+        const checkboxInput = checkbox.querySelector('input[type="checkbox"]');
+        if (checkboxInput && !isInTeam) {
+          checkboxInput.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              this.studentData.selectedStudents.add(student);
+            } else {
+              this.studentData.selectedStudents.delete(student);
+            }
+          });
+        }
+      });
+    },
+
+    /**
+     * Show the team registration UI and hide other UIs
+     */
+    showTeamRegistrationUI: function() {
+      this.elements.teamRegistrationForm.classList.remove('hidden');
+      this.elements.joinForm.classList.add('hidden');
+      this.elements.gameUI.classList.add('hidden');
+    },
+
+    /**
+     * Show the join game UI and hide other UIs
+     */
+    showJoinUI: function() {
+      this.elements.teamRegistrationForm.classList.add('hidden');
+      this.elements.joinForm.classList.remove('hidden');
+      this.elements.gameUI.classList.add('hidden');
+    },
+
+    /**
+     * Show the game UI and hide other UIs
+     */
+    showGameUI: function() {
+      this.elements.teamRegistrationForm.classList.add('hidden');
       this.elements.joinForm.classList.add('hidden');
       this.elements.gameUI.classList.remove('hidden');
     },
-
-    showInvestmentUI: function () {
+    showInvestmentUI: function() {
       this.elements.roundResults.classList.add('hidden');
       this.elements.investmentUI.classList.remove('hidden');
     },
 
-    showRoundResults: function () {
+    showRoundResults: function() {
       this.elements.investmentUI.classList.add('hidden');
       this.elements.roundResults.classList.remove('hidden');
     },
-
-    showGameOver: function () {
+    showGameOver: function() {
       this.elements.roundResults.classList.add('hidden');
       this.elements.gameOverUI.classList.remove('hidden');
     },
-
-    updateFinalRankings: function (finalResults, currentPlayerName) {
+    updateFinalRankings: function(finalResults, currentPlayerName) {
       let rankingsHTML = '<ol>';
       finalResults.forEach((result) => {
         const isCurrentPlayer = result.playerName === currentPlayerName;
@@ -110,7 +263,7 @@
       this.elements.finalRankings.innerHTML = rankingsHTML;
     },
 
-    displayAdminNotification: function (message, type) {
+    displayAdminNotification: function(message, type) {
       const notification = document.createElement('div');
       notification.textContent = message;
       notification.classList.add(

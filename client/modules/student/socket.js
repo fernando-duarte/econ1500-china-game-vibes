@@ -20,44 +20,22 @@
      */
     initializeSocketEvents: function () {
       // Group: Connection events
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_CONNECT,
-        this.handleConnect.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_DISCONNECT,
-        this.handleDisconnect.bind(this),
-      );
+      this.socket.on(CONSTANTS.SOCKET.EVENT_CONNECT, this.handleConnect.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_DISCONNECT, this.handleDisconnect.bind(this));
+
+      // Group: Team registration events
+      this.socket.on('student_list', this.handleStudentList.bind(this));
+      this.socket.on('student_list_updated', this.handleStudentListUpdated.bind(this));
+      this.socket.on('team_registered', this.handleTeamRegistered.bind(this));
 
       // Group: Game state events
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_GAME_JOINED,
-        this.handleGameJoined.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_GAME_STARTED,
-        this.handleGameStarted.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_ROUND_START,
-        this.handleRoundStart.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
-        this.handleInvestmentReceived.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
-        this.handleAllSubmitted.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_ROUND_END,
-        this.handleRoundEnd.bind(this),
-      );
-      this.socket.on(
-        CONSTANTS.SOCKET.EVENT_GAME_OVER,
-        this.handleGameOver.bind(this),
-      );
+      this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, this.handleGameJoined.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, this.handleGameStarted.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_ROUND_START, this.handleRoundStart.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, this.handleInvestmentReceived.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, this.handleAllSubmitted.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_ROUND_END, this.handleRoundEnd.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, this.handleGameOver.bind(this));
 
       // Group: Utility events
       this.socket.on(
@@ -72,6 +50,62 @@
       );
     },
 
+    /**
+     * Handle student list response
+     * @param {Object} data - Student list data
+     */
+    handleStudentList: function(data) {
+      SocketUtils.logEvent('Student list received', data);
+      if (data && data.allStudents) {
+        StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+      }
+    },
+
+    /**
+     * Handle student list updates
+     * @param {Object} data - Updated student list data
+     */
+    handleStudentListUpdated: function(data) {
+      SocketUtils.logEvent('Student list updated', data);
+      if (data && data.allStudents) {
+        StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+      }
+    },
+
+    /**
+     * Handle team registration response
+     * @param {Object} data - Team registration result
+     */
+    handleTeamRegistered: function(data) {
+      SocketUtils.logEvent('Team registration response', data);
+      const elements = StudentDom.elements;
+
+      if (data.success) {
+        // Store team info in game state
+        StudentGame.state.teamName = data.team.name;
+        StudentGame.state.teamMembers = data.team.students;
+        StudentGame.state.currentPlayerName = data.team.name; // Set current player name to team name
+
+        // Clear selected students
+        StudentDom.studentData.selectedStudents.clear();
+
+        // Show join UI after successful registration
+        StudentDom.showJoinUI();
+
+        // Pre-fill player name with team name
+        elements.playerName.value = data.team.name;
+
+        // Enable the register button again
+        elements.registerTeamButton.disabled = false;
+
+        // Automatically join the game with the team name
+        this.joinGame(data.team.name);
+      } else {
+        // Show error message
+        elements.teamRegistrationError.textContent = data.error;
+        elements.registerTeamButton.disabled = false;
+      }
+    },
     /**
      * Handle connection to server
      */
@@ -100,10 +134,7 @@
 
       // Update UI elements
       this.updatePlayerInfo(elements, data);
-
-      console.log(
-        `Successfully joined game as ${StudentGame.state.currentPlayerName}`,
-      );
+      console.log(`Successfully joined game as ${StudentGame.state.currentPlayerName}`);
 
       // Show game interface
       StudentDom.showGameUI();
@@ -116,10 +147,7 @@
      */
     updatePlayerInfo: function (elements, data) {
       // Update player name display
-      SocketUtils.updateElementText(
-        elements.displayName,
-        StudentGame.state.currentPlayerName,
-      );
+      SocketUtils.updateElementText(elements.displayName, StudentGame.state.currentPlayerName);
 
       // Set initial capital if provided
       if (data.initialCapital !== undefined) {
@@ -143,10 +171,7 @@
       const elements = StudentDom.elements;
 
       // Update round status
-      SocketUtils.updateElementText(
-        elements.roundStatus,
-        CONSTANTS.UI_TEXT.STATUS_GAME_STARTED,
-      );
+      SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_GAME_STARTED);
 
       // Ensure capital and output are displayed
       this.ensureCapitalOutputDisplayed(elements);
@@ -164,12 +189,7 @@
       ) {
         elements.capital.textContent = StudentGame.state.lastCapital;
       }
-
-      if (
-        elements.output &&
-        elements.output.textContent === '-' &&
-        StudentGame.state.lastOutput
-      ) {
+      if (elements.output && elements.output.textContent === '-' && StudentGame.state.lastOutput) {
         elements.output.textContent = StudentGame.state.lastOutput;
       }
     },
@@ -347,8 +367,8 @@
       const elements = StudentDom.elements;
 
       // Find this player's result
-      const playerResult = data.finalResults.find(
-        (r) => r.playerName === StudentGame.state.currentPlayerName,
+      const playerResult = data.finalResults.find(r =>
+        r.playerName === StudentGame.state.currentPlayerName
       );
 
       // Update UI with player's results
@@ -387,10 +407,7 @@
       if (!playerResult) return;
 
       // Update final output display
-      SocketUtils.updateElementText(
-        elements.finalOutput,
-        playerResult.finalOutput,
-      );
+      SocketUtils.updateElementText(elements.finalOutput, playerResult.finalOutput);
 
       // Update main capital/output display
       if (playerResult.finalCapital || playerResult.capital) {
@@ -452,11 +469,9 @@
       }
 
       // Auto-submit if time is below threshold and no submission yet
-      if (
-        data.timeRemaining <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS &&
-        !StudentGame.state.hasSubmittedInvestment &&
-        elements.investmentSlider
-      ) {
+      if (data.timeRemaining <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS &&
+          !StudentGame.state.hasSubmittedInvestment &&
+          elements.investmentSlider) {
         const currentInvestment = parseFloat(elements.investmentSlider.value);
         this.submitInvestment(currentInvestment, true);
         StudentGame.disableInvestmentControls(
@@ -494,6 +509,21 @@
     },
 
     /**
+     * Request student list from server
+     */
+    getStudentList: function() {
+      this.socket.emit('get_student_list');
+    },
+
+    /**
+     * Register a team with selected students
+     * @param {string} teamName - Team name
+     * @param {Array} students - Array of selected student names
+     */
+    registerTeam: function(teamName, students) {
+      this.socket.emit('register_team', { teamName, students });
+    },
+    /**
      * Join the game with the specified player name
      * @param {string} playerName - Player's name
      */
@@ -507,10 +537,10 @@
      * @param {number} investment - Amount to invest
      * @param {boolean} [isAutoSubmit=false] - Whether this is an auto-submission
      */
-    submitInvestment: function (investment, isAutoSubmit = false) {
+    submitInvestment: function(investment, isAutoSubmit = false) {
       this.socket.emit(CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT, {
         investment: parseFloat(investment),
-        isAutoSubmit,
+        isAutoSubmit
       });
     },
   };
