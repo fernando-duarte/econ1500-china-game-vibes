@@ -44,4 +44,10 @@ coverage/
 # Misc
 .cache/
 .temp/
-tmp/ 
+tmp/
+
+# Jest
+jest-junit.xml
+
+# E2E test artifacts
+tests/e2e/screenshots/ 
