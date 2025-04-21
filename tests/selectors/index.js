@@ -14,14 +14,14 @@ function extractIds(htmlPath) {
     const html = fs.readFileSync(path.join(process.cwd(), htmlPath), 'utf8');
     const dom = new JSDOM(html);
     const { document } = dom.window;
-    
+
     const ids = {};
     const elementsWithId = document.querySelectorAll('[id]');
-    
-    elementsWithId.forEach(el => {
+
+    elementsWithId.forEach((el) => {
       ids[el.id] = el.id;
     });
-    
+
     return ids;
   } catch (error) {
     console.error(`Failed to extract IDs from ${htmlPath}:`, error);
@@ -39,20 +39,20 @@ const pageSelector = {
   // Student page selectors
   student: {
     ...studentIds,
-    ...gameSelector.student
+    ...gameSelector.student,
   },
-  
-  // Instructor page selectors 
+
+  // Instructor page selectors
   instructor: {
     ...instructorIds,
-    ...gameSelector.instructor
+    ...gameSelector.instructor,
   },
-  
+
   // Screen dashboard selectors
   screen: {
     ...screenIds,
-    ...gameSelector.screen
-  }
+    ...gameSelector.screen,
+  },
 };
 
 module.exports = {
@@ -60,11 +60,11 @@ module.exports = {
   student: studentIds,
   instructor: instructorIds,
   screen: screenIds,
-  
+
   // New exports with game selectors
   gameSelector,
   pageSelector,
-  
+
   // Fallbacks for common elements if not found in the extracted IDs
   fallbacks: {
     student: {
@@ -76,7 +76,7 @@ module.exports = {
       investment: 'investment',
       submitDecision: 'submitDecision',
       gameUI: 'gameUI',
-      confirmationMessage: 'confirmationMessage'
+      confirmationMessage: 'confirmationMessage',
     },
     instructor: {
       createGameForm: 'createGameForm',
@@ -86,7 +86,7 @@ module.exports = {
       startGameButton: 'startGameButton',
       pauseGameButton: 'pauseGameButton',
       resumeGameButton: 'resumeGameButton',
-      endGameButton: 'endGameButton'
+      endGameButton: 'endGameButton',
     },
     screen: {
       gameScreen: 'gameScreen',
@@ -95,7 +95,7 @@ module.exports = {
       playerTable: 'playerTable',
       averageCapital: 'averageCapital',
       playerCount: 'playerCount',
-      roundInfo: 'roundInfo'
-    }
-  }
-}; 
+      roundInfo: 'roundInfo',
+    },
+  },
+};

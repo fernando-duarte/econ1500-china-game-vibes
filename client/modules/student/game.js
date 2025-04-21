@@ -1,5 +1,5 @@
 // client/modules/game.js
-(function(window) {
+(function (window) {
   'use strict';
 
   // Define StudentGame module
@@ -13,11 +13,11 @@
       currentOutput: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0,
       hasSubmittedInvestment: false,
       lastCapital: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0,
-      lastOutput: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0
+      lastOutput: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0,
     },
 
     // Methods
-    startTimer: function(seconds, onTimeExpired) {
+    startTimer: function (seconds, onTimeExpired) {
       if (this.state.timerInterval) {
         clearInterval(this.state.timerInterval);
       }
@@ -44,14 +44,12 @@
         }
       }, CONSTANTS.MILLISECONDS_PER_SECOND);
     },
-
     stopTimer: function() {
       if (this.state.timerInterval) {
         clearInterval(this.state.timerInterval);
         this.state.timerInterval = null;
       }
     },
-
     resetInvestmentState: function() {
       const elements = StudentDom.elements;
 
@@ -61,7 +59,6 @@
       elements.investmentValue.disabled = false;
       elements.investmentStatus.textContent = '';
     },
-
     disableInvestmentControls: function(statusMessage) {
       const elements = StudentDom.elements;
 
@@ -73,16 +70,16 @@
       }
       this.state.hasSubmittedInvestment = true;
     },
-
     autoSubmitInvestment: function() {
       if (!this.state.hasSubmittedInvestment) {
         const elements = StudentDom.elements;
         const investment = parseFloat(elements.investmentValue.value) || CONSTANTS.INVESTMENT_MIN;
-
         StudentSocket.submitInvestment(investment, true);
-        this.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_TIMES_UP_AUTO_SUBMIT);
+        this.disableInvestmentControls(
+          CONSTANTS.UI_TEXT.STATUS_TIMES_UP_AUTO_SUBMIT,
+        );
       }
-    }
+    },
   };
 
   // Expose the module to window

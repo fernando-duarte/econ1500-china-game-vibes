@@ -5,29 +5,31 @@
  * Useful before running e2e tests to avoid port conflicts
  */
 
-const { execSync } = require('child_process');
+const { execSync } = require("child_process");
+const CONSTANTS = require("../shared/constants");
 
-const PORT = 3001;
+// Use default port or specified port in environment
+const PORT = process.env.PORT || CONSTANTS.DEFAULT_PORT || 3001;
 
 function killProcessOnPort(port) {
   try {
     console.log(`Attempting to kill processes on port ${port}...`);
 
     // Different commands for different operating systems
-    if (process.platform === 'win32') {
+    if (process.platform === "win32") {
       // Windows
       const output = execSync(`netstat -ano | findstr :${port}`).toString();
-      const lines = output.split('\n');
+      const lines = output.split("\n");
       const pids = new Set();
 
-      lines.forEach(line => {
+      lines.forEach((line) => {
         const match = line.match(/LISTENING\s+(\d+)/);
         if (match && match[1]) {
           pids.add(match[1]);
         }
       });
 
-      pids.forEach(pid => {
+      pids.forEach((pid) => {
         console.log(`Killing process ${pid}...`);
         execSync(`taskkill /F /PID ${pid}`);
       });
@@ -36,14 +38,14 @@ function killProcessOnPort(port) {
       try {
         // Use lsof to find process IDs
         const output = execSync(`lsof -i :${port} -t`).toString();
-        const pids = output.split('\n').filter(Boolean);
+        const pids = output.split("\n").filter(Boolean);
 
         if (pids.length === 0) {
           console.log(`No processes found using port ${port}`);
           return;
         }
 
-        pids.forEach(pid => {
+        pids.forEach((pid) => {
           console.log(`Killing process ${pid}...`);
           execSync(`kill -9 ${pid}`);
         });
@@ -59,4 +61,4 @@ function killProcessOnPort(port) {
   }
 }
 
-killProcessOnPort(PORT); 
+killProcessOnPort(PORT);

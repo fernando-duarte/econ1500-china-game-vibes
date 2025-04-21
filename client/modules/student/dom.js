@@ -1,5 +1,5 @@
 // client/modules/dom.js
-(function(window) {
+(function (window) {
   'use strict';
 
   // Define StudentDom module
@@ -49,11 +49,11 @@
       gameOverUI: document.getElementById('gameOverUI'),
       finalOutput: document.getElementById('finalOutput'),
       winner: document.getElementById('winner'),
-      finalRankings: document.getElementById('finalRankings')
+      finalRankings: document.getElementById('finalRankings'),
     },
 
     // Methods
-    initializeUI: function() {
+    initializeUI: function () {
       const elements = this.elements;
 
       elements.totalRounds.textContent = CONSTANTS.ROUNDS;
@@ -70,15 +70,18 @@
       elements.output.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
       elements.roundNumber.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
       elements.maxOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.investmentResult.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+      elements.investmentResult.textContent =
+        CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
       elements.newCapital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
       elements.newOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
       elements.finalOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
       elements.winner.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
 
       // Initialize status messages
-      elements.roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
-      elements.waitingNextRound.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
+      elements.roundStatus.textContent =
+        CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+      elements.waitingNextRound.textContent =
+        CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
 
       // Initialize input placeholders
       elements.playerName.placeholder = CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
@@ -237,7 +240,6 @@
       this.elements.joinForm.classList.add('hidden');
       this.elements.gameUI.classList.remove('hidden');
     },
-
     showInvestmentUI: function() {
       this.elements.roundResults.classList.add('hidden');
       this.elements.investmentUI.classList.remove('hidden');
@@ -247,15 +249,13 @@
       this.elements.investmentUI.classList.add('hidden');
       this.elements.roundResults.classList.remove('hidden');
     },
-
     showGameOver: function() {
       this.elements.roundResults.classList.add('hidden');
       this.elements.gameOverUI.classList.remove('hidden');
     },
-
     updateFinalRankings: function(finalResults, currentPlayerName) {
       let rankingsHTML = '<ol>';
-      finalResults.forEach(result => {
+      finalResults.forEach((result) => {
         const isCurrentPlayer = result.playerName === currentPlayerName;
         rankingsHTML += `<li${isCurrentPlayer ? ' class="current-player"' : ''}>${result.playerName}: ${result.finalOutput}</li>`;
       });
@@ -266,13 +266,16 @@
     displayAdminNotification: function(message, type) {
       const notification = document.createElement('div');
       notification.textContent = message;
-      notification.classList.add('admin-notification', `admin-notification-${type || 'info'}`);
+      notification.classList.add(
+        'admin-notification',
+        `admin-notification-${type || 'info'}`,
+      );
       document.body.appendChild(notification);
 
       setTimeout(() => {
         notification.remove();
       }, CONSTANTS.NOTIFICATION_DISPLAY_MS);
-    }
+    },
   };
 
   // Expose the module to window

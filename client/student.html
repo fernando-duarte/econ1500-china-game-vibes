@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -52,17 +52,21 @@
           <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds"></span></p>
           <p id="roundStatus">Waiting for game to start...</p>
         </div>
+        <button id="joinButton" class="button">Join Game</button>
+        <p id="joinError" class="error"></p>
       </div>
-
       <div class="card">
         <div class="economy-stats">
           <div class="stat-box">
             <h3>Capital (K)</h3>
             <p id="capital">-</p>
           </div>
-          <div class="stat-box">
-            <h3>Output (Y)</h3>
-            <p id="output">-</p>
+          <div class="round-info">
+            <p>
+              Round: <span id="roundNumber">-</span> of
+              <span id="totalRounds"></span>
+            </p>
+            <p id="roundStatus">Waiting for game to start...</p>
           </div>
         </div>
 
@@ -91,16 +95,46 @@
               <p>Investment</p>
               <p id="investmentResult">-</p>
             </div>
-            <div class="result-box">
-              <p>New Capital</p>
-              <p id="newCapital">-</p>
-            </div>
-            <div class="result-box">
-              <p>New Output</p>
-              <p id="newOutput">-</p>
-            </div>
           </div>
-          <p id="waitingNextRound">Waiting for next round...</p>
+
+          <div id="investmentUI" class="hidden">
+            <h3>Investment Decision</h3>
+            <p>How much of your output do you want to invest?</p>
+            <p>Time remaining: <span id="timer">-</span> seconds</p>
+
+            <div class="investment-controls">
+              <input type="range" id="investmentSlider" value="0" />
+              <div class="investment-values">
+                <span>0</span>
+                <input type="number" id="investmentValue" value="0" />
+                <span id="maxOutput">-</span>
+              </div>
+            </div>
+
+            <button id="submitInvestment" class="button">
+              Submit Investment
+            </button>
+            <p id="investmentStatus"></p>
+          </div>
+
+          <div id="roundResults" class="hidden">
+            <h3>Round Results</h3>
+            <div class="results-container">
+              <div class="result-box">
+                <p>Investment</p>
+                <p id="investmentResult">-</p>
+              </div>
+              <div class="result-box">
+                <p>New Capital</p>
+                <p id="newCapital">-</p>
+              </div>
+              <div class="result-box">
+                <p>New Output</p>
+                <p id="newOutput">-</p>
+              </div>
+            </div>
+            <p id="waitingNextRound">Waiting for next round...</p>
+          </div>
         </div>
       </div>
 
@@ -116,8 +150,8 @@
             <h4>Winner</h4>
             <p id="winner">-</p>
           </div>
+          <div id="finalRankings"></div>
         </div>
-        <div id="finalRankings"></div>
       </div>
     </div>
   </div>
@@ -127,3 +161,4 @@
   <script src="/student.js"></script>
 </body>
 </html>
+

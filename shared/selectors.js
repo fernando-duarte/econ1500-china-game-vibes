@@ -12,7 +12,7 @@ const SELECTORS = {
     DECISION_FORM: 'decisionForm',
     INVESTMENT: 'investment',
     SUBMIT_DECISION: 'submitDecision',
-    CONFIRMATION_MESSAGE: 'confirmationMessage'
+    CONFIRMATION_MESSAGE: 'confirmationMessage',
   },
   INSTRUCTOR: {
     CREATE_FORM: 'createGameForm',
@@ -22,7 +22,7 @@ const SELECTORS = {
     START_BUTTON: 'startGameButton',
     PAUSE_BUTTON: 'pauseGameButton',
     RESUME_BUTTON: 'resumeGameButton',
-    END_BUTTON: 'endGameButton'
+    END_BUTTON: 'endGameButton',
   },
   SCREEN: {
     GAME_SCREEN: 'gameScreen',
@@ -31,8 +31,8 @@ const SELECTORS = {
     PLAYER_TABLE: 'playerTable',
     AVERAGE_CAPITAL: 'averageCapital',
     PLAYER_COUNT: 'playerCount',
-    ROUND_INFO: 'roundInfo'
-  }
+    ROUND_INFO: 'roundInfo',
+  },
 };
 
 // Export for both browser and Node environments
@@ -40,4 +40,4 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = SELECTORS;
 } else if (typeof window !== 'undefined') {
   window.SELECTORS = SELECTORS;
-} 
+}
