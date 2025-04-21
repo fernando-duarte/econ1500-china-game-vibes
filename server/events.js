@@ -8,6 +8,7 @@ const {
   playerDisconnect,
 } = require('./gameLogic');
 
+const teamManager = require('./teamManager');
 const CONSTANTS = require('../shared/constants');
 
 /**
@@ -30,6 +31,8 @@ function setupSocketEvents(io) {
   gameLogic.game.currentIo = io;
   console.log('Stored IO instance for game functions');
 
+  // Make gameLogic available to all event handlers
+
   // Create a game automatically on server start
   createGame();
   console.log('Game created automatically on server start');
@@ -37,6 +40,14 @@ function setupSocketEvents(io) {
   // Enable manual start mode by default
   gameLogic.setManualStartMode(true);
   console.log('Manual start mode enabled by default');
+
+  // Load student list on server start
+  teamManager.loadStudentList();
+  console.log('Student list loaded for team registration');
+
+  // Clear any existing teams on server start
+  teamManager.clearTeams();
+  console.log('Cleared existing teams on server start');
 
   // Handle new socket connections
   io.on('connection', (socket) => {
@@ -48,6 +59,47 @@ function setupSocketEvents(io) {
     let playerName = null;
     let isInstructor = false;
     let isScreen = false;
+
+    // Check if connection is from instructor page
+    const referer = socket.handshake.headers.referer || '';
+    console.log(`Connection referer: ${referer}`);
+
+    const isInstructorPage = referer && referer.includes(CONSTANTS.ROUTES.INSTRUCTOR);
+    console.log(`Is instructor page: ${isInstructorPage}`);
+
+    // Add instructor to instructor room if from instructor page
+    if (isInstructorPage) {
+      isInstructor = true;
+
+      console.log(`Instructor with ID ${socket.id} joined instructor room`);
+
+      // Map this socket to "instructor" role
+      socket.instructor = true;
+      socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
+      socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room for broadcasts
+
+      // Notify the instructor client that a game is already created
+      socket.emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
+        manualStartEnabled: gameLogic.game.manualStartEnabled
+      });
+
+      // Send existing players to the instructor
+      const players = Object.keys(gameLogic.game.players);
+      console.log(`Sending existing ${players.length} players to instructor: ${players.join(', ')}`);
+
+      players.forEach(playerName => {
+        const player = gameLogic.game.players[playerName];
+        const isTeam = player.isTeam || false;
+
+        socket.emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+          playerName: playerName,
+          initialCapital: player.capital,
+          initialOutput: player.output,
+          isTeam: isTeam,
+          teamMembers: isTeam ? player.teamMembers : undefined
+        });
+      });
+    }
 
     // Screen client connects
     socket.on(CONSTANTS.SOCKET.EVENT_SCREEN_CONNECT, () => {
@@ -63,7 +115,6 @@ function setupSocketEvents(io) {
         socket.join(CONSTANTS.SOCKET_ROOMS.SCREENS);
 
         // Send current game state if available
-        const gameLogic = require('./gameLogic');
         if (gameLogic.game) {
           const stateData = {
             isGameRunning: gameLogic.game.isGameRunning,
@@ -179,38 +230,46 @@ function setupSocketEvents(io) {
         const result = addPlayer(playerName, socket.id, io); // Pass io here
 
         if (result.success) {
-          console.log(
-            `Player joined: ${playerName} with socket ID ${socket.id}`,
-          );
-          io.to(getPlayerRoom(playerName)).emit(
-            CONSTANTS.SOCKET.EVENT_GAME_JOINED,
-            {
-              playerName: playerName,
-              initialCapital: result.initialCapital,
-              initialOutput: result.initialOutput,
-              isGameRunning: gameLogic.game.isGameRunning,
-              round: gameLogic.game.round,
-              autoStart: result.autoStart,
-              manualStartEnabled: result.manualStartEnabled,
-            },
-          );
+          console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
 
-          // Send player_joined to the instructor room
-          console.log('Sending player_joined to instructor room');
-          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
-            CONSTANTS.SOCKET.EVENT_PLAYER_JOINED,
-            {
-              playerName: playerName,
-              initialCapital: result.initialCapital,
-              initialOutput: result.initialOutput,
-            },
-          );
+          // Check if this is a team join (from previous team registration)
+          const isTeam = socket.teamName === playerName && Array.isArray(socket.teamMembers);
+
+          // If this is a team, store team info in the game player object
+          if (isTeam) {
+            const gameLogic = require('./gameLogic');
+            if (gameLogic.game.players[playerName]) {
+              gameLogic.game.players[playerName].isTeam = true;
+              gameLogic.game.players[playerName].teamMembers = socket.teamMembers;
+            }
+          }
+
+          // Send game joined event to the player
+          io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
+            playerName: playerName,
+            initialCapital: result.initialCapital,
+            initialOutput: result.initialOutput,
+            isGameRunning: gameLogic.game.isGameRunning,
+            round: gameLogic.game.round,
+            autoStart: result.autoStart,
+            manualStartEnabled: result.manualStartEnabled
+          });
+
+          // Send player_joined to the instructor room with team info if applicable
+          console.log(`Sending ${isTeam ? 'team' : 'player'}_joined to instructor room`);
+          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+            playerName: playerName,
+            initialCapital: result.initialCapital,
+            initialOutput: result.initialOutput,
+            isTeam: isTeam,
+            teamMembers: isTeam ? socket.teamMembers : undefined
+          });
 
           // Also notify screens
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
-            CONSTANTS.SOCKET.EVENT_PLAYER_JOINED,
-            { playerName },
-          );
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+            playerName,
+            isTeam: isTeam
+          });
         } else {
           console.error(
             `${CONSTANTS.DEBUG_MESSAGES.PLAYER_JOIN_FAILED} ${playerName}:`,
@@ -375,10 +434,7 @@ function setupSocketEvents(io) {
           console.log(`Manual start mode ${enabled ? 'enabled' : 'disabled'}`);
 
           // Notify all clients about the change
-          io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(
-            CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE,
-            { enabled: result.manualStartEnabled },
-          );
+          io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE, { enabled: result.manualStartEnabled });
 
           // If switching to auto mode (disabling manual start), check if we should auto-start based on current player count
           if (!enabled && !gameLogic.game.isGameRunning) {
@@ -556,6 +612,95 @@ function setupSocketEvents(io) {
         }
       },
     );
+
+    // Client requests student list
+    socket.on('get_student_list', () => {
+      try {
+        // Get all students
+        const allStudents = teamManager.getStudentList();
+
+        // Get students who are already in teams
+        const studentsInTeams = new Set();
+        const teamInfo = {}; // Map student name to team name
+
+        // Collect all students who are already in teams and their team info
+        Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
+          team.students.forEach(student => {
+            studentsInTeams.add(student);
+            teamInfo[student] = teamName;
+          });
+        });
+
+        // Send the complete list to the client with availability info
+        socket.emit('student_list', {
+          allStudents: allStudents,
+          studentsInTeams: Array.from(studentsInTeams),
+          teamInfo: teamInfo,
+          unavailableCount: studentsInTeams.size
+        });
+
+        console.log(`Sent student list to client: ${socket.id} (${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total)`);
+      } catch (error) {
+        console.error('Error sending student list:', error);
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error retrieving student list' });
+      }
+    });
+
+    // Client registers a team
+    socket.on('register_team', ({ teamName, students }) => {
+      try {
+        console.log(`Team registration request from ${socket.id}: ${teamName} with ${students.length} students`);
+        const result = teamManager.registerTeam(teamName, students);
+
+        if (result.success) {
+          // Send success response to the client
+          socket.emit('team_registered', {
+            success: true,
+            team: result.team
+          });
+          console.log(`Team registered successfully: ${teamName}`);
+
+          // Store team info on socket for later use
+          socket.teamName = teamName.trim();
+          socket.teamMembers = students;
+
+          // Note: We don't automatically add the player here anymore
+          // The client will call joinGame separately
+
+          // Prepare updated student list info for broadcasting
+          const allStudents = teamManager.getStudentList();
+          const studentsInTeams = new Set();
+          const teamInfo = {};
+
+          // Collect all students who are already in teams and their team info
+          Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
+            team.students.forEach(student => {
+              studentsInTeams.add(student);
+              teamInfo[student] = teamName;
+            });
+          });
+
+          // Broadcast updated student list to all clients
+          io.emit('student_list_updated', {
+            allStudents: allStudents,
+            studentsInTeams: Array.from(studentsInTeams),
+            teamInfo: teamInfo,
+            unavailableCount: studentsInTeams.size
+          });
+
+          console.log(`Broadcast updated student list: ${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total`);
+        } else {
+          socket.emit('team_registered', {
+            success: false,
+            error: result.error
+          });
+          console.log(`Team registration failed: ${result.error}`);
+        }
+      } catch (error) {
+        console.error('Error registering team:', error);
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error registering team' });
+      }
+    });
 
     // Handle disconnection
     socket.on('disconnect', () => {

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Team Registration</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io();
+
+      // Log connection status
+      socket.on('connect', () => {
+        console.log('Connected to server with ID:', socket.id);
+        document.getElementById('connectionStatus').textContent = 'Connected to server';
+        document.getElementById('connectionStatus').style.color = 'green';
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+        document.getElementById('connectionStatus').textContent = 'Disconnected from server';
+        document.getElementById('connectionStatus').style.color = 'red';
+      });
+
+      // First, let's create Team1
+      document.getElementById('createTeam1Button').addEventListener('click', () => {
+        const teamName = 'Team1';
+        const students = ['Aidan Wang', 'Alek Karagozyan', 'Alexander Ong'];
+
+        socket.emit('register_team', { teamName, students });
+        console.log('Sent register_team request for Team1:', { teamName, students });
+      });
+
+      // Then try to create Team2 with some of the same students
+      document.getElementById('createTeam2Button').addEventListener('click', () => {
+        const teamName = 'Team2';
+        const students = ['Aidan Wang', 'Alexander Vertikov', 'Aminata Davis'];
+
+        socket.emit('register_team', { teamName, students });
+        console.log('Sent register_team request for Team2:', { teamName, students });
+      });
+
+      // Handle custom team registration
+      document.getElementById('registerButton').addEventListener('click', () => {
+        const teamName = document.getElementById('teamName').value;
+        const students = document.getElementById('students').value.split(',').map(s => s.trim());
+
+        socket.emit('register_team', { teamName, students });
+        console.log('Sent register_team request:', { teamName, students });
+      });
+
+      // Handle responses
+      socket.on('team_registered', (data) => {
+        console.log('Received team_registered response:', data);
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      });
+
+      socket.on('error', (data) => {
+        console.error('Received error:', data);
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      });
+    });
+  </script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .button-group { margin: 20px 0; }
+    button { padding: 8px 16px; margin-right: 10px; }
+    #result { background-color: #f5f5f5; padding: 10px; border-radius: 4px; }
+    .status { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Test Team Registration</h1>
+
+  <div class="status">
+    <p>Connection status: <span id="connectionStatus">Connecting...</span></p>
+  </div>
+
+  <div class="button-group">
+    <h3>Test Scenario: Students Already in Teams</h3>
+    <button id="createTeam1Button">1. Create Team1 with Aidan, Alek, Alexander O.</button>
+    <button id="createTeam2Button">2. Try to Create Team2 with Aidan (already in Team1)</button>
+  </div>
+
+  <div class="button-group">
+    <h3>Custom Team Registration</h3>
+    <div>
+      <label for="teamName">Team Name:</label>
+      <input type="text" id="teamName" value="CustomTeam">
+    </div>
+    <div>
+      <label for="students">Students (comma-separated):</label>
+      <input type="text" id="students" value="Andrew Zhong,Ashley Ganesh,Bennett Galin" style="width: 300px;">
+    </div>
+    <button id="registerButton">Register Custom Team</button>
+  </div>
+
+  <div>
+    <h2>Result:</h2>
+    <pre id="result">No result yet</pre>
+  </div>
+</body>
+</html>

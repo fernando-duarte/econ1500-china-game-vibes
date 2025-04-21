@@ -127,8 +127,7 @@ const GAME_CONSTANTS = {
 
     // IO-related errors
     NO_IO_AVAILABLE_END_ROUND: 'No io object available when ending round!',
-    CANNOT_START_NEXT_ROUND:
-      'Cannot start next round - no io object available!',
+    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!'
 
     // Socket handlers errors
     ERROR_IN_SCREEN_CONNECT: 'Error in screen_connect:',
@@ -190,6 +189,8 @@ const GAME_CONSTANTS = {
     ALERT_NO_PLAYERS:
       'No players have joined yet. Wait for at least one player to join before starting the game.',
     ERROR_ENTER_NAME: 'Please enter your name',
+    ERROR_ENTER_TEAM_NAME: 'Please enter a team name',
+    ERROR_SELECT_STUDENTS: 'Please select at least one student',
     ERROR_ENTER_VALID_NUMBER: 'Please enter a valid number',
     STATUS_INVESTMENT_SUBMITTED:
       'Investment submitted. Waiting for other players...',
@@ -204,8 +205,10 @@ const GAME_CONSTANTS = {
     ROUND_COMPLETED_FORMAT: 'Round {0} Completed',
     PLACEHOLDER_TEXT: '-',
     PLAYER_NAME_PLACEHOLDER: 'Enter your name',
+    TEAM_NAME_PLACEHOLDER: 'Enter your team name',
     PLAYER_PLURAL_SUFFIX: 's',
     PLAYER_JOINED_SUFFIX: ' have joined',
+    LOADING_STUDENT_LIST: 'Loading student list...'
   },
 
   // CSS Class Constants
@@ -250,6 +253,10 @@ const GAME_CONSTANTS = {
     EVENT_INSTRUCTOR_DISCONNECTED: 'instructor_disconnected',
     EVENT_PLAYER_DISCONNECTED: 'player_disconnected',
 
+    // Team registration events
+    EVENT_STUDENT_LIST: 'student_list',
+    EVENT_TEAM_REGISTERED: 'team_registered',
+
     // Control events (client → server)
     EVENT_FORCE_END_GAME: 'force_end_game',
     EVENT_SET_MANUAL_START: 'set_manual_start',
@@ -260,6 +267,8 @@ const GAME_CONSTANTS = {
     EVENT_RECONNECT_GAME: 'reconnect_game',
     EVENT_CREATE_GAME: 'create_game',
     EVENT_JOIN_ACK: 'join_ack',
+    EVENT_GET_STUDENT_LIST: 'get_student_list',
+    EVENT_REGISTER_TEAM: 'register_team'
   },
 
   // Notification Types
