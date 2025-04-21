@@ -15,12 +15,20 @@ const { Server } = require('socket.io');
 const { setupSocketEvents } = require('./events');
 const CONSTANTS = require('../shared/constants');
 
+// Check if we're in test environment
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+
 // Create Express app
 const app = express();
 const server = http.createServer(app);
 
-// Set up Socket.IO
-const io = new Server(server);
+// Set up Socket.IO with test-specific configurations
+const io = isTestEnvironment
+  ? new Server(server, {
+      pingTimeout: 2000, // Reduce ping timeout for faster tests
+      pingInterval: 5000, // Reduce ping interval for faster tests
+    })
+  : new Server(server);
 
 // Add explicit body parser middleware
 app.use(express.json());
@@ -71,9 +79,13 @@ app.use((req, res, next) => {
 const PORT = process.env.PORT || CONSTANTS.DEFAULT_PORT;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Student view: http://localhost:${PORT}`);
-  console.log(`Instructor view: http://localhost:${PORT}/instructor`);
-  console.log(`Screen dashboard: http://localhost:${PORT}/screen`);
+  
+  // Only log URLs in non-test environment
+  if (!isTestEnvironment) {
+    console.log(`Student view: http://localhost:${PORT}`);
+    console.log(`Instructor view: http://localhost:${PORT}/instructor`);
+    console.log(`Screen dashboard: http://localhost:${PORT}/screen`);
+  }
 });
 
 // Export for testing

@@ -91,4 +91,54 @@ For testing with multiple users locally, open multiple browser tabs:
 
 ## License
 
-MIT 
+MIT
+
+## Running Tests
+
+This project uses Jest for testing, including end-to-end tests with jest-puppeteer.
+
+### Test Commands
+
+- `npm test`: Run all tests
+- `npm run test:unit`: Run only unit tests
+- `npm run test:integration`: Run only integration tests
+- `npm run test:e2e`: Run only end-to-end tests with Puppeteer
+- `npm run test:watch`: Run tests in watch mode
+- `npm run test:coverage`: Generate test coverage report
+
+### End-to-End Testing with jest-puppeteer
+
+The project is configured to use jest-puppeteer (v11.0.0) for end-to-end testing with Puppeteer (v24.6.1). These tests automate browser interactions to verify the application works correctly from a user's perspective.
+
+#### How it Works
+
+- jest-puppeteer automatically launches a Chrome browser for testing
+- The tests navigate to the application and perform actions like a real user
+- Screenshots are captured during tests and saved to `tests/e2e/screenshots/`
+
+#### Writing E2E Tests
+
+E2E tests are located in the `tests/e2e/` directory. Here's a simple example:
+
+```javascript
+describe('Login Page', () => {
+  beforeAll(async () => {
+    await page.goto('http://localhost:3000/login');
+  });
+
+  it('should allow user to log in', async () => {
+    await page.type('#username', 'testuser');
+    await page.type('#password', 'password');
+    await page.click('#login-button');
+    
+    // Verify successful login
+    await page.waitForSelector('#welcome-message');
+    const welcomeText = await page.$eval('#welcome-message', el => el.textContent);
+    expect(welcomeText).toContain('Welcome');
+  });
+});
+```
+
+#### Configuration
+
+The jest-puppeteer configuration is in `jest-puppeteer.config.js`. You can modify browser options, server settings, and more in this file. 
