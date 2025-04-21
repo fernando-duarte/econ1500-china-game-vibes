@@ -87,10 +87,12 @@
 
     /**
      * Populate the student selection container with checkboxes
-     * @param {Array} students - Array of student names
+     * @param {Array} students - Array of all student names
+     * @param {Array} studentsInTeams - Array of student names already in teams
+     * @param {Object} teamInfo - Map of student names to team names
      * @param {number} unavailableCount - Number of students already in teams
      */
-    populateStudentList: function(students, unavailableCount) {
+    populateStudentList: function(students, studentsInTeams, teamInfo, unavailableCount) {
       const container = this.elements.studentSelectionContainer;
       container.innerHTML = '';
 
@@ -103,17 +105,32 @@
       if (unavailableCount > 0) {
         const infoDiv = document.createElement('div');
         infoDiv.className = 'student-info';
-        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${unavailableCount > 1 ? 's' : ''} already in teams and not shown below.</p>`;
+        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${unavailableCount > 1 ? 's' : ''} already in teams.</p>`;
         container.appendChild(infoDiv);
       }
 
+      // Convert studentsInTeams array to a Set for faster lookups
+      const studentsInTeamsSet = new Set(studentsInTeams || []);
+
       students.forEach(student => {
         const checkbox = document.createElement('div');
-        checkbox.className = 'student-checkbox';
-        checkbox.innerHTML = `
-          <input type="checkbox" id="student-${student}" name="student" value="${student}">
+        const isInTeam = studentsInTeamsSet.has(student);
+
+        // Add class if student is already in a team
+        checkbox.className = isInTeam ? 'student-checkbox student-in-team' : 'student-checkbox';
+
+        // Create the checkbox HTML
+        let checkboxHtml = `
+          <input type="checkbox" id="student-${student}" name="student" value="${student}"${isInTeam ? ' disabled' : ''}>
           <label for="student-${student}">${student}</label>
         `;
+
+        // Add team info if student is in a team
+        if (isInTeam && teamInfo && teamInfo[student]) {
+          checkboxHtml += `<span class="team-info">(in team ${teamInfo[student]})</span>`;
+        }
+
+        checkbox.innerHTML = checkboxHtml;
         container.appendChild(checkbox);
       });
     },

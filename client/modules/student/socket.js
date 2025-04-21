@@ -25,6 +25,7 @@
 
       // Group: Team registration events
       this.socket.on('student_list', this.handleStudentList.bind(this));
+      this.socket.on('student_list_updated', this.handleStudentListUpdated.bind(this));
       this.socket.on('team_registered', this.handleTeamRegistered.bind(this));
 
       // Group: Game state events
@@ -49,8 +50,19 @@
      */
     handleStudentList: function(data) {
       SocketUtils.logEvent('Student list received', data);
-      if (data && data.students) {
-        StudentDom.populateStudentList(data.students, data.unavailableCount);
+      if (data && data.allStudents) {
+        StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+      }
+    },
+
+    /**
+     * Handle student list updates
+     * @param {Object} data - Updated student list data
+     */
+    handleStudentListUpdated: function(data) {
+      SocketUtils.logEvent('Student list updated', data);
+      if (data && data.allStudents) {
+        StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
       }
     },
 
