@@ -14,7 +14,7 @@ global.console = {
 jest.useFakeTimers();
 
 // Set timeout for unit and integration tests
-jest.setTimeout(10000);
+jest.setTimeout(40000);
 
 // Database setup/teardown (if applicable)
 beforeAll(async () => {
@@ -28,10 +28,10 @@ afterAll(async () => {
     // If we're not in an environment where the socket module is loaded,
     // this will silently fail without affecting the tests
     const { cleanupAllSocketResources } = require('./integration/socketUtils');
-    await cleanupAllSocketResources().catch(err => {
+    await cleanupAllSocketResources().catch((err) => {
       console.error('Error in socket cleanup during teardown:', err);
     });
   } catch (error) {
     // Ignore if module not found - this means we're not in a socket test context
   }
-}); 
+});

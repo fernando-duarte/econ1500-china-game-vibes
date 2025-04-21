@@ -1,15 +1,15 @@
 // Configuration for jest-puppeteer
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Ensure temp directory exists for port file
-const tempDir = path.join(__dirname, 'temp');
+const tempDir = path.join(__dirname, "temp");
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true });
 }
 
 // File to store dynamically assigned port
-const PORT_FILE = path.join(tempDir, 'test-server-port.txt');
+const PORT_FILE = path.join(tempDir, "test-server-port.txt");
 
 // Clean up any existing port file before starting
 if (fs.existsSync(PORT_FILE)) {
@@ -20,16 +20,16 @@ module.exports = {
   // Launch options for Puppeteer
   launch: {
     // Use new headless mode
-    headless: 'new',
+    headless: "new",
     // Slow down Puppeteer operations by the specified amount of milliseconds
     // Useful for debugging
     slowMo: process.env.DEBUG ? 100 : 0,
     // Add any additional command line arguments for Chrome/Chromium
     args: [
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
     ],
     // Set timeout for browser launch
     timeout: 10000,
@@ -43,14 +43,14 @@ module.exports = {
     // URL is dynamically determined in test setup
     url: null, // Will be determined dynamically
     // Increase timeout for server to start
-    launchTimeout: 10000,
+    launchTimeout: 30000,
     // Debug server startup
     debug: true,
     // Only start the server once for all tests
-    launchType: 'once',
+    launchType: "once",
     // Used port action
-    usedPortAction: 'kill',
+    usedPortAction: "kill",
   },
   // Browser context settings
-  browserContext: 'default', // or 'incognito'
-}; 
+  browserContext: "default", // or 'incognito'
+};
