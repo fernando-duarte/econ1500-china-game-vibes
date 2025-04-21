@@ -13,6 +13,9 @@ global.console = {
 // Set up fake timers for testing time-dependent code
 jest.useFakeTimers();
 
+// Set timeout for unit and integration tests
+jest.setTimeout(10000);
+
 // Database setup/teardown (if applicable)
 beforeAll(async () => {
   // If your app uses a database, set up a test database here
