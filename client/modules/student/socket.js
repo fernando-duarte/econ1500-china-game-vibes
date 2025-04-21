@@ -80,6 +80,9 @@
         StudentGame.state.teamMembers = data.team.students;
         StudentGame.state.currentPlayerName = data.team.name; // Set current player name to team name
 
+        // Clear selected students
+        StudentDom.studentData.selectedStudents.clear();
+
         // Show join UI after successful registration
         StudentDom.showJoinUI();
 

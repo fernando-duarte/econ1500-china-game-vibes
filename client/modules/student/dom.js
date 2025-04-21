@@ -91,7 +91,8 @@
       allStudents: [],
       studentsInTeams: [],
       teamInfo: {},
-      unavailableCount: 0
+      unavailableCount: 0,
+      selectedStudents: new Set() // Track selected students
     },
 
     /**
@@ -138,7 +139,7 @@
      */
     renderStudentList: function(searchQuery = '') {
       const container = this.elements.studentSelectionContainer;
-      const { allStudents, studentsInTeams, teamInfo, unavailableCount } = this.studentData;
+      const { allStudents, studentsInTeams, teamInfo, unavailableCount, selectedStudents } = this.studentData;
 
       container.innerHTML = '';
 
@@ -179,9 +180,12 @@
         // Add class if student is already in a team
         checkbox.className = isInTeam ? 'student-checkbox student-in-team' : 'student-checkbox';
 
+        // Check if this student was previously selected
+        const isSelected = selectedStudents.has(student);
+
         // Create the checkbox HTML
         let checkboxHtml = `
-          <input type="checkbox" id="student-${student}" name="student" value="${student}"${isInTeam ? ' disabled' : ''}>
+          <input type="checkbox" id="student-${student}" name="student" value="${student}"${isInTeam ? ' disabled' : ''}${isSelected ? ' checked' : ''}>
           <label for="student-${student}">${student}</label>
         `;
 
@@ -192,6 +196,18 @@
 
         checkbox.innerHTML = checkboxHtml;
         container.appendChild(checkbox);
+
+        // Add event listener to track checkbox changes
+        const checkboxInput = checkbox.querySelector('input[type="checkbox"]');
+        if (checkboxInput && !isInTeam) {
+          checkboxInput.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              this.studentData.selectedStudents.add(student);
+            } else {
+              this.studentData.selectedStudents.delete(student);
+            }
+          });
+        }
       });
     },
 

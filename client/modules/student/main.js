@@ -16,12 +16,8 @@
           return;
         }
 
-        // Get selected students
-        const selectedStudents = [];
-        const checkboxes = elements.studentSelectionContainer.querySelectorAll('input[type="checkbox"]:checked');
-        checkboxes.forEach(checkbox => {
-          selectedStudents.push(checkbox.value);
-        });
+        // Get selected students from our tracked selections
+        const selectedStudents = Array.from(StudentDom.studentData.selectedStudents);
 
         if (selectedStudents.length === 0) {
           elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_SELECT_STUDENTS;
