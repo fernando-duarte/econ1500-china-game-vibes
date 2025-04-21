@@ -20,13 +20,13 @@ describe('Student Flow', () => {
     page = await browser.newPage();
     
     // Navigate to the student page (main page)
-    await page.goto('http://localhost:3001', {
+    await page.goto(`http://localhost:${server.port}`, {
       waitUntil: 'networkidle0',
-      timeout: 30000
+      timeout: 10000
     });
     // Wait for the page to render fully
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }, 60000);
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }, 10000);
   
   afterAll(async () => {
     // Close browser and server with proper error handling
@@ -49,7 +49,7 @@ describe('Student Flow', () => {
   
   test('Student can join a game with a game code', async () => {
     // Wait for login form to be visible
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Check if we're on the student login page
     const pageTitle = await page.title();
@@ -79,7 +79,7 @@ describe('Student Flow', () => {
       path: 'tests/e2e/screenshots/student-login.png',
       fullPage: true 
     });
-  }, 30000);
+  }, 10000);
   
   test('Student can submit a decision', async () => {
     // This test would simulate the student submitting an investment decision
@@ -135,5 +135,5 @@ describe('Student Flow', () => {
       console.log('Investment controls not found - may need to join game first');
       expect(true).toBe(true);
     }
-  }, 30000);
+  }, 10000);
 }); 

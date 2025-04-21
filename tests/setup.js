@@ -24,4 +24,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Clean up database connections, if any
+  try {
+    // If we're not in an environment where the socket module is loaded,
+    // this will silently fail without affecting the tests
+    const { cleanupAllSocketResources } = require('./integration/socketUtils');
+    await cleanupAllSocketResources().catch(err => {
+      console.error('Error in socket cleanup during teardown:', err);
+    });
+  } catch (error) {
+    // Ignore if module not found - this means we're not in a socket test context
+  }
 }); 
