@@ -9,20 +9,22 @@ const activeServers = new Set();
 
 // Add debugging to console
 const log = (...args) => {
-  if (typeof console.log === 'function' && console.log.mock) {
-    // If console.log is mocked, use process.stdout directly
-    process.stdout.write(args.map(a => String(a)).join(' ') + '\n');
-  } else {
+  // Use a try-catch to handle potential mock detection
+  try {
     console.log(...args);
+  } catch (err) {
+    // If logging fails (e.g., in a mocked environment), use direct stdout
+    process.stdout.write(args.map(a => String(a)).join(' ') + '\n');
   }
 };
 
 const error = (...args) => {
-  if (typeof console.error === 'function' && console.error.mock) {
-    // If console.error is mocked, use process.stderr directly
-    process.stderr.write(args.map(a => String(a)).join(' ') + '\n');
-  } else {
+  // Use a try-catch to handle potential mock detection
+  try {
     console.error(...args);
+  } catch (err) {
+    // If logging fails (e.g., in a mocked environment), use direct stderr
+    process.stderr.write(args.map(a => String(a)).join(' ') + '\n');
   }
 };
 
@@ -36,8 +38,8 @@ async function createSocketServer() {
   const io = new Server(httpServer, {
     // Add explicit configuration for test environment
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
+      origin: '*',
+      methods: ['GET', 'POST']
     },
     pingTimeout: 2000, // Reduce ping timeout for tests
     pingInterval: 2000, // Reduce ping interval for tests
@@ -64,7 +66,9 @@ async function createSocketServer() {
     
     httpServer.listen(0, () => {
       clearTimeout(timeout);
-      log(`HTTP server listening on port ${httpServer.address().port}`);
+      const address = httpServer.address();
+      const port = typeof address === 'string' ? address : address.port;
+      log(`HTTP server listening on port ${port}`);
       resolve();
     });
     
