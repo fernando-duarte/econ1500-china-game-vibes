@@ -62,6 +62,11 @@ app.use((err, req, res, next) => {
   res.status(500).send('Server error occurred');
 });
 
+// Add catch-all 404 handler
+app.use((req, res, next) => {
+  res.status(404).send('Not Found');
+});
+
 // Start the server
 const PORT = process.env.PORT || CONSTANTS.DEFAULT_PORT;
 server.listen(PORT, () => {
@@ -69,4 +74,7 @@ server.listen(PORT, () => {
   console.log(`Student view: http://localhost:${PORT}`);
   console.log(`Instructor view: http://localhost:${PORT}/instructor`);
   console.log(`Screen dashboard: http://localhost:${PORT}/screen`);
-}); 
+});
+
+// Export for testing
+module.exports = { app, server }; 

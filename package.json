@@ -8,7 +8,14 @@
     "dev": "npm run watch-css & nodemon server/index.js",
     "build-css": "sass client/scss/main.scss:client/style.css",
     "watch-css": "sass --watch client/scss/main.scss:client/style.css",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:e2e": "jest tests/e2e",
+    "test:ci": "jest --ci --coverage --bail --reporters=default --reporters=jest-junit",
+    "test:report": "jest --coverage && open coverage/lcov-report/index.html"
   },
   "keywords": [
     "classroom",
@@ -24,8 +31,16 @@
     "socket.io": "^4.6.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.6",
     "eslint": "^9.25.0",
+    "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "jsdom": "^22.1.0",
     "nodemon": "^3.1.9",
-    "sass": "^1.73.3"
+    "puppeteer": "^21.3.8",
+    "sass": "^1.73.3",
+    "socket.io-client": "^4.6.1",
+    "supertest": "^6.3.3",
+    "wait-on": "^7.2.0"
   }
 }
