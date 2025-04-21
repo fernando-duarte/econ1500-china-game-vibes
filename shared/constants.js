@@ -38,7 +38,7 @@ const GAME_CONSTANTS = {
   OPACITY_FULL: '1', // Full opacity value for restoring after repaint
 
   // Auto-start feature
-  AUTO_START_ENABLED: false,  // Disabled - use manual start instead
+  AUTO_START_ENABLED: true,  // Enabled - will auto-start when manual mode is turned off
   AUTO_START_PLAYERS: 3,  // Default number of players needed if auto-start is enabled
 
   // Server defaults

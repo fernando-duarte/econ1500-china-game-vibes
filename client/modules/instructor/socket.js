@@ -310,7 +310,7 @@
     },
     
     setManualStart: function(enabled) {
-      this.socket.emit(CONSTANTS.SOCKET.EVENT_SET_MANUAL_START, enabled);
+      this.socket.emit(CONSTANTS.SOCKET.EVENT_SET_MANUAL_START, { enabled });
     },
     
     startGame: function() {

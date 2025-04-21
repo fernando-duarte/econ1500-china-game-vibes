@@ -124,7 +124,9 @@ function addPlayer(playerName, socketId, io) {
  * Check if the game should auto-start and start it if conditions are met
  */
 function checkAutoStart(io) { // Accept io here
-  if (CONSTANTS.AUTO_START_ENABLED && 
+  // Only proceed with auto-start if manual start is NOT enabled
+  if (!game.manualStartEnabled && 
+      CONSTANTS.AUTO_START_ENABLED && 
       Object.keys(game.players).length >= CONSTANTS.AUTO_START_PLAYERS && 
       !game.isGameRunning) {
     
