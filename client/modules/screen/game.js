@@ -12,32 +12,32 @@ const gameState = {
   gameState: 'waiting',
   timerInterval: null,
   capitalValues: [],
-  outputValues: []
+  outputValues: [],
 };
 
 // Helper function to start timer
-window.screenGame.startTimer = function(seconds) {
+window.screenGame.startTimer = function (seconds) {
   // Set initial time
   window.screenDOM.elements.timer.textContent = seconds;
 };
 
 // Get state (for use by other modules)
-window.screenGame.getState = function() {
+window.screenGame.getState = function () {
   return gameState;
 };
 
 // State modification functions
-window.screenGame.updateGameState = function(newState) {
+window.screenGame.updateGameState = function (newState) {
   gameState.gameState = newState;
 };
 
-window.screenGame.addPlayer = function(playerName) {
+window.screenGame.addPlayer = function (playerName) {
   if (!gameState.players.includes(playerName)) {
     gameState.players.push(playerName);
   }
 };
 
-window.screenGame.resetForNewGame = function() {
+window.screenGame.resetForNewGame = function () {
   gameState.players = [];
   gameState.submittedPlayers = [];
   gameState.autoSubmittedPlayers = [];
@@ -46,18 +46,22 @@ window.screenGame.resetForNewGame = function() {
   gameState.outputValues = [];
 };
 
-window.screenGame.resetForNewRound = function() {
+window.screenGame.resetForNewRound = function () {
   gameState.submittedPlayers = [];
   gameState.autoSubmittedPlayers = [];
   gameState.roundInvestments = {};
 };
 
-window.screenGame.recordInvestment = function(playerName, investment, isAutoSubmit) {
+window.screenGame.recordInvestment = function (
+  playerName,
+  investment,
+  isAutoSubmit,
+) {
   // Store the investment
   if (investment !== undefined) {
     gameState.roundInvestments[playerName] = {
       investment: investment,
-      isAutoSubmit: isAutoSubmit || false
+      isAutoSubmit: isAutoSubmit || false,
     };
   }
 
@@ -72,12 +76,12 @@ window.screenGame.recordInvestment = function(playerName, investment, isAutoSubm
   }
 };
 
-window.screenGame.updateCapitalAndOutput = function(results) {
+window.screenGame.updateCapitalAndOutput = function (results) {
   gameState.capitalValues = [];
   gameState.outputValues = [];
-  
-  results.forEach(result => {
+
+  results.forEach((result) => {
     gameState.capitalValues.push(result.newCapital);
     gameState.outputValues.push(result.newOutput);
   });
-}; 
+};

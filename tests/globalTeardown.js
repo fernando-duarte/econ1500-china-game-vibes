@@ -4,15 +4,12 @@ const { cleanupAllSocketResources } = require('./integration/socketUtils');
 
 module.exports = async () => {
   console.log('Running global teardown to clean up test resources...');
-  
+
   try {
     // Run cleanup functions
-    await Promise.all([
-      cleanupAllResources(),
-      cleanupAllSocketResources()
-    ]);
+    await Promise.all([cleanupAllResources(), cleanupAllSocketResources()]);
     console.log('Global teardown completed successfully');
   } catch (error) {
     console.error('Error during global teardown:', error);
   }
-}; 
+};

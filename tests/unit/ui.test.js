@@ -114,84 +114,84 @@ describe('UI Components', () => {
   test('Student UI structure matches expectations', () => {
     const dom = new JSDOM(createMockStudentHTML());
     const { document } = dom.window;
-    
+
     // Extract structure
     const structure = {
       title: document.title,
-      forms: Array.from(document.querySelectorAll('form')).map(f => ({
+      forms: Array.from(document.querySelectorAll('form')).map((f) => ({
         id: f.id,
         method: f.method,
-        action: f.action
+        action: f.action,
       })),
-      inputs: Array.from(document.querySelectorAll('input')).map(i => ({
+      inputs: Array.from(document.querySelectorAll('input')).map((i) => ({
         id: i.id,
         type: i.type,
-        name: i.name
+        name: i.name,
       })),
-      buttons: Array.from(document.querySelectorAll('button')).map(b => ({
+      buttons: Array.from(document.querySelectorAll('button')).map((b) => ({
         id: b.id,
         type: b.type,
-        text: b.textContent.trim()
-      }))
+        text: b.textContent.trim(),
+      })),
     };
-    
+
     // Check for basic elements
     expect(structure.forms.length).toBeGreaterThan(0);
     expect(structure.inputs.length).toBeGreaterThan(0);
-    
+
     // Check for form elements
     const joinForm = document.getElementById('joinForm');
     expect(joinForm).not.toBeNull();
-    
+
     // Verify game UI is hidden initially
     const gameUI = document.getElementById('gameUI');
     expect(gameUI).not.toBeNull();
     expect(gameUI.classList.contains('hidden')).toBe(true);
-    
+
     // Check for form inputs
     const playerNameInput = document.getElementById('playerName');
     const gameCodeInput = document.getElementById('gameCode');
     expect(playerNameInput).not.toBeNull();
     expect(gameCodeInput).not.toBeNull();
   });
-  
+
   test('Instructor UI structure matches expectations', () => {
     const dom = new JSDOM(createMockInstructorHTML());
     const { document } = dom.window;
-    
+
     // Extract structure
     const structure = {
       title: document.title,
-      forms: Array.from(document.querySelectorAll('form')).map(f => ({
+      forms: Array.from(document.querySelectorAll('form')).map((f) => ({
         id: f.id,
         method: f.method,
-        action: f.action
+        action: f.action,
       })),
-      inputs: Array.from(document.querySelectorAll('input')).map(i => ({
+      inputs: Array.from(document.querySelectorAll('input')).map((i) => ({
         id: i.id,
         type: i.type,
-        name: i.name
+        name: i.name,
       })),
-      buttons: Array.from(document.querySelectorAll('button')).map(b => ({
+      buttons: Array.from(document.querySelectorAll('button')).map((b) => ({
         id: b.id,
         type: b.type,
-        text: b.textContent.trim()
-      }))
+        text: b.textContent.trim(),
+      })),
     };
-    
+
     // Check for basic elements
     expect(structure.forms.length).toBeGreaterThan(0);
     expect(structure.inputs.length).toBeGreaterThan(0);
-    
+
     // Check for form element
     const createForm = document.getElementById('createGameForm');
     expect(createForm).not.toBeNull();
-    
+
     // Check for game controls
     const gameControls = document.getElementById('gameControls');
     expect(gameControls).not.toBeNull();
     expect(gameControls.classList.contains('hidden')).toBe(true);
-    
+
     // Check for control buttons
     const startButton = document.getElementById('startGameButton');
     const pauseButton = document.getElementById('pauseGameButton');
@@ -199,11 +199,11 @@ describe('UI Components', () => {
     expect(pauseButton).not.toBeNull();
     expect(pauseButton.disabled).toBe(true);
   });
-  
+
   test('Screen dashboard UI structure matches expectations', () => {
     const dom = new JSDOM(createMockScreenHTML());
     const { document } = dom.window;
-    
+
     // Structure variable - currently unused but kept for future tests
     // const structure = {
     //   title: document.title,
@@ -216,15 +216,15 @@ describe('UI Components', () => {
     //     headers: Array.from(t.querySelectorAll('th')).map(th => th.textContent.trim())
     //   }))
     // };
-    
+
     // Check for key dashboard elements
     const gameScreen = document.getElementById('gameScreen');
     expect(gameScreen).not.toBeNull();
-    
+
     // Check for player table
     const playerTable = document.getElementById('playerTable');
     expect(playerTable).not.toBeNull();
-    
+
     // Check for status elements
     const gameState = document.getElementById('gameState');
     const playerCount = document.getElementById('playerCount');
@@ -232,38 +232,38 @@ describe('UI Components', () => {
     expect(playerCount).not.toBeNull();
     expect(gameState.textContent).toBe('Not connected');
   });
-  
+
   test('UI toggling behavior', () => {
-    const dom = new JSDOM(createMockStudentHTML(), { 
+    const dom = new JSDOM(createMockStudentHTML(), {
       runScripts: 'outside-only',
-      resources: 'usable'
+      resources: 'usable',
     });
     const { document } = dom.window;
-    
+
     // Set up minimal mocks for browser APIs
     dom.window.localStorage = {
       getItem: jest.fn(),
-      setItem: jest.fn()
+      setItem: jest.fn(),
     };
     dom.window.io = jest.fn(() => ({
       on: jest.fn(),
-      emit: jest.fn()
+      emit: jest.fn(),
     }));
-    
+
     // Find elements that have toggle behavior (showing/hiding)
     const joinForm = document.getElementById('joinForm');
     const gameUI = document.getElementById('gameUI');
-    
+
     // Test initial state
     expect(joinForm.classList.contains('hidden')).toBe(false);
     expect(gameUI.classList.contains('hidden')).toBe(true);
-    
+
     // Simulate toggling UI elements
     joinForm.classList.add('hidden');
     gameUI.classList.remove('hidden');
-    
+
     // Test toggled state
     expect(joinForm.classList.contains('hidden')).toBe(true);
     expect(gameUI.classList.contains('hidden')).toBe(false);
   });
-}); 
+});

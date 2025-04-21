@@ -1,7 +1,7 @@
 // client/modules/game.js
-(function(window) {
+(function (window) {
   'use strict';
-  
+
   // Define StudentGame module
   const StudentGame = {
     // Game state
@@ -11,11 +11,11 @@
       currentOutput: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0,
       hasSubmittedInvestment: false,
       lastCapital: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0,
-      lastOutput: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0
+      lastOutput: CONSTANTS.NEGATIVE_INITIAL_VALUE + 1 * 0,
     },
-    
+
     // Methods
-    startTimer: function(seconds, onTimeExpired) {
+    startTimer: function (seconds, onTimeExpired) {
       if (this.state.timerInterval) {
         clearInterval(this.state.timerInterval);
       }
@@ -35,34 +35,34 @@
 
         if (seconds <= 0) {
           clearInterval(this.state.timerInterval);
-          
+
           if (onTimeExpired) {
             onTimeExpired();
           }
         }
       }, CONSTANTS.MILLISECONDS_PER_SECOND);
     },
-    
-    stopTimer: function() {
+
+    stopTimer: function () {
       if (this.state.timerInterval) {
         clearInterval(this.state.timerInterval);
         this.state.timerInterval = null;
       }
     },
-    
-    resetInvestmentState: function() {
+
+    resetInvestmentState: function () {
       const elements = StudentDom.elements;
-      
+
       this.state.hasSubmittedInvestment = false;
       elements.submitInvestment.disabled = false;
       elements.investmentSlider.disabled = false;
       elements.investmentValue.disabled = false;
       elements.investmentStatus.textContent = '';
     },
-    
-    disableInvestmentControls: function(statusMessage) {
+
+    disableInvestmentControls: function (statusMessage) {
       const elements = StudentDom.elements;
-      
+
       elements.submitInvestment.disabled = true;
       elements.investmentSlider.disabled = true;
       elements.investmentValue.disabled = true;
@@ -71,18 +71,22 @@
       }
       this.state.hasSubmittedInvestment = true;
     },
-    
-    autoSubmitInvestment: function() {
+
+    autoSubmitInvestment: function () {
       if (!this.state.hasSubmittedInvestment) {
         const elements = StudentDom.elements;
-        const investment = parseFloat(elements.investmentValue.value) || CONSTANTS.INVESTMENT_MIN;
-        
+        const investment =
+          parseFloat(elements.investmentValue.value) ||
+          CONSTANTS.INVESTMENT_MIN;
+
         StudentSocket.submitInvestment(investment, true);
-        this.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_TIMES_UP_AUTO_SUBMIT);
+        this.disableInvestmentControls(
+          CONSTANTS.UI_TEXT.STATUS_TIMES_UP_AUTO_SUBMIT,
+        );
       }
-    }
+    },
   };
-  
+
   // Expose the module to window
   window.StudentGame = StudentGame;
-})(window); 
+})(window);
