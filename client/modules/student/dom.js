@@ -88,14 +88,23 @@
     /**
      * Populate the student selection container with checkboxes
      * @param {Array} students - Array of student names
+     * @param {number} unavailableCount - Number of students already in teams
      */
-    populateStudentList: function(students) {
+    populateStudentList: function(students, unavailableCount) {
       const container = this.elements.studentSelectionContainer;
       container.innerHTML = '';
 
       if (!students || students.length === 0) {
         container.innerHTML = '<p>No students available</p>';
         return;
+      }
+
+      // Add info about unavailable students if any
+      if (unavailableCount > 0) {
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'student-info';
+        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${unavailableCount > 1 ? 's' : ''} already in teams and not shown below.</p>`;
+        container.appendChild(infoDiv);
       }
 
       students.forEach(student => {

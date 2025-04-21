@@ -50,7 +50,7 @@
     handleStudentList: function(data) {
       SocketUtils.logEvent('Student list received', data);
       if (data && data.students) {
-        StudentDom.populateStudentList(data.students);
+        StudentDom.populateStudentList(data.students, data.unavailableCount);
       }
     },
 
