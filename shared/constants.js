@@ -127,7 +127,7 @@ const GAME_CONSTANTS = {
 
     // IO-related errors
     NO_IO_AVAILABLE_END_ROUND: 'No io object available when ending round!',
-    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!'
+    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!',
 
     // Socket handlers errors
     ERROR_IN_SCREEN_CONNECT: 'Error in screen_connect:',
