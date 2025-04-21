@@ -4,6 +4,7 @@ module.exports = {
     commonjs: true,
     es2021: true,
     node: true,
+    jest: true,
   },
   extends: 'eslint:recommended',
   parserOptions: {
@@ -15,4 +16,17 @@ module.exports = {
     quotes: ['error', 'single'],
     semi: ['error', 'always'],
   },
+  globals: {
+    page: true,
+    browser: true,
+    jestPuppeteer: true,
+    describe: true,
+    it: true,
+    test: true,
+    expect: true,
+    beforeAll: true,
+    afterAll: true,
+    beforeEach: true,
+    afterEach: true
+  }
 }; 

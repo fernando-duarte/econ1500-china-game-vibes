@@ -1,6 +1,5 @@
 const { startTestServer, launchBrowser } = require('./e2eUtils');
-const selectors = require('../selectors');
-const { gameSelector, pageSelector } = require('../selectors');
+const { gameSelector } = require('../selectors');
 const { waitForGameEvents } = require('./e2eUtils');
 
 describe('Instructor Flow', () => {
