@@ -45,6 +45,7 @@ coverage/
 .cache/
 .temp/
 tmp/
+temp/test-server-port.txt
 
 # Jest
 jest-junit.xml
