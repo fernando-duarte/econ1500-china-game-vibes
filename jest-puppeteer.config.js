@@ -15,7 +15,7 @@ module.exports = {
       '--disable-setuid-sandbox',
     ],
     // Set timeout for browser launch
-    timeout: 60000,
+    timeout: 10000,
   },
   // Server configurations
   server: {
@@ -26,7 +26,7 @@ module.exports = {
     // Protocol, hostname and port
     url: 'http://localhost:3001',
     // Increase timeout for server to start
-    launchTimeout: 300000,
+    launchTimeout: 10000,
     // Debug server startup
     debug: true,
     // Only start the server once for all tests

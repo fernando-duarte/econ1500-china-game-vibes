@@ -3,7 +3,7 @@ const { Server } = require('socket.io');
 const Client = require('socket.io-client');
 const CONSTANTS = require('../../shared/constants');
 
-function createSocketServer() {
+async function createSocketServer() {
   // Create an HTTP server
   const httpServer = createServer();
   
@@ -14,9 +14,8 @@ function createSocketServer() {
   const { setupSocketEvents } = require('../../server/events');
   setupSocketEvents(io);
   
-  // Start server on a random port
-  const port = 0; // Let the OS choose a free port
-  httpServer.listen(port);
+  // Start server on a random port and wait until it's listening
+  await new Promise(resolve => httpServer.listen(0, resolve));
   
   // Return server instances and helper functions
   return {

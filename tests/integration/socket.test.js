@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { createSocketServer, createSocketClient } = require('./socketUtils');
 const { createTestGame, createTestPlayer } = require('../factories');
 const CONSTANTS = require('../../shared/constants');
@@ -30,35 +31,44 @@ jest.mock('../../server/gameLogic', () => ({
   }
 }));
 
-// Skip tests due to timing issues until proper fixes can be implemented
-describe.skip('Socket.IO Events', () => {
+// Enable only the first Socket.IO integration test
+describe('Socket.IO Events', () => {
   let socketServer;
   let socketClient;
   let clientSocket;
   
-  // Increase timeout for hooks to prevent timeouts
+  // Disable global hooks; we'll handle setup/teardown inside our single test
+  /*
   jest.setTimeout(30000);
   
   beforeEach(async () => {
-    // Create a Socket.IO server for each test
-    socketServer = createSocketServer();
-    
-    // Create a Socket.IO client
+    socketServer = await createSocketServer();
     socketClient = createSocketClient(socketServer.getPort());
-    
-    // Connect client to server
     await socketClient.connectClient();
     clientSocket = socketClient.client;
   });
   
   afterEach(async () => {
-    // Disconnect client and close server after each test
     if (socketClient) await socketClient.disconnectClient();
     if (socketServer) await socketServer.closeServer();
   });
-  
-  test('Client can connect to server', () => {
+  */
+   
+  test.only('Client can connect to server', async () => {
+    // Start a test server
+    const server = await createSocketServer();
+
+    // Create and connect a client
+    const clientUtil = createSocketClient(server.getPort());
+    await clientUtil.connectClient();
+    const clientSocket = clientUtil.client;
+
+    // Assert that the client connected
     expect(clientSocket.connected).toBe(true);
+
+    // Clean up client and server
+    await clientUtil.disconnectClient();
+    await server.closeServer();
   });
   
   test('Instructor can create a game', (done) => {

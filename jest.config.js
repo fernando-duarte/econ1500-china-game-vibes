@@ -2,6 +2,7 @@
 module.exports = {
   // Default configuration for all tests
   testEnvironment: 'node',
+  testTimeout: 10000,
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/tests/mocks/'],

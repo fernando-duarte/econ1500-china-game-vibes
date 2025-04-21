@@ -3,7 +3,7 @@
 require('expect-puppeteer');
 
 // Set longer timeout for E2E tests
-jest.setTimeout(120000);
+jest.setTimeout(10000);
 
 // Log useful debugging information
 console.log('Running E2E tests with Puppeteer');
