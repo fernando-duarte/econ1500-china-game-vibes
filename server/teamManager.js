@@ -7,7 +7,7 @@ const path = require('path');
 const CONSTANTS = require('../shared/constants');
 
 // In-memory store of teams and their members
-const teams = {};
+const teams = {}; // Reset on server restart
 let studentList = [];
 
 /**
@@ -40,33 +40,33 @@ function registerTeam(teamName, studentNames) {
   if (!teamName || typeof teamName !== 'string' || teamName.trim().length === 0) {
     return { success: false, error: 'Invalid team name' };
   }
-  
+
   // Check if team name already exists
   if (teams[teamName]) {
     return { success: false, error: 'Team name already taken' };
   }
-  
+
   // Validate student names against the loaded list
   const invalidStudents = studentNames.filter(name => !studentList.includes(name));
   if (invalidStudents.length > 0) {
-    return { 
-      success: false, 
-      error: `Invalid student names: ${invalidStudents.join(', ')}` 
+    return {
+      success: false,
+      error: `Invalid student names: ${invalidStudents.join(', ')}`
     };
   }
-  
+
   // Create and store the team
   teams[teamName] = {
     name: teamName,
     students: studentNames,
     createdAt: Date.now()
   };
-  
+
   console.log(`Team registered: ${teamName} with ${studentNames.length} students`);
-  
-  return { 
-    success: true, 
-    team: teams[teamName] 
+
+  return {
+    success: true,
+    team: teams[teamName]
   };
 }
 
@@ -95,10 +95,22 @@ function getTeam(teamName) {
   return teams[teamName] || null;
 }
 
+/**
+ * Clear all teams
+ * @returns {boolean} - Success flag
+ */
+function clearTeams() {
+  // Clear the teams object
+  Object.keys(teams).forEach(key => delete teams[key]);
+  console.log('All teams have been cleared');
+  return true;
+}
+
 module.exports = {
   loadStudentList,
   registerTeam,
   getTeams,
   getStudentList,
-  getTeam
+  getTeam,
+  clearTeams
 };

@@ -31,6 +31,8 @@ function setupSocketEvents(io) {
   gameLogic.game.currentIo = io;
   console.log('Stored IO instance for game functions');
 
+  // Make gameLogic available to all event handlers
+
   // Create a game automatically on server start
   createGame();
   console.log('Game created automatically on server start');
@@ -43,6 +45,10 @@ function setupSocketEvents(io) {
   teamManager.loadStudentList();
   console.log('Student list loaded for team registration');
 
+  // Clear any existing teams on server start
+  teamManager.clearTeams();
+  console.log('Cleared existing teams on server start');
+
   // Handle new socket connections
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
@@ -53,6 +59,47 @@ function setupSocketEvents(io) {
     let playerName = null;
     let isInstructor = false;
     let isScreen = false;
+
+    // Check if connection is from instructor page
+    const referer = socket.handshake.headers.referer || '';
+    console.log(`Connection referer: ${referer}`);
+
+    const isInstructorPage = referer && referer.includes(CONSTANTS.ROUTES.INSTRUCTOR);
+    console.log(`Is instructor page: ${isInstructorPage}`);
+
+    // Add instructor to instructor room if from instructor page
+    if (isInstructorPage) {
+      isInstructor = true;
+
+      console.log(`Instructor with ID ${socket.id} joined instructor room`);
+
+      // Map this socket to "instructor" role
+      socket.instructor = true;
+      socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
+      socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room for broadcasts
+
+      // Notify the instructor client that a game is already created
+      socket.emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
+        manualStartEnabled: gameLogic.game.manualStartEnabled
+      });
+
+      // Send existing players to the instructor
+      const players = Object.keys(gameLogic.game.players);
+      console.log(`Sending existing ${players.length} players to instructor: ${players.join(', ')}`);
+
+      players.forEach(playerName => {
+        const player = gameLogic.game.players[playerName];
+        const isTeam = player.isTeam || false;
+
+        socket.emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+          playerName: playerName,
+          initialCapital: player.capital,
+          initialOutput: player.output,
+          isTeam: isTeam,
+          teamMembers: isTeam ? player.teamMembers : undefined
+        });
+      });
+    }
 
     // Screen client connects
     socket.on(CONSTANTS.SOCKET.EVENT_SCREEN_CONNECT, () => {
@@ -68,7 +115,6 @@ function setupSocketEvents(io) {
         socket.join(CONSTANTS.SOCKET_ROOMS.SCREENS);
 
         // Send current game state if available
-        const gameLogic = require('./gameLogic');
         if (gameLogic.game) {
           const stateData = {
             isGameRunning: gameLogic.game.isGameRunning,
@@ -86,27 +132,6 @@ function setupSocketEvents(io) {
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_CONNECTING_SCREEN });
       }
     });
-
-    // Check if connection is from instructor page
-    const isInstructorPage = socket.handshake.headers.referer &&
-                            socket.handshake.headers.referer.endsWith(CONSTANTS.ROUTES.INSTRUCTOR);
-
-    // Add instructor to instructor room if from instructor page
-    if (isInstructorPage) {
-      isInstructor = true;
-
-      console.log(`Instructor with ID ${socket.id} joined instructor room`);
-
-      // Map this socket to "instructor" role
-      socket.instructor = true;
-      socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
-      socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room for broadcasts
-
-      // Notify the instructor client that a game is already created
-      io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
-        manualStartEnabled: gameLogic.game.manualStartEnabled
-      });
-    }
 
     // Instructor creates a new game (keeping for backward compatibility)
     socket.on(CONSTANTS.SOCKET.EVENT_CREATE_GAME, () => {
@@ -164,6 +189,20 @@ function setupSocketEvents(io) {
 
         if (result.success) {
           console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
+
+          // Check if this is a team join (from previous team registration)
+          const isTeam = socket.teamName === playerName && Array.isArray(socket.teamMembers);
+
+          // If this is a team, store team info in the game player object
+          if (isTeam) {
+            const gameLogic = require('./gameLogic');
+            if (gameLogic.game.players[playerName]) {
+              gameLogic.game.players[playerName].isTeam = true;
+              gameLogic.game.players[playerName].teamMembers = socket.teamMembers;
+            }
+          }
+
+          // Send game joined event to the player
           io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
             playerName: playerName,
             initialCapital: result.initialCapital,
@@ -174,16 +213,21 @@ function setupSocketEvents(io) {
             manualStartEnabled: result.manualStartEnabled
           });
 
-          // Send player_joined to the instructor room
-          console.log('Sending player_joined to instructor room');
+          // Send player_joined to the instructor room with team info if applicable
+          console.log(`Sending ${isTeam ? 'team' : 'player'}_joined to instructor room`);
           io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
             playerName: playerName,
             initialCapital: result.initialCapital,
-            initialOutput: result.initialOutput
+            initialOutput: result.initialOutput,
+            isTeam: isTeam,
+            teamMembers: isTeam ? socket.teamMembers : undefined
           });
 
           // Also notify screens
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, { playerName });
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+            playerName,
+            isTeam: isTeam
+          });
 
         } else {
           console.error(`${CONSTANTS.DEBUG_MESSAGES.PLAYER_JOIN_FAILED} ${playerName}:`, result.error);
@@ -458,50 +502,12 @@ function setupSocketEvents(io) {
           });
           console.log(`Team registered successfully: ${teamName}`);
 
-          // Assign to the outer scope variable
-          playerName = teamName.trim();
+          // Store team info on socket for later use
+          socket.teamName = teamName.trim();
+          socket.teamMembers = students;
 
-          // Store player name and role on socket
-          socket.playerName = playerName;
-          socket.gameRole = CONSTANTS.GAME_ROLES.PLAYER;
-          socket.join(CONSTANTS.SOCKET_ROOMS.PLAYERS);
-
-          // Create player-specific room
-          socket.join(getPlayerRoom(playerName));
-
-          console.log(`Team ${playerName} attempting to join as player`);
-
-          // Use the io instance from the outer scope
-          const joinResult = addPlayer(playerName, socket.id, io);
-
-          if (joinResult.success) {
-            console.log(`Team joined as player: ${playerName} with socket ID ${socket.id}`);
-
-            // Store team info in the game player object
-            const gameLogic = require('./gameLogic');
-            if (gameLogic.game.players[playerName]) {
-              gameLogic.game.players[playerName].isTeam = true;
-              gameLogic.game.players[playerName].teamMembers = students;
-            }
-
-            // Send player_joined to the instructor room
-            console.log('Sending team_joined to instructor room');
-            io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
-              playerName: playerName,
-              initialCapital: joinResult.initialCapital,
-              initialOutput: joinResult.initialOutput,
-              isTeam: true,
-              teamMembers: students
-            });
-
-            // Also notify screens
-            io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
-              playerName: playerName,
-              isTeam: true
-            });
-          } else {
-            console.error(`Team join as player failed: ${joinResult.error}`);
-          }
+          // Note: We don't automatically add the player here anymore
+          // The client will call joinGame separately
         } else {
           socket.emit('team_registered', {
             success: false,
