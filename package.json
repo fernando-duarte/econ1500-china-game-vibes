@@ -5,7 +5,9 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js",
+    "dev": "npm run watch-css & nodemon server/index.js",
+    "build-css": "sass client/scss/main.scss:client/style.css",
+    "watch-css": "sass --watch client/scss/main.scss:client/style.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "eslint": "^9.25.0",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "sass": "^1.73.3"
   }
 }
