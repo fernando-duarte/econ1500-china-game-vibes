@@ -7,11 +7,17 @@ async function startTestServer() {
   // Start a test server on a different port
   const testPort = 3001;
   process.env.PORT = testPort;
+  process.env.NODE_ENV = 'test';
   
   // Start the server as a child process
   const serverProcess = spawn('node', [path.join(__dirname, '../../server/index.js')], {
-    env: { ...process.env, PORT: testPort },
+    env: { ...process.env, PORT: testPort, NODE_ENV: 'test' },
     stdio: ['ignore', 'pipe', 'pipe']
+  });
+  
+  // Add a timeout promise
+  const timeout = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Server startup timed out')), 45000);
   });
   
   // Log server output for debugging
@@ -23,41 +29,194 @@ async function startTestServer() {
     console.error(`Server error: ${data}`);
   });
   
-  // Wait for the server to be available
-  await waitOn({
-    resources: [`http://localhost:${testPort}`],
-    timeout: 30000
-  });
+  // Wait for the server to be available or timeout
+  try {
+    await Promise.race([
+      waitOn({
+        resources: [`http://localhost:${testPort}`],
+        timeout: 45000
+      }),
+      timeout
+    ]);
+  } catch (error) {
+    serverProcess.kill('SIGTERM');
+    throw error;
+  }
   
   return {
     port: testPort,
     close: () => {
       return new Promise(resolve => {
+        if (!serverProcess || serverProcess.killed) {
+          resolve();
+          return;
+        }
+        
         serverProcess.on('close', () => {
           resolve();
         });
         serverProcess.kill('SIGTERM');
+        
+        // Fallback if server doesn't close cleanly
+        setTimeout(() => {
+          if (!serverProcess.killed) {
+            serverProcess.kill('SIGKILL');
+          }
+          resolve();
+        }, 5000);
       });
     }
   };
 }
 
 async function launchBrowser() {
-  const browser = await puppeteer.launch({
-    headless: true, // Use true instead of 'new' for better compatibility
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    defaultViewport: null
+  try {
+    const browser = await puppeteer.launch({
+      headless: 'new', // Updated to new headless mode
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',  // Helps with memory in CI environments
+        '--disable-gpu',            // Reduces resource usage
+        '--window-size=1280,720'    // Sets consistent viewport size
+      ],
+      defaultViewport: { width: 1280, height: 720 },
+      timeout: 30000                // Browser launch timeout
+    });
+    
+    return {
+      browser,
+      closeBrowser: async () => {
+        if (browser) {
+          await browser.close();
+        }
+      }
+    };
+  } catch (error) {
+    console.error('Failed to launch browser:', error);
+    throw error;
+  }
+}
+
+/**
+ * Utility functions for E2E testing with Puppeteer
+ */
+
+// Wait for Socket.IO events in the browser
+async function waitForGameEvents(page, eventTypes, timeout = 5000) {
+  return page.evaluate((eventTypes, timeout) => {
+    return new Promise((resolve, reject) => {
+      const events = [];
+      const timeoutId = setTimeout(() => {
+        // Clean up listeners before resolving
+        if (window.socket) {
+          eventTypes.forEach(type => {
+            window.socket.off(type);
+          });
+        }
+        resolve(events);
+      }, timeout);
+      
+      // Check if socket exists
+      if (!window.socket) {
+        console.log('Socket not found - returning empty events array');
+        clearTimeout(timeoutId);
+        return resolve(events);
+      }
+      
+      // Set up event listeners
+      eventTypes.forEach(type => {
+        window.socket.on(type, (data) => {
+          events.push({
+            type,
+            data,
+            timestamp: Date.now()
+          });
+        });
+      });
+    });
+  }, eventTypes, timeout);
+}
+
+// Set up error handling for server process
+function setupServerErrorHandling(serverProcess) {
+  serverProcess.stdout.on('data', (data) => {
+    console.log(`Server: ${data}`);
   });
   
-  return {
-    browser,
-    closeBrowser: async () => {
-      await browser.close();
+  serverProcess.stderr.on('data', (data) => {
+    console.error(`Server error: ${data}`);
+  });
+  
+  // Wait for the server to be available or timeout
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Server failed to start in time'));
+    }, 10000);
+    
+    serverProcess.stdout.on('data', (data) => {
+      // Look for server ready message
+      if (data.toString().includes('Server running on port')) {
+        clearTimeout(timeoutId);
+        resolve(serverProcess);
+      }
+    });
+  });
+}
+
+// Take screenshots for debugging
+async function takeDebugScreenshot(page, name) {
+  try {
+    const screenshotPath = `tests/e2e/screenshots/debug-${name}-${Date.now()}.png`;
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    console.log(`Debug screenshot saved: ${screenshotPath}`);
+  } catch (error) {
+    console.error(`Failed to take debug screenshot: ${error.message}`);
+  }
+}
+
+// Wait for element to be visible
+async function waitForElement(page, selector, timeout = 5000) {
+  try {
+    // Use a promise with setTimeout instead of page.waitForTimeout
+    const element = await page.waitForSelector(selector, { 
+      timeout,
+      visible: true
+    });
+    return element;
+  } catch (error) {
+    console.error(`Element not found: ${selector}`);
+    return null;
+  }
+}
+
+// Retry an action with exponential backoff
+async function retryWithBackoff(action, retries = 3, initialDelay = 500) {
+  let delay = initialDelay;
+  
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await action();
+    } catch (error) {
+      console.log(`Attempt ${i + 1} failed: ${error.message}`);
+      
+      if (i === retries - 1) {
+        throw error;
+      }
+      
+      // Use setTimeout instead of page.waitForTimeout
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay *= 2; // Exponential backoff
     }
-  };
+  }
 }
 
 module.exports = {
   startTestServer,
-  launchBrowser
+  launchBrowser,
+  waitForGameEvents,
+  setupServerErrorHandling,
+  takeDebugScreenshot,
+  waitForElement,
+  retryWithBackoff
 }; 
