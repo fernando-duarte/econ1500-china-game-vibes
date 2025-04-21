@@ -2,7 +2,7 @@ const Sequencer = require('@jest/test-sequencer').default;
 
 /**
  * Custom Jest Test Sequencer
- * 
+ *
  * This sequencer organizes test execution in a logical order:
  * 1. Unit tests first
  * 2. Integration tests next
@@ -15,39 +15,33 @@ class CustomSequencer extends Sequencer {
    * @returns {Array} Sorted array of test objects
    */
   sort(tests) {
-    // Return tests in a predictable order
+    // Ensure tests run in a specific order for better isolation:
+    // 1. Unit tests (fastest and most isolated)
+    // 2. Integration tests (require server but not browser)
+    // 3. E2E tests (require full stack)
+
     return tests.sort((testA, testB) => {
-      const pathA = testA.path;
-      const pathB = testB.path;
+      // Extract test type from path
+      const getTestType = (path) => {
+        if (path.includes('/unit/')) return 1;
+        if (path.includes('/integration/')) return 2;
+        if (path.includes('/e2e/')) return 3;
+        return 4; // Other tests
+      };
 
-      // Run unit tests first
-      if (pathA.includes('/unit/') && !pathB.includes('/unit/')) {
-        return -1;
-      }
-      if (!pathA.includes('/unit/') && pathB.includes('/unit/')) {
-        return 1;
-      }
+      // Get test types
+      const typeA = getTestType(testA.path);
+      const typeB = getTestType(testB.path);
 
-      // Then run integration tests
-      if (pathA.includes('/integration/') && !pathB.includes('/integration/')) {
-        return -1;
-      }
-      if (!pathA.includes('/integration/') && pathB.includes('/integration/')) {
-        return 1;
+      // Sort by test type first
+      if (typeA !== typeB) {
+        return typeA - typeB;
       }
 
-      // E2E tests run last
-      if (pathA.includes('/e2e/') && !pathB.includes('/e2e/')) {
-        return 1;
-      }
-      if (!pathA.includes('/e2e/') && pathB.includes('/e2e/')) {
-        return -1;
-      }
-
-      // Alpha sort for same category
-      return pathA.localeCompare(pathB);
+      // If same test type, use Jest's default sorting
+      return super.sort([testA, testB])[0] === testA ? -1 : 1;
     });
   }
 }
 
-module.exports = CustomSequencer; 
+module.exports = CustomSequencer;

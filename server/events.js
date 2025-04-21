@@ -3,9 +3,9 @@ const {
   addPlayer,
   startGame,
   startRound,
-  submitInvestment,
+  // submitInvestment imported but used indirectly through event handlers
   playerReconnect,
-  playerDisconnect
+  playerDisconnect,
 } = require('./gameLogic');
 
 const teamManager = require('./teamManager');
@@ -119,19 +119,52 @@ function setupSocketEvents(io) {
           const stateData = {
             isGameRunning: gameLogic.game.isGameRunning,
             roundNumber: gameLogic.game.round,
-            timeRemaining: gameLogic.game.timeRemaining
+            timeRemaining: gameLogic.game.timeRemaining,
           };
 
           // If the game is running and a round is active, send more data
-          if (gameLogic.game.isGameRunning && gameLogic.game.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
-            io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, stateData);
+          if (
+            gameLogic.game.isGameRunning &&
+            gameLogic.game.round >= CONSTANTS.FIRST_ROUND_NUMBER
+          ) {
+            io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+              CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
+              stateData,
+            );
           }
         }
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SCREEN_CONNECT, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_CONNECTING_SCREEN });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+          message: CONSTANTS.ERROR_MESSAGES.ERROR_CONNECTING_SCREEN,
+        });
       }
     });
+
+    // Check if connection is from instructor page
+    const isInstructorPage =
+      socket.handshake.headers.referer &&
+      socket.handshake.headers.referer.endsWith(CONSTANTS.ROUTES.INSTRUCTOR);
+
+    // Add instructor to instructor room if from instructor page
+    if (isInstructorPage) {
+      isInstructor = true;
+
+      console.log(`Instructor with ID ${socket.id} joined instructor room`);
+
+      // Map this socket to "instructor" role
+      socket.instructor = true;
+      socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
+      socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room for broadcasts
+
+      // Notify the instructor client that a game is already created
+      io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
+        CONSTANTS.SOCKET.EVENT_GAME_CREATED,
+        {
+          manualStartEnabled: gameLogic.game.manualStartEnabled,
+        },
+      );
+    }
 
     // Instructor creates a new game (keeping for backward compatibility)
     socket.on(CONSTANTS.SOCKET.EVENT_CREATE_GAME, () => {
@@ -151,15 +184,22 @@ function setupSocketEvents(io) {
         console.log('Game created - players reset');
 
         // Notify the client
-        io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
-          manualStartEnabled: gameLogic.game.manualStartEnabled
-        });
+        io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
+          CONSTANTS.SOCKET.EVENT_GAME_CREATED,
+          {
+            manualStartEnabled: gameLogic.game.manualStartEnabled,
+          },
+        );
 
         // Also notify screens
-        io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED);
+        io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+          CONSTANTS.SOCKET.EVENT_GAME_CREATED,
+        );
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_CREATE_GAME, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_CREATING_GAME });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+          message: CONSTANTS.ERROR_MESSAGES.ERROR_CREATING_GAME,
+        });
       }
     });
 
@@ -167,7 +207,9 @@ function setupSocketEvents(io) {
     socket.on(CONSTANTS.SOCKET.EVENT_JOIN_GAME, ({ playerName: name }) => {
       try {
         if (!name) {
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.PLAYER_NAME_REQUIRED });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+            message: CONSTANTS.ERROR_MESSAGES.PLAYER_NAME_REQUIRED,
+          });
           return;
         }
 
@@ -228,14 +270,18 @@ function setupSocketEvents(io) {
             playerName,
             isTeam: isTeam
           });
-
         } else {
-          console.error(`${CONSTANTS.DEBUG_MESSAGES.PLAYER_JOIN_FAILED} ${playerName}:`, result.error);
+          console.error(
+            `${CONSTANTS.DEBUG_MESSAGES.PLAYER_JOIN_FAILED} ${playerName}:`,
+            result.error,
+          );
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_JOIN_GAME, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_JOINING_GAME });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+          message: CONSTANTS.ERROR_MESSAGES.ERROR_JOINING_GAME,
+        });
       }
     });
 
@@ -246,7 +292,7 @@ function setupSocketEvents(io) {
         if (!name || typeof name !== 'string' || name.trim() === '') {
           socket.emit(CONSTANTS.SOCKET.EVENT_JOIN_ACK, {
             success: false,
-            error: CONSTANTS.ERROR_MESSAGES.INVALID_INPUT
+            error: CONSTANTS.ERROR_MESSAGES.INVALID_INPUT,
           });
           return;
         }
@@ -266,22 +312,31 @@ function setupSocketEvents(io) {
           console.log(`Player reconnected: ${playerName}`);
 
           // Send current game state to the player
-          if (result.isGameRunning && result.round >= CONSTANTS.FIRST_ROUND_NUMBER) {
+          if (
+            result.isGameRunning &&
+            result.round >= CONSTANTS.FIRST_ROUND_NUMBER
+          ) {
             const gameLogic = require('./gameLogic');
-            io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, {
-              roundNumber: result.round,
-              capital: result.capital,
-              output: result.output,
-              submitted: result.submitted,
-              timeRemaining: gameLogic.game.timeRemaining
-            });
+            io.to(getPlayerRoom(playerName)).emit(
+              CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
+              {
+                roundNumber: result.round,
+                capital: result.capital,
+                output: result.output,
+                submitted: result.submitted,
+                timeRemaining: gameLogic.game.timeRemaining,
+              },
+            );
           }
 
           // Also notify screens about reconnection
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
-            playerName,
-            isReconnect: true
-          });
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+            CONSTANTS.SOCKET.EVENT_PLAYER_JOINED,
+            {
+              playerName,
+              isReconnect: true,
+            },
+          );
         }
 
         // Send acknowledgment to the client
@@ -290,7 +345,7 @@ function setupSocketEvents(io) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_RECONNECT_GAME, error);
         socket.emit(CONSTANTS.SOCKET.EVENT_JOIN_ACK, {
           success: false,
-          error: CONSTANTS.ERROR_MESSAGES.SERVER_ERROR_RECONNECT
+          error: CONSTANTS.ERROR_MESSAGES.SERVER_ERROR_RECONNECT,
         });
       }
     });
@@ -299,7 +354,9 @@ function setupSocketEvents(io) {
     socket.on(CONSTANTS.SOCKET.EVENT_START_GAME, () => {
       try {
         if (!isInstructor) {
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.NOT_AUTHORIZED });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+            message: CONSTANTS.ERROR_MESSAGES.NOT_AUTHORIZED,
+          });
           return;
         }
 
@@ -309,7 +366,9 @@ function setupSocketEvents(io) {
           console.log('Game started');
 
           // Broadcast game started to all players and instructors
-          io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_GAME_STARTED);
+          io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(
+            CONSTANTS.SOCKET.EVENT_GAME_STARTED,
+          );
 
           // Start the first round
           startRound(io);
@@ -318,7 +377,9 @@ function setupSocketEvents(io) {
         }
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_START_GAME, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_STARTING_GAME });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+          message: CONSTANTS.ERROR_MESSAGES.ERROR_STARTING_GAME,
+        });
       }
     });
 
@@ -326,7 +387,9 @@ function setupSocketEvents(io) {
     socket.on(CONSTANTS.SOCKET.EVENT_FORCE_END_GAME, () => {
       try {
         if (!isInstructor) {
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.NOT_AUTHORIZED });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+            message: CONSTANTS.ERROR_MESSAGES.NOT_AUTHORIZED,
+          });
           return;
         }
 
@@ -337,11 +400,16 @@ function setupSocketEvents(io) {
         const result = gameLogic.forceEndGame(io);
 
         if (!result.success) {
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error || CONSTANTS.ERROR_MESSAGES.ERROR_FORCE_END_GAME });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+            message:
+              result.error || CONSTANTS.ERROR_MESSAGES.ERROR_FORCE_END_GAME,
+          });
         }
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_FORCE_END_GAME, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_FORCE_END_GAME });
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+          message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_FORCE_END_GAME,
+        });
       }
     });
 
@@ -349,11 +417,15 @@ function setupSocketEvents(io) {
     socket.on(CONSTANTS.SOCKET.EVENT_SET_MANUAL_START, ({ enabled }) => {
       try {
         if (!isInstructor) {
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.NOT_AUTHORIZED });
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+            message: CONSTANTS.ERROR_MESSAGES.NOT_AUTHORIZED,
+          });
           return;
         }
 
-        console.log(`Instructor requested to ${enabled ? 'enable' : 'disable'} manual start mode`);
+        console.log(
+          `Instructor requested to ${enabled ? 'enable' : 'disable'} manual start mode`,
+        );
 
         const gameLogic = require('./gameLogic');
         const result = gameLogic.setManualStartMode(enabled);
@@ -371,110 +443,175 @@ function setupSocketEvents(io) {
           }
         }
       } catch (error) {
-        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SET_MANUAL_START, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_SETTING_MANUAL_START });
+        console.error(
+          CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SET_MANUAL_START,
+          error,
+        );
+        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+          message: CONSTANTS.ERROR_MESSAGES.ERROR_SETTING_MANUAL_START,
+        });
       }
     });
 
     // Student submits investment
-    socket.on(CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT, ({ investment, isAutoSubmit }) => {
-      try {
-        console.log(`Received investment submission from socket ${socket.id} (role: ${socket.gameRole || 'unknown'})`);
+    socket.on(
+      CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT,
+      ({ investment, isAutoSubmit }) => {
+        try {
+          console.log(
+            `Received investment submission from socket ${socket.id} (role: ${socket.gameRole || 'unknown'})`,
+          );
 
-        if (!playerName) {
-          console.error(`${CONSTANTS.DEBUG_MESSAGES.NO_PLAYER_NAME} ${socket.id}`);
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.NOT_IN_GAME });
-          return;
-        }
-
-        console.log(`Processing investment from ${playerName}: ${investment}`);
-
-        const gameLogic = require('./gameLogic');
-        // Debug game state
-        console.log('Game state:', {
-          isGameRunning: gameLogic.game.isGameRunning,
-          round: gameLogic.game.round,
-          playerCount: Object.keys(gameLogic.game.players).length,
-          instructorRoomSize: io.sockets.adapter.rooms.get(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR)?.size || 0
-        });
-
-        const result = gameLogic.submitInvestment(playerName, investment, isAutoSubmit);
-
-        if (result.success) {
-          console.log(`Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`);
-          io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, { investment: result.investment, isAutoSubmit });
-
-          // Always broadcast to instructor room
-          console.log('Sending investment_received to instructor room');
-          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, {
-            playerName,
-            investment: result.investment,
-            isAutoSubmit
-          });
-
-          // Also notify screens about the investment
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, {
-            playerName,
-            investment: result.investment,
-            isAutoSubmit
-          });
-
-          // Check if the round should end (all players submitted)
-          if (gameLogic.game.pendingEndRound) {
-            console.log('All players have submitted - ending round immediately');
-
-            // Prepare notification message
-            const notificationData = {
-              message: CONSTANTS.UI_TEXT.ALL_SUBMITTED_NOTIFICATION,
-              timeRemaining: CONSTANTS.ALL_SUBMITTED_NOTIFICATION_SECONDS // Show message for specified time
-            };
-
-            try {
-              // Send notification to all students
-              io.to(CONSTANTS.SOCKET_ROOMS.PLAYERS).emit(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, notificationData);
-
-              // Send notification to instructor room
-              io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, notificationData);
-
-              // Send notification to screens
-              io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, notificationData);
-
-              // Clear timers safely
-              try {
-                if (gameLogic.game.roundTimer) {
-                  clearTimeout(gameLogic.game.roundTimer);
-                }
-                if (gameLogic.game.timerInterval) {
-                  clearInterval(gameLogic.game.timerInterval);
-                }
-              } catch (timerError) {
-                console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS, timerError);
-              }
-
-              // Add a slight delay before ending the round to allow for UI updates
-              setTimeout(() => {
-                try {
-                  gameLogic.endRound(io);
-                } catch (endRoundError) {
-                  console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_ENDING_ROUND, endRoundError);
-                }
-              }, CONSTANTS.ALL_SUBMITTED_UI_DELAY_MS);
-            } catch (notificationError) {
-              console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_SENDING_NOTIFICATIONS, notificationError);
-            }
-          } else if (result.allSubmitted) {
-            // This could happen if multiple submissions come in at almost the same time
-            console.log('This submission completed all required inputs - will end round shortly');
+          if (!playerName) {
+            console.error(
+              `${CONSTANTS.DEBUG_MESSAGES.NO_PLAYER_NAME} ${socket.id}`,
+            );
+            socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+              message: CONSTANTS.ERROR_MESSAGES.NOT_IN_GAME,
+            });
+            return;
           }
-        } else {
-          console.error(`${CONSTANTS.DEBUG_MESSAGES.INVESTMENT_SUBMISSION_FAILED} ${playerName}:`, result.error);
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
+
+          console.log(
+            `Processing investment from ${playerName}: ${investment}`,
+          );
+
+          const gameLogic = require('./gameLogic');
+          // Debug game state
+          console.log('Game state:', {
+            isGameRunning: gameLogic.game.isGameRunning,
+            round: gameLogic.game.round,
+            playerCount: Object.keys(gameLogic.game.players).length,
+            instructorRoomSize:
+              io.sockets.adapter.rooms.get(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR)
+                ?.size || 0,
+          });
+
+          const result = gameLogic.submitInvestment(
+            playerName,
+            investment,
+            isAutoSubmit,
+          );
+
+          if (result.success) {
+            console.log(
+              `Investment submitted by ${playerName}: ${result.investment}${isAutoSubmit ? ' (auto-submitted)' : ''}`,
+            );
+            io.to(getPlayerRoom(playerName)).emit(
+              CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
+              { investment: result.investment, isAutoSubmit },
+            );
+
+            // Always broadcast to instructor room
+            console.log('Sending investment_received to instructor room');
+            io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
+              CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
+              {
+                playerName,
+                investment: result.investment,
+                isAutoSubmit,
+              },
+            );
+
+            // Also notify screens about the investment
+            io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+              CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
+              {
+                playerName,
+                investment: result.investment,
+                isAutoSubmit,
+              },
+            );
+
+            // Check if the round should end (all players submitted)
+            if (gameLogic.game.pendingEndRound) {
+              console.log(
+                'All players have submitted - ending round immediately',
+              );
+
+              // Prepare notification message
+              const notificationData = {
+                message: CONSTANTS.UI_TEXT.ALL_SUBMITTED_NOTIFICATION,
+                timeRemaining: CONSTANTS.ALL_SUBMITTED_NOTIFICATION_SECONDS, // Show message for specified time
+              };
+
+              try {
+                // Send notification to all students
+                io.to(CONSTANTS.SOCKET_ROOMS.PLAYERS).emit(
+                  CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
+                  notificationData,
+                );
+
+                // Send notification to instructor room
+                io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
+                  CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
+                  notificationData,
+                );
+
+                // Send notification to screens
+                io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+                  CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
+                  notificationData,
+                );
+
+                // Clear timers safely
+                try {
+                  if (gameLogic.game.roundTimer) {
+                    clearTimeout(gameLogic.game.roundTimer);
+                  }
+                  if (gameLogic.game.timerInterval) {
+                    clearInterval(gameLogic.game.timerInterval);
+                  }
+                } catch (timerError) {
+                  console.error(
+                    CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS,
+                    timerError,
+                  );
+                }
+
+                // Add a slight delay before ending the round to allow for UI updates
+                setTimeout(() => {
+                  try {
+                    gameLogic.endRound(io);
+                  } catch (endRoundError) {
+                    console.error(
+                      CONSTANTS.DEBUG_MESSAGES.ERROR_ENDING_ROUND,
+                      endRoundError,
+                    );
+                  }
+                }, CONSTANTS.ALL_SUBMITTED_UI_DELAY_MS);
+              } catch (notificationError) {
+                console.error(
+                  CONSTANTS.DEBUG_MESSAGES.ERROR_SENDING_NOTIFICATIONS,
+                  notificationError,
+                );
+              }
+            } else if (result.allSubmitted) {
+              // This could happen if multiple submissions come in at almost the same time
+              console.log(
+                'This submission completed all required inputs - will end round shortly',
+              );
+            }
+          } else {
+            console.error(
+              `${CONSTANTS.DEBUG_MESSAGES.INVESTMENT_SUBMISSION_FAILED} ${playerName}:`,
+              result.error,
+            );
+            socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+              message: result.error,
+            });
+          }
+        } catch (error) {
+          console.error(
+            CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SUBMIT_INVESTMENT,
+            error,
+          );
+          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+            message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_INVESTMENT,
+          });
         }
-      } catch (error) {
-        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SUBMIT_INVESTMENT, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: CONSTANTS.ERROR_MESSAGES.ERROR_PROCESSING_INVESTMENT });
-      }
-    });
+      },
+    );
 
     // Client requests student list
     socket.on('get_student_list', () => {
@@ -573,7 +710,9 @@ function setupSocketEvents(io) {
         // Socket.IO automatically handles room membership on disconnect
         if (isInstructor) {
           console.log('Instructor disconnected');
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_INSTRUCTOR_DISCONNECTED);
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+            CONSTANTS.SOCKET.EVENT_INSTRUCTOR_DISCONNECTED,
+          );
         }
 
         // Handle screen disconnect
@@ -586,8 +725,14 @@ function setupSocketEvents(io) {
           console.log(`Player disconnected: ${playerName}`);
 
           // Notify instructor and screens about the disconnection
-          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED, { playerName });
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED, { playerName });
+          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
+            CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED,
+            { playerName },
+          );
+          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
+            CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED,
+            { playerName },
+          );
         }
 
         // Mark player as disconnected

@@ -3,7 +3,7 @@
  * Student Socket Module
  * Manages all socket communication for student game interface
  */
-(function(window) {
+(function (window) {
   'use strict';
 
   /**
@@ -18,7 +18,7 @@
      * Initialize all socket event listeners
      * Main entry point for socket communication
      */
-    initializeSocketEvents: function() {
+    initializeSocketEvents: function () {
       // Group: Connection events
       this.socket.on(CONSTANTS.SOCKET.EVENT_CONNECT, this.handleConnect.bind(this));
       this.socket.on(CONSTANTS.SOCKET.EVENT_DISCONNECT, this.handleDisconnect.bind(this));
@@ -38,10 +38,16 @@
       this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, this.handleGameOver.bind(this));
 
       // Group: Utility events
-      this.socket.on(CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT, this.handleStateSnapshot.bind(this));
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
+        this.handleStateSnapshot.bind(this),
+      );
       this.socket.on('timer_update', this.handleTimerUpdate.bind(this));
       this.socket.on(CONSTANTS.SOCKET.EVENT_ERROR, this.handleError.bind(this));
-      this.socket.on('admin_notification', this.handleAdminNotification.bind(this));
+      this.socket.on(
+        'admin_notification',
+        this.handleAdminNotification.bind(this),
+      );
     },
 
     /**
@@ -100,18 +106,17 @@
         elements.registerTeamButton.disabled = false;
       }
     },
-
     /**
      * Handle connection to server
      */
-    handleConnect: function() {
+    handleConnect: function () {
       SocketUtils.logEvent('Connect', { socketId: this.socket.id });
     },
 
     /**
      * Handle disconnection from server
      */
-    handleDisconnect: function() {
+    handleDisconnect: function () {
       SocketUtils.logEvent('Disconnect');
       StudentGame.stopTimer();
     },
@@ -120,7 +125,7 @@
      * Handle successful game join
      * @param {Object} data - Game join data with player information
      */
-    handleGameJoined: function(data) {
+    handleGameJoined: function (data) {
       SocketUtils.logEvent('Game joined', data);
       const elements = StudentDom.elements;
 
@@ -129,7 +134,6 @@
 
       // Update UI elements
       this.updatePlayerInfo(elements, data);
-
       console.log(`Successfully joined game as ${StudentGame.state.currentPlayerName}`);
 
       // Show game interface
@@ -141,7 +145,7 @@
      * @param {Object} elements - DOM elements
      * @param {Object} data - Player data
      */
-    updatePlayerInfo: function(elements, data) {
+    updatePlayerInfo: function (elements, data) {
       // Update player name display
       SocketUtils.updateElementText(elements.displayName, StudentGame.state.currentPlayerName);
 
@@ -162,7 +166,7 @@
     /**
      * Handle game started event
      */
-    handleGameStarted: function() {
+    handleGameStarted: function () {
       SocketUtils.logEvent('Game started');
       const elements = StudentDom.elements;
 
@@ -177,11 +181,14 @@
      * Ensure capital and output values are displayed
      * @param {Object} elements - DOM elements
      */
-    ensureCapitalOutputDisplayed: function(elements) {
-      if (elements.capital && elements.capital.textContent === '-' && StudentGame.state.lastCapital) {
+    ensureCapitalOutputDisplayed: function (elements) {
+      if (
+        elements.capital &&
+        elements.capital.textContent === '-' &&
+        StudentGame.state.lastCapital
+      ) {
         elements.capital.textContent = StudentGame.state.lastCapital;
       }
-
       if (elements.output && elements.output.textContent === '-' && StudentGame.state.lastOutput) {
         elements.output.textContent = StudentGame.state.lastOutput;
       }
@@ -191,7 +198,7 @@
      * Handle round start event
      * @param {Object} data - Round data
      */
-    handleRoundStart: function(data) {
+    handleRoundStart: function (data) {
       SocketUtils.logEvent('Round start', data);
       const elements = StudentDom.elements;
 
@@ -202,7 +209,10 @@
       this.updateCapitalOutput(elements, data);
 
       // Update round status
-      SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS);
+      SocketUtils.updateElementText(
+        elements.roundStatus,
+        CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS,
+      );
 
       // Configure investment UI for new round
       this.configureInvestmentUI(elements, data);
@@ -216,7 +226,7 @@
      * @param {Object} elements - DOM elements
      * @param {Object} data - Game data
      */
-    updateCapitalOutput: function(elements, data) {
+    updateCapitalOutput: function (elements, data) {
       if (data.capital !== undefined && elements.capital) {
         elements.capital.textContent = data.capital;
         StudentGame.state.lastCapital = data.capital;
@@ -234,7 +244,7 @@
      * @param {Object} elements - DOM elements
      * @param {Object} data - Round data
      */
-    configureInvestmentUI: function(elements, data) {
+    configureInvestmentUI: function (elements, data) {
       // Configure investment slider
       if (elements.investmentSlider) {
         elements.investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
@@ -261,7 +271,7 @@
      * Handle investment received confirmation
      * @param {Object} data - Investment data
      */
-    handleInvestmentReceived: function(data) {
+    handleInvestmentReceived: function (data) {
       SocketUtils.logEvent('Investment received', data);
 
       // Update UI to show investment was received
@@ -275,7 +285,7 @@
      * Handle all students submitted event
      * @param {Object} data - Submission data
      */
-    handleAllSubmitted: function(data) {
+    handleAllSubmitted: function (data) {
       SocketUtils.logEvent('All submitted', data);
       const elements = StudentDom.elements;
 
@@ -303,7 +313,7 @@
      * Handle round end event
      * @param {Object} data - Round end data
      */
-    handleRoundEnd: function(data) {
+    handleRoundEnd: function (data) {
       SocketUtils.logEvent('Round end', data);
       const elements = StudentDom.elements;
 
@@ -317,7 +327,10 @@
       StudentDom.showRoundResults();
 
       // Update round status
-      SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED);
+      SocketUtils.updateElementText(
+        elements.roundStatus,
+        CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED,
+      );
     },
 
     /**
@@ -325,7 +338,7 @@
      * @param {Object} elements - DOM elements
      * @param {Object} data - Round end data
      */
-    updateRoundEndResults: function(elements, data) {
+    updateRoundEndResults: function (elements, data) {
       // Update main capital and output values
       if (data.newCapital !== undefined) {
         SocketUtils.updateElementText(elements.capital, data.newCapital);
@@ -349,7 +362,7 @@
      * Handle game over event
      * @param {Object} data - Game over data
      */
-    handleGameOver: function(data) {
+    handleGameOver: function (data) {
       SocketUtils.logEvent('Game over', data);
       const elements = StudentDom.elements;
 
@@ -365,16 +378,24 @@
       SocketUtils.updateElementText(elements.winner, data.winner);
 
       // Generate rankings
-      StudentDom.updateFinalRankings(data.finalResults, StudentGame.state.currentPlayerName);
+      StudentDom.updateFinalRankings(
+        data.finalResults,
+        StudentGame.state.currentPlayerName,
+      );
 
       // Hide round content and show game over UI
       StudentDom.showGameOver();
 
       // Update round status
-      SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_GAME_OVER);
+      SocketUtils.updateElementText(
+        elements.roundStatus,
+        CONSTANTS.UI_TEXT.STATUS_GAME_OVER,
+      );
 
       // Disable all investment controls
-      StudentGame.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS);
+      StudentGame.disableInvestmentControls(
+        CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS,
+      );
     },
 
     /**
@@ -382,7 +403,7 @@
      * @param {Object} elements - DOM elements
      * @param {Object} playerResult - Player's final result data
      */
-    updateGameOverResults: function(elements, playerResult) {
+    updateGameOverResults: function (elements, playerResult) {
       if (!playerResult) return;
 
       // Update final output display
@@ -396,7 +417,10 @@
       }
 
       if (playerResult.finalOutput) {
-        SocketUtils.updateElementText(elements.output, playerResult.finalOutput);
+        SocketUtils.updateElementText(
+          elements.output,
+          playerResult.finalOutput,
+        );
         StudentGame.state.lastOutput = playerResult.finalOutput;
       }
     },
@@ -405,7 +429,7 @@
      * Handle state snapshot event
      * @param {Object} data - State snapshot data
      */
-    handleStateSnapshot: function(data) {
+    handleStateSnapshot: function (data) {
       SocketUtils.logEvent('State snapshot', data);
       const elements = StudentDom.elements;
 
@@ -417,7 +441,8 @@
 
       // Handle submission status
       if (data.submitted && elements.investmentStatus) {
-        elements.investmentStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ALREADY_SUBMITTED;
+        elements.investmentStatus.textContent =
+          CONSTANTS.UI_TEXT.STATUS_ALREADY_SUBMITTED;
         StudentGame.disableInvestmentControls();
       }
 
@@ -434,7 +459,7 @@
      * Handle timer update event
      * @param {Object} data - Timer data
      */
-    handleTimerUpdate: function(data) {
+    handleTimerUpdate: function (data) {
       SocketUtils.logEvent('Timer update', data);
       const elements = StudentDom.elements;
 
@@ -447,10 +472,11 @@
       if (data.timeRemaining <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS &&
           !StudentGame.state.hasSubmittedInvestment &&
           elements.investmentSlider) {
-
         const currentInvestment = parseFloat(elements.investmentSlider.value);
         this.submitInvestment(currentInvestment, true);
-        StudentGame.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_TIME_EXPIRED);
+        StudentGame.disableInvestmentControls(
+          CONSTANTS.UI_TEXT.STATUS_TIME_EXPIRED,
+        );
       }
     },
 
@@ -458,7 +484,7 @@
      * Handle error event
      * @param {Object} data - Error data
      */
-    handleError: function(data) {
+    handleError: function (data) {
       SocketUtils.logEvent('Error', data);
       const elements = StudentDom.elements;
 
@@ -475,7 +501,7 @@
      * Handle admin notification event
      * @param {Object} data - Notification data
      */
-    handleAdminNotification: function(data) {
+    handleAdminNotification: function (data) {
       SocketUtils.logEvent('Admin notification', data);
       if (data.message) {
         StudentDom.displayAdminNotification(data.message, data.type || 'info');
@@ -497,12 +523,11 @@
     registerTeam: function(teamName, students) {
       this.socket.emit('register_team', { teamName, students });
     },
-
     /**
      * Join the game with the specified player name
      * @param {string} playerName - Player's name
      */
-    joinGame: function(playerName) {
+    joinGame: function (playerName) {
       if (!playerName) return;
       this.socket.emit(CONSTANTS.SOCKET.EVENT_JOIN_GAME, { playerName });
     },
@@ -517,7 +542,7 @@
         investment: parseFloat(investment),
         isAutoSubmit
       });
-    }
+    },
   };
 
   // Expose the module to window

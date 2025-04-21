@@ -25,8 +25,8 @@ The application can be accessed through a web browser:
 
 ## Game Flow
 
-1. **Instructor creates a game** and gets a unique 4-digit code to share with students
-2. **Students join** using the code and their chosen names
+1. **Instructor creates a game**
+2. **Students join** using their chosen names
 3. **Instructor starts the game** once all students have joined
 4. For each of the 10 rounds:
    - Students receive their current capital and output values

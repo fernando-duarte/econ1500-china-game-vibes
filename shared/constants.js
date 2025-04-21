@@ -38,8 +38,8 @@ const GAME_CONSTANTS = {
   OPACITY_FULL: '1', // Full opacity value for restoring after repaint
 
   // Auto-start feature
-  AUTO_START_ENABLED: true,  // Enabled - will auto-start when manual mode is turned off
-  AUTO_START_PLAYERS: 3,  // Default number of players needed if auto-start is enabled
+  AUTO_START_ENABLED: true, // Enabled - will auto-start when manual mode is turned off
+  AUTO_START_PLAYERS: 3, // Default number of players needed if auto-start is enabled
 
   // Server defaults
   DEFAULT_PORT: 3000,
@@ -49,17 +49,17 @@ const GAME_CONSTANTS = {
     INACTIVE: 'inactive',
     WAITING: 'waiting',
     ACTIVE: 'active',
-    COMPLETED: 'completed'
+    COMPLETED: 'completed',
   },
 
   // Content type constants
   CONTENT_TYPES: {
-    JAVASCRIPT: 'application/javascript'
+    JAVASCRIPT: 'application/javascript',
   },
 
   // Environment constants
   ENVIRONMENT: {
-    TYPEOF_UNDEFINED: 'undefined'
+    TYPEOF_UNDEFINED: 'undefined',
   },
 
   // CSS layout constant for stat-box width
@@ -71,14 +71,14 @@ const GAME_CONSTANTS = {
     PLAYERS: 'players',
     INSTRUCTOR: 'instructor',
     SCREENS: 'screens',
-    PLAYER_PREFIX: 'player:'
+    PLAYER_PREFIX: 'player:',
   },
 
   // Game Role Constants
   GAME_ROLES: {
     PLAYER: 'player',
     INSTRUCTOR: 'instructor',
-    SCREEN: 'screen'
+    SCREEN: 'screen',
   },
 
   // Error Message Constants
@@ -101,12 +101,12 @@ const GAME_CONSTANTS = {
     MAX_PLAYERS_REACHED: 'Maximum number of players reached',
     NO_PLAYERS_IN_GAME: 'No players in the game',
     PLAYER_NOT_FOUND: 'Player not found',
-    GAME_NOT_RUNNING: 'Game is not running'
+    GAME_NOT_RUNNING: 'Game is not running',
   },
 
   // Notification Messages
   NOTIFICATION_MESSAGES: {
-    GAME_ENDING: 'Game is being ended by the instructor...'
+    GAME_ENDING: 'Game is being ended by the instructor...',
   },
 
   // Debug Message Constants
@@ -116,7 +116,8 @@ const GAME_CONSTANTS = {
     AUTO_START_FAILED_NO_IO: 'Auto-start failed: io object is missing',
 
     // Timer-related errors
-    ERROR_CLEARING_TIMERS_START_ROUND: 'Error clearing existing timers in startRound:',
+    ERROR_CLEARING_TIMERS_START_ROUND:
+      'Error clearing existing timers in startRound:',
     ERROR_TIMER_INTERVAL: 'Error in timer interval:',
     ERROR_ROUND_END_TIMEOUT: 'Error in round end timeout:',
     ERROR_SETTING_UP_TIMERS: 'Error setting up timers:',
@@ -126,7 +127,7 @@ const GAME_CONSTANTS = {
 
     // IO-related errors
     NO_IO_AVAILABLE_END_ROUND: 'No io object available when ending round!',
-    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!',
+    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!'
 
     // Socket handlers errors
     ERROR_IN_SCREEN_CONNECT: 'Error in screen_connect:',
@@ -137,7 +138,8 @@ const GAME_CONSTANTS = {
     ERROR_IN_FORCE_END_GAME: 'Error in force_end_game:',
     ERROR_IN_SET_MANUAL_START: 'Error in set_manual_start:',
     PLAYER_JOIN_FAILED: 'Player join failed for',
-    NO_PLAYER_NAME: 'Cannot process investment: No player name associated with socket',
+    NO_PLAYER_NAME:
+      'Cannot process investment: No player name associated with socket',
     INVESTMENT_SUBMISSION_FAILED: 'Investment submission failed for',
     ERROR_IN_SUBMIT_INVESTMENT: 'Error in submit_investment:',
     ERROR_ENDING_ROUND: 'Error ending round:',
@@ -151,7 +153,7 @@ const GAME_CONSTANTS = {
 
     // Client-side errors
     INVALID_INVESTMENT_DATA: 'Invalid investment_received data:',
-    SOCKET_ERROR: 'Socket error:'
+    SOCKET_ERROR: 'Socket error:',
   },
 
   // UI Text Constants
@@ -170,26 +172,34 @@ const GAME_CONSTANTS = {
     STATUS_GAME_STARTING: 'Game Starting',
     STATUS_WAITING_FOR_GAME: 'Waiting for Game',
     STATUS_GAME_STARTED: 'Game has started. Waiting for first round...',
-    STATUS_ALREADY_SUBMITTED: 'You have already submitted your investment for this round',
-    STATUS_TIME_EXPIRED: 'Time expired. Current investment value submitted automatically.',
+    STATUS_ALREADY_SUBMITTED:
+      'You have already submitted your investment for this round',
+    STATUS_TIME_EXPIRED:
+      'Time expired. Current investment value submitted automatically.',
     STATUS_ENDING: 'Ending...',
     STATUS_WAITING_FOR_GAME_START: 'Waiting for game to start...',
     STATUS_WAITING_FOR_NEXT_ROUND: 'Waiting for next round...',
     TITLE_AUTO_SUBMITTED: 'Auto-submitted (current slider value)',
     AUTO_SUBMIT_SUFFIX: ' (auto)',
     PLACEHOLDER_INVESTMENT_SUBMITTED: 'No investments submitted yet',
-    CONFIRM_FORCE_END: 'Are you sure you want to force end the game? This will end the current round and declare a winner immediately.',
+    CONFIRM_FORCE_END:
+      'Are you sure you want to force end the game? This will end the current round and declare a winner immediately.',
     CONFIRM_START_GAME_PREFIX: 'Start the game with ',
     CONFIRM_START_GAME_SUFFIX: ' player(s)?',
-    ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.',
+    ALERT_NO_PLAYERS:
+      'No players have joined yet. Wait for at least one player to join before starting the game.',
     ERROR_ENTER_NAME: 'Please enter your name',
     ERROR_ENTER_TEAM_NAME: 'Please enter a team name',
     ERROR_SELECT_STUDENTS: 'Please select at least one student',
     ERROR_ENTER_VALID_NUMBER: 'Please enter a valid number',
-    STATUS_INVESTMENT_SUBMITTED: 'Investment submitted. Waiting for other players...',
-    STATUS_TIMES_UP_AUTO_SUBMIT: 'Time\'s up! Your investment was auto-submitted.',
-    STATUS_GAME_OVER_NO_INVESTMENTS: 'Game is over. No more investments can be made.',
-    ALL_SUBMITTED_NOTIFICATION: 'All players have submitted investments. Round ending early...',
+    STATUS_INVESTMENT_SUBMITTED:
+      'Investment submitted. Waiting for other players...',
+    STATUS_TIMES_UP_AUTO_SUBMIT:
+      'Time\'s up! Your investment was auto-submitted.',
+    STATUS_GAME_OVER_NO_INVESTMENTS:
+      'Game is over. No more investments can be made.',
+    ALL_SUBMITTED_NOTIFICATION:
+      'All players have submitted investments. Round ending early...',
     ERROR_PREFIX: 'Error: ',
     TIMER_PLACEHOLDER: '-',
     ROUND_COMPLETED_FORMAT: 'Round {0} Completed',
@@ -215,7 +225,7 @@ const GAME_CONSTANTS = {
     ALL_SUBMITTED_STATUS: 'all-submitted-status',
     PLAYER_NAME: 'player-name',
     PLAYER_STATUS: 'player-status',
-    PLAYER_STATUS_PENDING: 'pending'
+    PLAYER_STATUS_PENDING: 'pending',
   },
 
   // Socket.IO Events
@@ -266,7 +276,7 @@ const GAME_CONSTANTS = {
     TYPE_INFO: 'info',
     TYPE_WARNING: 'warning',
     TYPE_ERROR: 'error',
-    DEFAULT_TYPE: 'info'
+    DEFAULT_TYPE: 'info',
   },
 
   // HTTP Routes
@@ -276,26 +286,32 @@ const GAME_CONSTANTS = {
     STUDENT: '/',
     SCREEN: '/screen',
     SHARED: '/shared',
-    CONSTANTS: '/constants.js'
+    CONSTANTS: '/constants.js',
   },
 
   // Table columns
-  INVESTMENTS_TABLE_COLUMN_COUNT: 2
+  INVESTMENTS_TABLE_COLUMN_COUNT: 2,
 };
 
 // Calculated constants (derived from the above)
 const CALCULATED_CONSTANTS = {
-  INITIAL_OUTPUT: Math.pow(GAME_CONSTANTS.INITIAL_CAPITAL, GAME_CONSTANTS.ALPHA).toFixed(GAME_CONSTANTS.DECIMAL_PRECISION),
+  INITIAL_OUTPUT: Math.pow(
+    GAME_CONSTANTS.INITIAL_CAPITAL,
+    GAME_CONSTANTS.ALPHA,
+  ).toFixed(GAME_CONSTANTS.DECIMAL_PRECISION),
 };
 
 const ALL_CONSTANTS = {
   ...GAME_CONSTANTS,
-  ...CALCULATED_CONSTANTS
+  ...CALCULATED_CONSTANTS,
 };
 
 // Export for server-side use
-if (typeof module !== GAME_CONSTANTS.ENVIRONMENT.TYPEOF_UNDEFINED && module.exports) {
+if (
+  typeof module !== GAME_CONSTANTS.ENVIRONMENT.TYPEOF_UNDEFINED &&
+  module.exports
+) {
   module.exports = {
-    ...ALL_CONSTANTS
+    ...ALL_CONSTANTS,
   };
 }

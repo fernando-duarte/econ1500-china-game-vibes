@@ -1,39 +1,56 @@
 // Configuration for jest-puppeteer
+const fs = require("fs");
+const path = require("path");
+
+// Ensure temp directory exists for port file
+const tempDir = path.join(__dirname, "temp");
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir, { recursive: true });
+}
+
+// File to store dynamically assigned port
+const PORT_FILE = path.join(tempDir, "test-server-port.txt");
+
+// Clean up any existing port file before starting
+if (fs.existsSync(PORT_FILE)) {
+  fs.unlinkSync(PORT_FILE);
+}
+
 module.exports = {
   // Launch options for Puppeteer
   launch: {
     // Use new headless mode
-    headless: 'new',
+    headless: "new",
     // Slow down Puppeteer operations by the specified amount of milliseconds
     // Useful for debugging
     slowMo: process.env.DEBUG ? 100 : 0,
     // Add any additional command line arguments for Chrome/Chromium
     args: [
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
     ],
     // Set timeout for browser launch
-    timeout: 60000,
+    timeout: 10000,
   },
   // Server configurations
   server: {
-    // Use the dev script which is likely more suitable for testing
-    command: 'NODE_ENV=test START_SERVER_IN_TEST=true node server/index.js',
-    // Port to wait for
-    port: 3001,
-    // Protocol, hostname and port
-    url: 'http://localhost:3001',
+    // Use the dev script with dynamic port and port file for persistence
+    command: `NODE_ENV=test START_SERVER_IN_TEST=true PORT=0 PORT_FILE="${PORT_FILE}" node server/index.js`,
+    // Port detection is handled by waitForPort function in custom setup
+    port: 0,
+    // URL is dynamically determined in test setup
+    url: null, // Will be determined dynamically
     // Increase timeout for server to start
-    launchTimeout: 300000,
+    launchTimeout: 30000,
     // Debug server startup
     debug: true,
     // Only start the server once for all tests
-    launchType: 'once',
+    launchType: "once",
     // Used port action
-    usedPortAction: 'kill',
+    usedPortAction: "kill",
   },
   // Browser context settings
-  browserContext: 'default', // or 'incognito'
-}; 
+  browserContext: "default", // or 'incognito'
+};

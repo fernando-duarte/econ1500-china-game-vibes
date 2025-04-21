@@ -13,7 +13,7 @@ function createTestGame(overrides = {}) {
     startTime: Date.now(),
     capital: 100,
     output: 50,
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -29,7 +29,7 @@ function createTestPlayer(overrides = {}) {
     decisions: [],
     investment: 0,
     consumption: 0,
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -41,7 +41,7 @@ function createTestDecision(overrides = {}) {
     roundId: 1,
     investment: 50,
     timestamp: Date.now(),
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -55,7 +55,7 @@ function createTestRound(overrides = {}) {
     endTime: null,
     duration: 60000, // 60 seconds
     decisions: [],
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -63,5 +63,5 @@ module.exports = {
   createTestGame,
   createTestPlayer,
   createTestDecision,
-  createTestRound
-}; 
+  createTestRound,
+};
