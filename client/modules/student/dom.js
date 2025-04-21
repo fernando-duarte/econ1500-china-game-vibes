@@ -106,6 +106,12 @@
      * @param {number} unavailableCount - Number of students already in teams
      */
     populateStudentList: function(students, studentsInTeams, teamInfo, unavailableCount) {
+      console.log('populateStudentList called with:', {
+        studentsCount: students ? students.length : 0,
+        studentsInTeamsCount: studentsInTeams ? studentsInTeams.length : 0,
+        unavailableCount: unavailableCount || 0
+      });
+
       // Store the data for filtering
       this.studentData.allStudents = students || [];
       this.studentData.studentsInTeams = studentsInTeams || [];
@@ -141,12 +147,20 @@
      * @param {string} searchQuery - Optional search query to filter students
      */
     renderStudentList: function(searchQuery = '') {
+      console.log('renderStudentList called with searchQuery:', searchQuery);
       const container = this.elements.studentSelectionContainer;
+      console.log('studentSelectionContainer element:', container);
       const { allStudents, studentsInTeams, teamInfo, unavailableCount, selectedStudents } = this.studentData;
+      console.log('Student data for rendering:', {
+        allStudentsCount: allStudents.length,
+        studentsInTeamsCount: studentsInTeams.length,
+        unavailableCount: unavailableCount
+      });
 
       container.innerHTML = '';
 
       if (!allStudents || allStudents.length === 0) {
+        console.log('No students available to render');
         container.innerHTML = '<p>No students available</p>';
         return;
       }
@@ -163,12 +177,15 @@
       const studentsInTeamsSet = new Set(studentsInTeams);
 
       // Filter students based on search query
+      console.log('Filtering students with search query:', searchQuery);
       const filteredStudents = searchQuery ?
-        allStudents.filter(student => student.toLowerCase().includes(searchQuery)) :
+        allStudents.filter(student => student.toLowerCase().includes(searchQuery.toLowerCase())) :
         allStudents;
+      console.log(`Filtered ${filteredStudents.length} students out of ${allStudents.length} total`);
 
       // Show message if no students match the search
       if (filteredStudents.length === 0) {
+        console.log('No students match the search query');
         const noResults = document.createElement('div');
         noResults.className = 'no-results';
         noResults.textContent = 'No students match your search.';
@@ -176,7 +193,9 @@
         return;
       }
 
-      filteredStudents.forEach(student => {
+      console.log('Creating checkboxes for filtered students...');
+      filteredStudents.forEach((student, index) => {
+        if (index < 5) console.log(`Creating checkbox for student: ${student}`);
         const checkbox = document.createElement('div');
         const isInTeam = studentsInTeamsSet.has(student);
 

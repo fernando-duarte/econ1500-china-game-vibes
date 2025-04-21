@@ -105,5 +105,11 @@
   // Initialize the app when DOM is loaded
   document.addEventListener('DOMContentLoaded', () => {
     StudentMain.init();
+
+    // Explicitly request student list again after a short delay
+    setTimeout(() => {
+      console.log('Explicitly requesting student list after initialization...');
+      StudentSocket.getStudentList();
+    }, 1000);
   });
 })(window);

@@ -23,10 +23,17 @@
       this.socket.on(CONSTANTS.SOCKET.EVENT_CONNECT, this.handleConnect.bind(this));
       this.socket.on(CONSTANTS.SOCKET.EVENT_DISCONNECT, this.handleDisconnect.bind(this));
 
+      // Test event
+      this.socket.on('test_event', (data) => {
+        console.log('Received test_event from server:', data);
+        // Explicitly request student list after receiving test event
+        this.getStudentList();
+      });
+
       // Group: Team registration events
-      this.socket.on('student_list', this.handleStudentList.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_STUDENT_LIST, this.handleStudentList.bind(this));
       this.socket.on('student_list_updated', this.handleStudentListUpdated.bind(this));
-      this.socket.on('team_registered', this.handleTeamRegistered.bind(this));
+      this.socket.on(CONSTANTS.SOCKET.EVENT_TEAM_REGISTERED, this.handleTeamRegistered.bind(this));
 
       // Group: Game state events
       this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, this.handleGameJoined.bind(this));
@@ -55,9 +62,13 @@
      * @param {Object} data - Student list data
      */
     handleStudentList: function(data) {
+      console.log('Student list received from server:', data);
       SocketUtils.logEvent('Student list received', data);
       if (data && data.allStudents) {
+        console.log(`Populating student list with ${data.allStudents.length} students`);
         StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+      } else {
+        console.error('Invalid student list data received:', data);
       }
     },
 
@@ -111,6 +122,12 @@
      */
     handleConnect: function () {
       SocketUtils.logEvent('Connect', { socketId: this.socket.id });
+
+      // Request student list immediately after connection
+      console.log('Connected to server, requesting student list...');
+      setTimeout(() => {
+        this.getStudentList();
+      }, 500);
     },
 
     /**
@@ -512,7 +529,9 @@
      * Request student list from server
      */
     getStudentList: function() {
-      this.socket.emit('get_student_list');
+      console.log('Requesting student list from server...');
+      this.socket.emit(CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST);
+      console.log(`Sent ${CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST} event to server`);
     },
 
     /**

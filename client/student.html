@@ -61,6 +61,10 @@
             <h3>Capital (K)</h3>
             <p id="capital">-</p>
           </div>
+          <div class="stat-box">
+            <h3>Output (Y)</h3>
+            <p id="output">-</p>
+          </div>
           <div class="round-info">
             <p>
               Round: <span id="roundNumber">-</span> of
@@ -95,46 +99,18 @@
               <p>Investment</p>
               <p id="investmentResult">-</p>
             </div>
-          </div>
-
-          <div id="investmentUI" class="hidden">
-            <h3>Investment Decision</h3>
-            <p>How much of your output do you want to invest?</p>
-            <p>Time remaining: <span id="timer">-</span> seconds</p>
-
-            <div class="investment-controls">
-              <input type="range" id="investmentSlider" value="0" />
-              <div class="investment-values">
-                <span>0</span>
-                <input type="number" id="investmentValue" value="0" />
-                <span id="maxOutput">-</span>
-              </div>
+            <div class="result-box">
+              <p>New Capital</p>
+              <p id="newCapital">-</p>
             </div>
-
-            <button id="submitInvestment" class="button">
-              Submit Investment
-            </button>
-            <p id="investmentStatus"></p>
-          </div>
-
-          <div id="roundResults" class="hidden">
-            <h3>Round Results</h3>
-            <div class="results-container">
-              <div class="result-box">
-                <p>Investment</p>
-                <p id="investmentResult">-</p>
-              </div>
-              <div class="result-box">
-                <p>New Capital</p>
-                <p id="newCapital">-</p>
-              </div>
-              <div class="result-box">
-                <p>New Output</p>
-                <p id="newOutput">-</p>
-              </div>
+            <div class="result-box">
+              <p>New Output</p>
+              <p id="newOutput">-</p>
             </div>
-            <p id="waitingNextRound">Waiting for next round...</p>
           </div>
+          <p id="waitingNextRound">Waiting for next round...</p>
+
+
         </div>
       </div>
 
@@ -159,6 +135,22 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/constants.js"></script>
   <script src="/student.js"></script>
+  <script>
+    // Direct script to request student list
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, waiting for socket initialization...');
+      // Wait for socket to be initialized
+      setTimeout(function() {
+        console.log('Directly requesting student list...');
+        if (window.StudentSocket) {
+          window.StudentSocket.getStudentList();
+          console.log('Student list request sent directly from inline script');
+        } else {
+          console.error('StudentSocket not found!');
+        }
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
 

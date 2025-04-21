@@ -15,6 +15,7 @@ const fs = require('fs');
 const { Server } = require('socket.io');
 const { setupSocketEvents } = require('./events');
 const CONSTANTS = require('../shared/constants');
+const teamManager = require('./teamManager');
 
 // Check if we're in test environment
 const isTestEnvironment = process.env.NODE_ENV === 'test';
@@ -63,6 +64,10 @@ app.get('/instructor', (req, res) => {
 app.get('/screen', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/screen.html'));
 });
+
+// Load student list
+const studentList = teamManager.loadStudentList();
+console.log(`Loaded ${studentList.length} students at server startup`);
 
 // Set up Socket.IO event handlers
 setupSocketEvents(io);
