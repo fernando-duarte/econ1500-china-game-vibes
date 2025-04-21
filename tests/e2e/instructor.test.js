@@ -20,13 +20,13 @@ describe('Instructor Flow', () => {
     page = await browser.newPage();
     
     // Navigate to the instructor page
-    await page.goto('http://localhost:3001/instructor', {
+    await page.goto(`http://localhost:${server.port}/instructor`, {
       waitUntil: 'networkidle0',
-      timeout: 30000
+      timeout: 10000
     });
     // Wait for the page to render fully
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }, 60000);
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }, 10000);
   
   afterAll(async () => {
     // Close browser and server with proper error handling
@@ -49,7 +49,7 @@ describe('Instructor Flow', () => {
   
   it('Instructor can create a new game', async () => {
     // Wait for game controls to be visible
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Check if we're on the instructor page
     const pageTitle = await page.title();

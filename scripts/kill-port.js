@@ -6,8 +6,10 @@
  */
 
 const { execSync } = require('child_process');
+const CONSTANTS = require('../shared/constants');
 
-const PORT = 3001;
+// Use default port or specified port in environment
+const PORT = process.env.PORT || CONSTANTS.DEFAULT_PORT || 3001;
 
 function killProcessOnPort(port) {
   try {

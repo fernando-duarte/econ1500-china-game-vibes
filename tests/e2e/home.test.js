@@ -1,17 +1,32 @@
 /**
  * E2E test for the home page using jest-puppeteer
  */
+const { startTestServer } = require('./e2eUtils');
 
 describe('Home Page', () => {
+  let server;
+  
   beforeAll(async () => {
+    // Get server info including dynamic port
+    server = await startTestServer();
+    
     // Navigate to the home page before running tests
-    await page.goto('http://localhost:3001', {
+    await page.goto(`http://localhost:${server.port}`, {
       waitUntil: 'networkidle0', // Wait until there are no more network connections for at least 500ms
-      timeout: 30000 // Increase timeout for page load
+      timeout: 10000 // Timeout matching Jest config
     });
     
     // Wait for the page to be fully rendered
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
+  });
+  
+  afterAll(async () => {
+    // Clean up resources
+    if (server) {
+      await server.close().catch(err => 
+        console.error('Error closing server:', err)
+      );
+    }
   });
 
   it('should have the correct page title', async () => {
@@ -74,7 +89,10 @@ describe('Home Page', () => {
         }
       } else if (tagName === 'input') {
         // For input fields, try typing if they're enabled
-        const isEnabled = await page.evaluate(el => !el.disabled, element);
+        const isEnabled = await page.evaluate(el => {
+          if (el.tagName === 'A') return true;
+          return 'disabled' in el ? !el.disabled : true;
+        }, element);
         
         if (isEnabled) {
           try {

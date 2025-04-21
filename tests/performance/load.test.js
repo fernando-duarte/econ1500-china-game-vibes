@@ -6,13 +6,16 @@ describe('Socket Performance', () => {
   let clients = [];
   
   beforeAll(async () => {
-    socketServer = createSocketServer();
+    socketServer = await createSocketServer();
   });
   
   afterAll(async () => {
     // Disconnect all clients
     await Promise.all(clients.map(c => c.disconnectClient()));
-    await socketServer.closeServer();
+    
+    if (socketServer) {
+      await socketServer.closeServer();
+    }
   });
   
   test('Can handle 20 simultaneous connections', async () => {
@@ -30,7 +33,7 @@ describe('Socket Performance', () => {
     
     expect(clients.length).toBe(20);
     expect(duration).toBeLessThan(10000); // Should connect 20 clients in under 10 seconds
-  }, 30000);
+  }, 10000);
   
   test('Can broadcast to all clients efficiently', async () => {
     // Skip if no clients connected
@@ -62,7 +65,7 @@ describe('Socket Performance', () => {
     
     // Performance expectations
     expect(duration).toBeLessThan(1000); // Broadcast should complete in under 1 second
-  }, 15000);
+  }, 10000);
   
   test('Can handle multiple simultaneous investment submissions', async () => {
     // Skip if no clients connected
@@ -103,5 +106,5 @@ describe('Socket Performance', () => {
     
     // Performance expectations
     expect(duration).toBeLessThan(2000); // 10 submissions should process in under 2 seconds
-  }, 20000);
+  }, 10000);
 }); 

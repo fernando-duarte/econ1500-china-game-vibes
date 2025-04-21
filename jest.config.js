@@ -9,6 +9,8 @@ module.exports = {
   verbose: true,
   setupFilesAfterEnv: ['./tests/setup.js'],
   reporters: ['default'],
+  // Add global teardown
+  globalTeardown: './tests/globalTeardown.js',
   // Set coverage thresholds to enforce code quality - temporarily lowered for development
   coverageThreshold: {
     global: {
@@ -18,6 +20,10 @@ module.exports = {
       statements: 20
     }
   },
+  // Make test runs more isolated
+  maxWorkers: 1, // Run tests serially for better isolation
+  // Add more granular test execution
+  bail: 0, // Don't stop on first failure
   // Configuration for specific test types
   projects: [
     {

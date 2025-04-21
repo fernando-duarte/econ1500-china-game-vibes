@@ -1,4 +1,21 @@
 // Configuration for jest-puppeteer
+const fs = require('fs');
+const path = require('path');
+
+// Ensure temp directory exists for port file
+const tempDir = path.join(__dirname, 'temp');
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir, { recursive: true });
+}
+
+// File to store dynamically assigned port
+const PORT_FILE = path.join(tempDir, 'test-server-port.txt');
+
+// Clean up any existing port file before starting
+if (fs.existsSync(PORT_FILE)) {
+  fs.unlinkSync(PORT_FILE);
+}
+
 module.exports = {
   // Launch options for Puppeteer
   launch: {
@@ -19,12 +36,12 @@ module.exports = {
   },
   // Server configurations
   server: {
-    // Use the dev script which is likely more suitable for testing
-    command: 'NODE_ENV=test START_SERVER_IN_TEST=true node server/index.js',
-    // Port to wait for
-    port: 3001,
-    // Protocol, hostname and port
-    url: 'http://localhost:3001',
+    // Use the dev script with dynamic port and port file for persistence
+    command: `NODE_ENV=test START_SERVER_IN_TEST=true PORT=0 PORT_FILE="${PORT_FILE}" node server/index.js`,
+    // Port detection is handled by waitForPort function in custom setup
+    port: 0,
+    // URL is dynamically determined in test setup
+    url: null, // Will be determined dynamically
     // Increase timeout for server to start
     launchTimeout: 10000,
     // Debug server startup
