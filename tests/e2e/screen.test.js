@@ -1,17 +1,12 @@
-const { startTestServer, launchBrowser } = require('./e2eUtils');
+const { waitForGameEvents } = require('./e2eUtils');
 const selectors = require('../selectors');
 const { gameSelector, pageSelector } = require('../selectors');
-const { waitForGameEvents } = require('./e2eUtils');
 
 describe('Screen Dashboard', () => {
-  let server;
   let browser;
   let page;
   
   beforeAll(async () => {
-    // Start test server
-    server = await startTestServer();
-    
     // Launch browser
     const browserObj = await launchBrowser();
     browser = browserObj.browser;
@@ -24,8 +19,7 @@ describe('Screen Dashboard', () => {
       waitUntil: 'networkidle0',
       timeout: 30000
     });
-    // Wait for the page to render fully
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await page.waitForTimeout(1000);
   }, 60000);
   
   afterAll(async () => {
@@ -36,12 +30,6 @@ describe('Screen Dashboard', () => {
           console.error('Error closing browser:', err)
         );
       }
-      
-      if (server) {
-        await server.close().catch(err => 
-          console.error('Error closing server:', err)
-        );
-      }
     } catch (error) {
       console.error('Error in test cleanup:', error);
     }
@@ -49,7 +37,7 @@ describe('Screen Dashboard', () => {
   
   it('Screen can display game information and update with broadcasts', async () => {
     // Wait for dashboard to be visible
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await page.waitForTimeout(2000);
     
     // Check if we're on the screen dashboard page
     const pageTitle = await page.title();

@@ -77,16 +77,19 @@ app.use((req, res, next) => {
 
 // Start the server
 const PORT = process.env.PORT || CONSTANTS.DEFAULT_PORT;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  
-  // Only log URLs in non-test environment
-  if (!isTestEnvironment) {
-    console.log(`Student view: http://localhost:${PORT}`);
-    console.log(`Instructor view: http://localhost:${PORT}/instructor`);
-    console.log(`Screen dashboard: http://localhost:${PORT}/screen`);
-  }
-});
+// Only start the server if not in test environment or if explicitly required
+if (!isTestEnvironment || process.env.START_SERVER_IN_TEST) {
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    
+    // Only log URLs in non-test environment
+    if (!isTestEnvironment) {
+      console.log(`Student view: http://localhost:${PORT}`);
+      console.log(`Instructor view: http://localhost:${PORT}/instructor`);
+      console.log(`Screen dashboard: http://localhost:${PORT}/screen`);
+    }
+  });
+}
 
 // Export for testing
 module.exports = { app, server }; 

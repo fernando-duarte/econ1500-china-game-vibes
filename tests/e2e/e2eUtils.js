@@ -1,72 +1,14 @@
+// @ts-nocheck
 const { spawn } = require('child_process');
 const puppeteer = require('puppeteer');
 const waitOn = require('wait-on');
 const path = require('path');
 
 async function startTestServer() {
-  // Start a test server on a different port
-  const testPort = 3001;
-  process.env.PORT = testPort;
-  process.env.NODE_ENV = 'test';
-  
-  // Start the server as a child process
-  const serverProcess = spawn('node', [path.join(__dirname, '../../server/index.js')], {
-    env: { ...process.env, PORT: testPort, NODE_ENV: 'test' },
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
-  
-  // Add a timeout promise
-  const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Server startup timed out')), 45000);
-  });
-  
-  // Log server output for debugging
-  serverProcess.stdout.on('data', (data) => {
-    console.log(`Server: ${data}`);
-  });
-  
-  serverProcess.stderr.on('data', (data) => {
-    console.error(`Server error: ${data}`);
-  });
-  
-  // Wait for the server to be available or timeout
-  try {
-    await Promise.race([
-      waitOn({
-        resources: [`http://localhost:${testPort}`],
-        timeout: 45000
-      }),
-      timeout
-    ]);
-  } catch (error) {
-    serverProcess.kill('SIGTERM');
-    throw error;
-  }
-  
-  return {
-    port: testPort,
-    close: () => {
-      return new Promise(resolve => {
-        if (!serverProcess || serverProcess.killed) {
-          resolve();
-          return;
-        }
-        
-        serverProcess.on('close', () => {
-          resolve();
-        });
-        serverProcess.kill('SIGTERM');
-        
-        // Fallback if server doesn't close cleanly
-        setTimeout(() => {
-          if (!serverProcess.killed) {
-            serverProcess.kill('SIGKILL');
-          }
-          resolve();
-        }, 5000);
-      });
-    }
-  };
+  const testPort = process.env.PORT || 3001;
+  // Wait for the server started by jest-puppeteer to be ready
+  await waitOn({ resources: [`http://localhost:${testPort}`], timeout: 45000 });
+  return { port: Number(testPort), close: async () => {} };
 }
 
 async function launchBrowser() {
