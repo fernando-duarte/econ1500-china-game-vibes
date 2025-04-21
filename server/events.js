@@ -141,31 +141,6 @@ function setupSocketEvents(io) {
       }
     });
 
-    // Check if connection is from instructor page
-    const isInstructorPage =
-      socket.handshake.headers.referer &&
-      socket.handshake.headers.referer.endsWith(CONSTANTS.ROUTES.INSTRUCTOR);
-
-    // Add instructor to instructor room if from instructor page
-    if (isInstructorPage) {
-      isInstructor = true;
-
-      console.log(`Instructor with ID ${socket.id} joined instructor room`);
-
-      // Map this socket to "instructor" role
-      socket.instructor = true;
-      socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
-      socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room for broadcasts
-
-      // Notify the instructor client that a game is already created
-      io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
-        CONSTANTS.SOCKET.EVENT_GAME_CREATED,
-        {
-          manualStartEnabled: gameLogic.game.manualStartEnabled,
-        },
-      );
-    }
-
     // Instructor creates a new game (keeping for backward compatibility)
     socket.on(CONSTANTS.SOCKET.EVENT_CREATE_GAME, () => {
       try {

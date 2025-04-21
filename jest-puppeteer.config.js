@@ -43,7 +43,7 @@ module.exports = {
     // URL is dynamically determined in test setup
     url: null, // Will be determined dynamically
     // Increase timeout for server to start
-    launchTimeout: 30000,
+    launchTimeout: 60000,
     // Debug server startup
     debug: true,
     // Only start the server once for all tests
