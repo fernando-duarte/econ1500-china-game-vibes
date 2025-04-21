@@ -1,13 +1,39 @@
 // client/modules/main.js
 (function(window) {
   'use strict';
-  
+
   // Define StudentMain module
   const StudentMain = {
     // Methods
     initializeDOMEventHandlers: function() {
       const elements = StudentDom.elements;
-      
+
+      // Team registration button click event
+      elements.registerTeamButton.addEventListener('click', () => {
+        const teamName = elements.teamName.value.trim();
+        if (!teamName) {
+          elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_TEAM_NAME;
+          return;
+        }
+
+        // Get selected students
+        const selectedStudents = [];
+        const checkboxes = elements.studentSelectionContainer.querySelectorAll('input[type="checkbox"]:checked');
+        checkboxes.forEach(checkbox => {
+          selectedStudents.push(checkbox.value);
+        });
+
+        if (selectedStudents.length === 0) {
+          elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_SELECT_STUDENTS;
+          return;
+        }
+
+        elements.teamRegistrationError.textContent = '';
+        elements.registerTeamButton.disabled = true;
+
+        StudentSocket.registerTeam(teamName, selectedStudents);
+      });
+
       // Join game button click event
       elements.joinButton.addEventListener('click', () => {
         const name = elements.playerName.value.trim();
@@ -52,26 +78,32 @@
         StudentGame.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED);
       });
     },
-    
+
     init: function() {
       // Initialize UI
       StudentDom.initializeUI();
-      
+
       // Initialize socket event handlers
       StudentSocket.initializeSocketEvents();
-      
+
       // Initialize DOM event handlers
       this.initializeDOMEventHandlers();
-      
+
+      // Show team registration UI first
+      StudentDom.showTeamRegistrationUI();
+
+      // Request student list
+      StudentSocket.getStudentList();
+
       console.log('Student app initialized');
     }
   };
-  
+
   // Expose the module to window
   window.StudentMain = StudentMain;
-  
+
   // Initialize the app when DOM is loaded
   document.addEventListener('DOMContentLoaded', () => {
     StudentMain.init();
   });
-})(window); 
+})(window);
