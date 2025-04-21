@@ -2,7 +2,8 @@
 const gameLogic = require('../../server/gameLogic');
 const CONSTANTS = require('../../shared/constants');
 const model = require('../../server/model');
-const { createTestGame, createTestPlayer } = require('../factories');
+// These factory functions are not used in this test file currently
+// const { createTestGame, createTestPlayer } = require('../factories/game');
 
 // Mock the model module by matching the exact path as imported in gameLogic.js
 jest.mock('../../server/model', () => require('../mocks/model'));

@@ -3,7 +3,7 @@ const {
   addPlayer,
   startGame,
   startRound,
-  submitInvestment,
+  // submitInvestment imported but used indirectly through event handlers
   playerReconnect,
   playerDisconnect
 } = require('./gameLogic');

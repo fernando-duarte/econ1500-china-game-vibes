@@ -136,7 +136,7 @@
       SocketUtils.logEvent('Player joined', data);
       
       // Add player to game state
-      const playerAdded = InstructorGame.addPlayer(data.playerName);
+      InstructorGame.addPlayer(data.playerName);
       
       // Update player list UI
       InstructorDom.updatePlayerList(
@@ -327,7 +327,6 @@
       
       // Update round status
       if (elements.roundStatus) {
-        const oldText = elements.roundStatus.textContent;
         elements.roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_ALL_SUBMITTED_ENDING;
         elements.roundStatus.classList.add(CONSTANTS.CSS.ALL_SUBMITTED_STATUS);
         

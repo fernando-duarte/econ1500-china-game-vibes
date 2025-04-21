@@ -15,6 +15,7 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single'],
     semi: ['error', 'always'],
+    'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
   },
   globals: {
     page: true,
@@ -27,6 +28,18 @@ module.exports = {
     beforeAll: true,
     afterAll: true,
     beforeEach: true,
-    afterEach: true
+    afterEach: true,
+    CONSTANTS: true,
+    io: true,
+    InstructorDom: true,
+    InstructorGame: true,
+    InstructorSocket: true,
+    StudentDom: true,
+    StudentGame: true,
+    StudentSocket: true,
+    ScreenDom: true,
+    ScreenGame: true,
+    ScreenSocket: true,
+    SocketUtils: true
   }
 }; 
