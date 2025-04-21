@@ -15,21 +15,23 @@ module.exports = {
       '--disable-setuid-sandbox',
     ],
     // Set timeout for browser launch
-    timeout: 30000,
+    timeout: 60000,
   },
   // Server configurations
   server: {
     // Use the dev script which is likely more suitable for testing
-    command: 'npm run dev',
+    command: 'NODE_ENV=test START_SERVER_IN_TEST=true node server/index.js',
     // Port to wait for
     port: 3001,
     // Protocol, hostname and port
     url: 'http://localhost:3001',
     // Increase timeout for server to start
-    launchTimeout: 120000,
+    launchTimeout: 300000,
     // Debug server startup
     debug: true,
-    // Wait for specific text in console to confirm server is ready
+    // Only start the server once for all tests
+    launchType: 'once',
+    // Used port action
     usedPortAction: 'kill',
   },
   // Browser context settings

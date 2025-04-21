@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { app } = require('../../server/index');
 
+// Directly use the app for testing routes without starting a server
 describe('Express Routes', () => {
   test('GET / responds with student.html', async () => {
     const response = await request(app).get('/');
