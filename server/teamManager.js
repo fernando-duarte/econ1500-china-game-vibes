@@ -114,6 +114,11 @@ function getTeams() {
  * @returns {Array} - Array of student names
  */
 function getStudentList() {
+  console.log(`getStudentList called, returning ${studentList.length} students`);
+  if (studentList.length === 0) {
+    console.warn('Student list is empty! Attempting to reload from file...');
+    return loadStudentList();
+  }
   return studentList;
 }
 

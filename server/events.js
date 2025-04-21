@@ -56,6 +56,54 @@ function setupSocketEvents(io) {
     // Add every client to the "all" room
     socket.join(CONSTANTS.SOCKET_ROOMS.ALL);
 
+    // Send a test event to the client
+    socket.emit('test_event', { message: 'Hello from server!' });
+    console.log(`Sent test_event to client: ${socket.id}`);
+
+    // Also add a direct handler for get_student_list
+    socket.on('get_student_list', () => {
+      console.log(`Received direct get_student_list request from client: ${socket.id}`);
+      try {
+        // Get all students
+        const allStudents = teamManager.getStudentList();
+        console.log(`Retrieved ${allStudents.length} students from teamManager for direct request`);
+
+        // Get students who are already in teams
+        const studentsInTeams = new Set();
+        const teamInfo = {}; // Map student name to team name
+
+        // Collect all students who are already in teams and their team info
+        Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
+          team.students.forEach(student => {
+            studentsInTeams.add(student);
+            teamInfo[student] = teamName;
+          });
+        });
+
+        // Prepare the data to send
+        const responseData = {
+          allStudents: allStudents,
+          studentsInTeams: Array.from(studentsInTeams),
+          teamInfo: teamInfo,
+          unavailableCount: studentsInTeams.size
+        };
+
+        console.log(`Sending student list to client ${socket.id} (direct request):`, {
+          totalStudents: allStudents.length,
+          studentsInTeams: studentsInTeams.size,
+          availableStudents: allStudents.length - studentsInTeams.size
+        });
+
+        // Send the complete list to the client with availability info
+        socket.emit('student_list', responseData);
+
+        console.log(`Sent student list to client: ${socket.id} (direct request)`);
+      } catch (error) {
+        console.error('Error sending student list (direct request):', error);
+        socket.emit('error', { message: 'Error retrieving student list' });
+      }
+    });
+
     let playerName = null;
     let isInstructor = false;
     let isScreen = false;
@@ -140,6 +188,7 @@ function setupSocketEvents(io) {
         });
       }
     });
+
 
     // Instructor creates a new game (keeping for backward compatibility)
     socket.on(CONSTANTS.SOCKET.EVENT_CREATE_GAME, () => {
@@ -589,10 +638,12 @@ function setupSocketEvents(io) {
     );
 
     // Client requests student list
-    socket.on('get_student_list', () => {
+    socket.on(CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST, () => {
+      console.log(`Received get_student_list request from client: ${socket.id}`);
       try {
         // Get all students
         const allStudents = teamManager.getStudentList();
+        console.log(`Retrieved ${allStudents.length} students from teamManager`);
 
         // Get students who are already in teams
         const studentsInTeams = new Set();
@@ -606,13 +657,22 @@ function setupSocketEvents(io) {
           });
         });
 
-        // Send the complete list to the client with availability info
-        socket.emit('student_list', {
+        // Prepare the data to send
+        const responseData = {
           allStudents: allStudents,
           studentsInTeams: Array.from(studentsInTeams),
           teamInfo: teamInfo,
           unavailableCount: studentsInTeams.size
+        };
+
+        console.log(`Sending student list to client ${socket.id}:`, {
+          totalStudents: allStudents.length,
+          studentsInTeams: studentsInTeams.size,
+          availableStudents: allStudents.length - studentsInTeams.size
         });
+
+        // Send the complete list to the client with availability info
+        socket.emit(CONSTANTS.SOCKET.EVENT_STUDENT_LIST, responseData);
 
         console.log(`Sent student list to client: ${socket.id} (${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total)`);
       } catch (error) {
