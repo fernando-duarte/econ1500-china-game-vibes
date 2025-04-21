@@ -106,7 +106,7 @@ function setupSocketEvents(io) {
     // Instructor creates a new game (keeping for backward compatibility)
     socket.on(CONSTANTS.SOCKET.EVENT_CREATE_GAME, () => {
       try {
-        // Create a new game
+        // Create a new game - this will reset all player data
         createGame();
         isInstructor = true;
 
@@ -118,7 +118,7 @@ function setupSocketEvents(io) {
         socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
         socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room
 
-        console.log('Game created');
+        console.log('Game created - players reset');
 
         // Notify the client
         io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
@@ -314,6 +314,12 @@ function setupSocketEvents(io) {
 
           // Notify all clients about the change
           io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE, { enabled: result.manualStartEnabled });
+          
+          // If switching to auto mode (disabling manual start), check if we should auto-start based on current player count
+          if (!enabled && !gameLogic.game.isGameRunning) {
+            console.log('Checking for auto-start after toggling to auto mode');
+            gameLogic.checkAutoStart(io);
+          }
         }
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_SET_MANUAL_START, error);

@@ -44,7 +44,8 @@ module.exports = {
   endRound,
   endGame,
   forceEndGame,
-  setManualStartMode
+  setManualStartMode,
+  checkAutoStart
 };
 
 /**
@@ -56,7 +57,7 @@ function createGame() {
     isGameRunning: false,
     state: CONSTANTS.GAME_STATES.WAITING,
     round: CONSTANTS.FIRST_ROUND_NUMBER - 1,
-    players: {},
+    players: {}, // Completely reset players object
     roundTimer: null,
     timerInterval: null,
     timeRemaining: 0,
@@ -124,13 +125,16 @@ function addPlayer(playerName, socketId, io) {
  * Check if the game should auto-start and start it if conditions are met
  */
 function checkAutoStart(io) { // Accept io here
+  // Only count connected players
+  const connectedPlayerCount = Object.values(game.players).filter(player => player.connected).length;
+  
   // Only proceed with auto-start if manual start is NOT enabled
   if (!game.manualStartEnabled && 
       CONSTANTS.AUTO_START_ENABLED && 
-      Object.keys(game.players).length >= CONSTANTS.AUTO_START_PLAYERS && 
+      connectedPlayerCount >= CONSTANTS.AUTO_START_PLAYERS && 
       !game.isGameRunning) {
     
-    console.log('Auto-starting game with', Object.keys(game.players).length, 'players');
+    console.log('Auto-starting game with', connectedPlayerCount, 'connected players');
     const startResult = startGame();
     
     if (startResult.success && io) { // Check if io exists
@@ -476,6 +480,27 @@ function endGame(io) {
   // Reset game state
   game.isGameRunning = false;
   game.state = CONSTANTS.GAME_STATES.COMPLETED;
+  
+  // Preserve connected player information but reset their game data
+  const preservedPlayers = {};
+  
+  Object.entries(game.players).forEach(([playerName, player]) => {
+    // Only keep connected players, and reset their game data
+    if (player.connected) {
+      preservedPlayers[playerName] = {
+        socketId: player.socketId,
+        name: playerName,
+        capital: CONSTANTS.INITIAL_CAPITAL,
+        output: calculateOutput(CONSTANTS.INITIAL_CAPITAL),
+        investment: null,
+        connected: true,
+        isAutoSubmit: false
+      };
+    }
+  });
+  
+  // Replace players with preserved data
+  game.players = preservedPlayers;
   
   return { success: true, finalResults, winner };
 }
