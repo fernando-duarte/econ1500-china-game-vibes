@@ -479,18 +479,30 @@ function setupSocketEvents(io) {
     // Client requests student list
     socket.on('get_student_list', () => {
       try {
-        // Get all students and available students (not in teams)
+        // Get all students
         const allStudents = teamManager.getStudentList();
-        const availableStudents = teamManager.getAvailableStudents();
 
-        // Send both lists to the client
-        socket.emit('student_list', {
-          students: availableStudents,
-          allStudents: allStudents,
-          unavailableCount: allStudents.length - availableStudents.length
+        // Get students who are already in teams
+        const studentsInTeams = new Set();
+        const teamInfo = {}; // Map student name to team name
+
+        // Collect all students who are already in teams and their team info
+        Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
+          team.students.forEach(student => {
+            studentsInTeams.add(student);
+            teamInfo[student] = teamName;
+          });
         });
 
-        console.log(`Sent student list to client: ${socket.id} (${availableStudents.length} available out of ${allStudents.length} total)`);
+        // Send the complete list to the client with availability info
+        socket.emit('student_list', {
+          allStudents: allStudents,
+          studentsInTeams: Array.from(studentsInTeams),
+          teamInfo: teamInfo,
+          unavailableCount: studentsInTeams.size
+        });
+
+        console.log(`Sent student list to client: ${socket.id} (${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total)`);
       } catch (error) {
         console.error('Error sending student list:', error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error retrieving student list' });
@@ -517,6 +529,29 @@ function setupSocketEvents(io) {
 
           // Note: We don't automatically add the player here anymore
           // The client will call joinGame separately
+
+          // Prepare updated student list info for broadcasting
+          const allStudents = teamManager.getStudentList();
+          const studentsInTeams = new Set();
+          const teamInfo = {};
+
+          // Collect all students who are already in teams and their team info
+          Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
+            team.students.forEach(student => {
+              studentsInTeams.add(student);
+              teamInfo[student] = teamName;
+            });
+          });
+
+          // Broadcast updated student list to all clients
+          io.emit('student_list_updated', {
+            allStudents: allStudents,
+            studentsInTeams: Array.from(studentsInTeams),
+            teamInfo: teamInfo,
+            unavailableCount: studentsInTeams.size
+          });
+
+          console.log(`Broadcast updated student list: ${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total`);
         } else {
           socket.emit('team_registered', {
             success: false,

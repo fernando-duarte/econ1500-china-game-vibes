@@ -195,6 +195,22 @@ input[type=range] {
   font-size: var(--font-size-sm);
 }
 
+.student-in-team {
+  opacity: 0.6;
+}
+
+.student-in-team label {
+  text-decoration: line-through;
+  color: var(--color-text-light);
+}
+
+.team-info {
+  margin-left: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-style: italic;
+}
+
 .error {
   color: var(--color-error);
   margin-top: var(--spacing-md);
