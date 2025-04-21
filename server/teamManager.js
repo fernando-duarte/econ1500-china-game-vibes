@@ -30,6 +30,20 @@ function loadStudentList(filePath = path.join(__dirname, '../data/students.txt')
 }
 
 /**
+ * Check if a student is already in a team
+ * @param {string} studentName - Student name to check
+ * @returns {Object|null} - Team object the student is in, or null if not in any team
+ */
+function findStudentTeam(studentName) {
+  for (const teamName in teams) {
+    if (teams[teamName].students.includes(studentName)) {
+      return teams[teamName];
+    }
+  }
+  return null;
+}
+
+/**
  * Register a new team with student members
  * @param {string} teamName - Team name
  * @param {Array} studentNames - Array of selected student names
@@ -52,6 +66,23 @@ function registerTeam(teamName, studentNames) {
     return {
       success: false,
       error: `Invalid student names: ${invalidStudents.join(', ')}`
+    };
+  }
+
+  // Check if any students are already in other teams
+  const studentsInTeams = [];
+  for (const studentName of studentNames) {
+    const existingTeam = findStudentTeam(studentName);
+    if (existingTeam) {
+      studentsInTeams.push({ student: studentName, team: existingTeam.name });
+    }
+  }
+
+  if (studentsInTeams.length > 0) {
+    const errorDetails = studentsInTeams.map(item => `${item.student} (in team ${item.team})`).join(', ');
+    return {
+      success: false,
+      error: `The following students are already in teams: ${errorDetails}`
     };
   }
 
@@ -87,6 +118,25 @@ function getStudentList() {
 }
 
 /**
+ * Get list of students who are not already in teams
+ * @returns {Array} - Array of available student names
+ */
+function getAvailableStudents() {
+  // Create a set of all students who are already in teams
+  const studentsInTeams = new Set();
+
+  // Collect all students who are already in teams
+  Object.values(teams).forEach(team => {
+    team.students.forEach(student => {
+      studentsInTeams.add(student);
+    });
+  });
+
+  // Filter the student list to only include students not in teams
+  return studentList.filter(student => !studentsInTeams.has(student));
+}
+
+/**
  * Get a specific team by name
  * @param {string} teamName - Team name to look up
  * @returns {Object|null} - Team object or null if not found
@@ -111,6 +161,8 @@ module.exports = {
   registerTeam,
   getTeams,
   getStudentList,
+  getAvailableStudents,
+  findStudentTeam,
   getTeam,
   clearTeams
 };

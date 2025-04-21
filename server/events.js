@@ -479,9 +479,18 @@ function setupSocketEvents(io) {
     // Client requests student list
     socket.on('get_student_list', () => {
       try {
-        const studentList = teamManager.getStudentList();
-        socket.emit('student_list', { students: studentList });
-        console.log(`Sent student list to client: ${socket.id}`);
+        // Get all students and available students (not in teams)
+        const allStudents = teamManager.getStudentList();
+        const availableStudents = teamManager.getAvailableStudents();
+
+        // Send both lists to the client
+        socket.emit('student_list', {
+          students: availableStudents,
+          allStudents: allStudents,
+          unavailableCount: allStudents.length - availableStudents.length
+        });
+
+        console.log(`Sent student list to client: ${socket.id} (${availableStudents.length} available out of ${allStudents.length} total)`);
       } catch (error) {
         console.error('Error sending student list:', error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error retrieving student list' });
