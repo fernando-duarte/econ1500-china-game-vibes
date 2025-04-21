@@ -9,6 +9,7 @@
       // Team registration elements
       teamRegistrationForm: document.getElementById('teamRegistrationForm'),
       teamName: document.getElementById('teamName'),
+      studentSearch: document.getElementById('studentSearch'),
       studentSelectionContainer: document.getElementById('studentSelectionContainer'),
       registerTeamButton: document.getElementById('registerTeamButton'),
       teamRegistrationError: document.getElementById('teamRegistrationError'),
@@ -85,6 +86,14 @@
       elements.studentSelectionContainer.innerHTML = CONSTANTS.UI_TEXT.LOADING_STUDENT_LIST;
     },
 
+    // Store student data for filtering
+    studentData: {
+      allStudents: [],
+      studentsInTeams: [],
+      teamInfo: {},
+      unavailableCount: 0
+    },
+
     /**
      * Populate the student selection container with checkboxes
      * @param {Array} students - Array of all student names
@@ -93,10 +102,47 @@
      * @param {number} unavailableCount - Number of students already in teams
      */
     populateStudentList: function(students, studentsInTeams, teamInfo, unavailableCount) {
+      // Store the data for filtering
+      this.studentData.allStudents = students || [];
+      this.studentData.studentsInTeams = studentsInTeams || [];
+      this.studentData.teamInfo = teamInfo || {};
+      this.studentData.unavailableCount = unavailableCount || 0;
+
+      // Initialize search functionality if not already done
+      this.initializeStudentSearch();
+
+      // Render the student list with the current filter
+      this.renderStudentList();
+    },
+
+    /**
+     * Initialize the student search functionality
+     */
+    initializeStudentSearch: function() {
+      // Only initialize once
+      if (this.searchInitialized) return;
+
+      const searchInput = this.elements.studentSearch;
+
+      // Add event listener for search input
+      searchInput.addEventListener('input', () => {
+        this.renderStudentList(searchInput.value.trim().toLowerCase());
+      });
+
+      this.searchInitialized = true;
+    },
+
+    /**
+     * Render the student list with optional search filter
+     * @param {string} searchQuery - Optional search query to filter students
+     */
+    renderStudentList: function(searchQuery = '') {
       const container = this.elements.studentSelectionContainer;
+      const { allStudents, studentsInTeams, teamInfo, unavailableCount } = this.studentData;
+
       container.innerHTML = '';
 
-      if (!students || students.length === 0) {
+      if (!allStudents || allStudents.length === 0) {
         container.innerHTML = '<p>No students available</p>';
         return;
       }
@@ -110,9 +156,23 @@
       }
 
       // Convert studentsInTeams array to a Set for faster lookups
-      const studentsInTeamsSet = new Set(studentsInTeams || []);
+      const studentsInTeamsSet = new Set(studentsInTeams);
 
-      students.forEach(student => {
+      // Filter students based on search query
+      const filteredStudents = searchQuery ?
+        allStudents.filter(student => student.toLowerCase().includes(searchQuery)) :
+        allStudents;
+
+      // Show message if no students match the search
+      if (filteredStudents.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-results';
+        noResults.textContent = 'No students match your search.';
+        container.appendChild(noResults);
+        return;
+      }
+
+      filteredStudents.forEach(student => {
         const checkbox = document.createElement('div');
         const isInTeam = studentsInTeamsSet.has(student);
 

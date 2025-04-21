@@ -156,6 +156,18 @@ input[type=range] {
 }
 
 /* Team Registration Styles */
+.search-container {
+  margin-bottom: var(--spacing-sm);
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
+}
+
 .student-selection {
   max-height: 200px;
   overflow-y: auto;
@@ -209,6 +221,13 @@ input[type=range] {
   font-size: var(--font-size-sm);
   color: var(--color-primary);
   font-style: italic;
+}
+
+.no-results {
+  padding: var(--spacing-md);
+  text-align: center;
+  font-style: italic;
+  color: var(--color-text-light);
 }
 
 .error {
