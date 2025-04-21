@@ -24,15 +24,15 @@ function validateInvestment(investment, currentOutput) {
   // Convert to numbers to ensure proper comparison
   investment = Number(investment);
   currentOutput = Number(currentOutput);
-  
+
   if (isNaN(investment) || investment < CONSTANTS.INVESTMENT_MIN) {
     return CONSTANTS.INVESTMENT_MIN;
   }
-  
+
   if (investment > currentOutput) {
     return currentOutput;
   }
-  
+
   return investment;
 }
 
@@ -41,5 +41,5 @@ module.exports = {
   ...CONSTANTS,
   calculateOutput,
   calculateNewCapital,
-  validateInvestment
-}; 
+  validateInvestment,
+};

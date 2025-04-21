@@ -26,8 +26,8 @@ const server = http.createServer(app);
 // Set up Socket.IO with test-specific configurations
 const io = isTestEnvironment
   ? new Server(server, {
-    pingTimeout: 2000,   // Reduced ping timeout for faster tests
-    pingInterval: 2000,  // Reduced ping interval for faster tests
+    pingTimeout: 2000, // Reduced ping timeout for faster tests
+    pingInterval: 2000, // Reduced ping interval for faster tests
     connectTimeout: 5000, // Reduced connection timeout
     transports: ['websocket'], // Use only websocket for faster tests
   })
@@ -68,11 +68,13 @@ app.get('/screen', (req, res) => {
 setupSocketEvents(io);
 
 // Add global error handler middleware with more detailed logging
-app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-  const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+app.use((err, req, res, _next) => {
+  // eslint-disable-line no-unused-vars
+  const errorId =
+    Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   console.error(`Express error [${errorId}]:`, err);
   console.error(`Request path: ${req.path}, method: ${req.method}`);
-  
+
   // In test environment, provide more detailed error information
   if (isTestEnvironment) {
     res.status(500).json({
@@ -81,7 +83,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
       error: err.message,
       stack: err.stack,
       path: req.path,
-      method: req.method
+      method: req.method,
     });
   } else {
     // In production, don't expose error details
@@ -90,21 +92,17 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 });
 
 // Add catch-all 404 handler with more information
-app.use((req, res, next) => { // eslint-disable-line no-unused-vars
+app.use((req, res, _next) => {
+  // eslint-disable-line no-unused-vars
   console.log(`404 Not Found: ${req.method} ${req.path}`);
-  
+
   // In test environment, provide more information
   if (isTestEnvironment) {
     res.status(404).json({
       message: 'Not Found',
       path: req.path,
       method: req.method,
-      availableRoutes: [
-        '/', 
-        '/instructor', 
-        '/screen', 
-        '/constants.js'
-      ]
+      availableRoutes: ['/', '/instructor', '/screen', '/constants.js'],
     });
   } else {
     res.status(404).send('Not Found');
@@ -118,18 +116,21 @@ if (!isTestEnvironment || process.env.START_SERVER_IN_TEST) {
   server.listen(PORT, () => {
     // Get the actual port that was assigned (especially important when PORT=0)
     const address = server.address();
-    const actualPort = address && typeof address === 'object' ? address.port : PORT;
+    const actualPort =
+      address && typeof address === 'object' ? address.port : PORT;
     console.log(`Server running on port ${actualPort}`);
-    
+
     // For test environments, write the port to a file for reliable port detection
     if (isTestEnvironment && process.env.PORT_FILE) {
       try {
         fs.writeFileSync(process.env.PORT_FILE, actualPort.toString(), 'utf8');
-        console.log(`Test server port ${actualPort} written to ${process.env.PORT_FILE}`);
+        console.log(
+          `Test server port ${actualPort} written to ${process.env.PORT_FILE}`,
+        );
       } catch (error) {
         console.error(`Failed to write port to file: ${error.message}`);
       }
-      
+
       // Also log a special marker for backward compatibility
       console.log(`TEST_SERVER_PORT=${actualPort}`);
     } else {
@@ -146,13 +147,13 @@ process.on('SIGINT', gracefulShutdown);
 
 function gracefulShutdown() {
   console.log('Received shutdown signal, closing server...');
-  
+
   // Set a timeout to force exit if shutdown takes too long
   const forceExitTimeout = setTimeout(() => {
     console.error('Forced exit after shutdown timeout');
     process.exit(1);
   }, 10000);
-  
+
   // Close the server gracefully
   server.close(() => {
     console.log('Server closed successfully');
@@ -162,4 +163,4 @@ function gracefulShutdown() {
 }
 
 // Export for testing
-module.exports = { app, server }; 
+module.exports = { app, server };

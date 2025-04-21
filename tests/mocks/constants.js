@@ -2,4 +2,4 @@
 const realConstants = require('../../shared/constants');
 
 // Export a deep copy of the real constants to avoid mutations affecting the original
-module.exports = JSON.parse(JSON.stringify(realConstants)); 
+module.exports = JSON.parse(JSON.stringify(realConstants));

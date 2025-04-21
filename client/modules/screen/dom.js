@@ -14,11 +14,11 @@ window.screenDOM.elements = {
   playerCount: document.getElementById('playerCount'),
   submissionCount: document.getElementById('submissionCount'),
   avgCapital: document.getElementById('avgCapital'),
-  avgOutput: document.getElementById('avgOutput')
+  avgOutput: document.getElementById('avgOutput'),
 };
 
 // Helper function to add an event to the log
-window.screenDOM.addEvent = function(type, message, highlight = false) {
+window.screenDOM.addEvent = function (type, message, highlight = false) {
   const eventElement = document.createElement('div');
   eventElement.classList.add('event');
   if (highlight) {
@@ -48,9 +48,11 @@ window.screenDOM.addEvent = function(type, message, highlight = false) {
 };
 
 // Helper function to update player list
-window.screenDOM.updatePlayerList = function() {
-  const { playerList, playerCount, submissionCount } = window.screenDOM.elements;
-  const { players, submittedPlayers, autoSubmittedPlayers } = window.screenGame.getState();
+window.screenDOM.updatePlayerList = function () {
+  const { playerList, playerCount, submissionCount } =
+    window.screenDOM.elements;
+  const { players, submittedPlayers, autoSubmittedPlayers } =
+    window.screenGame.getState();
 
   // Clear existing player list
   playerList.innerHTML = '';
@@ -62,7 +64,7 @@ window.screenDOM.updatePlayerList = function() {
   submissionCount.textContent = `${submittedPlayers.length}/${players.length}`;
 
   // Add all players to the list
-  players.forEach(player => {
+  players.forEach((player) => {
     const playerElement = document.createElement('div');
     playerElement.classList.add(CONSTANTS.CSS.PLAYER_ITEM);
 
@@ -88,21 +90,27 @@ window.screenDOM.updatePlayerList = function() {
 };
 
 // Helper function to calculate averages
-window.screenDOM.updateAverages = function() {
+window.screenDOM.updateAverages = function () {
   const { avgCapital, avgOutput } = window.screenDOM.elements;
   const { capitalValues, outputValues } = window.screenGame.getState();
 
   // Calculate average capital
   if (capitalValues.length > 0) {
-    const total = capitalValues.reduce((sum, value) => sum + parseFloat(value), 0);
+    const total = capitalValues.reduce(
+      (sum, value) => sum + parseFloat(value),
+      0,
+    );
     const average = total / capitalValues.length;
     avgCapital.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);
   }
 
   // Calculate average output
   if (outputValues.length > 0) {
-    const total = outputValues.reduce((sum, value) => sum + parseFloat(value), 0);
+    const total = outputValues.reduce(
+      (sum, value) => sum + parseFloat(value),
+      0,
+    );
     const average = total / outputValues.length;
     avgOutput.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);
   }
-}; 
+};
