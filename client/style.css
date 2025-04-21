@@ -155,6 +155,33 @@ input[type=range] {
   text-align: center;
 }
 
+/* Team Registration Styles */
+.student-selection {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-light-bg);
+  border-radius: var(--border-radius-sm);
+}
+
+.student-checkbox {
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+}
+
+.student-checkbox input[type="checkbox"] {
+  margin-right: var(--spacing-sm);
+}
+
+.student-checkbox label {
+  display: inline;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
 .error {
   color: var(--color-error);
   margin-top: var(--spacing-md);

@@ -73,14 +73,14 @@ const GAME_CONSTANTS = {
     SCREENS: 'screens',
     PLAYER_PREFIX: 'player:'
   },
-  
+
   // Game Role Constants
   GAME_ROLES: {
     PLAYER: 'player',
     INSTRUCTOR: 'instructor',
     SCREEN: 'screen'
   },
-  
+
   // Error Message Constants
   ERROR_MESSAGES: {
     NOT_AUTHORIZED: 'Not authorized',
@@ -103,7 +103,7 @@ const GAME_CONSTANTS = {
     PLAYER_NOT_FOUND: 'Player not found',
     GAME_NOT_RUNNING: 'Game is not running'
   },
-  
+
   // Notification Messages
   NOTIFICATION_MESSAGES: {
     GAME_ENDING: 'Game is being ended by the instructor...'
@@ -114,7 +114,7 @@ const GAME_CONSTANTS = {
     // Auto-start related
     AUTO_START_FAILED: 'Auto-start failed:',
     AUTO_START_FAILED_NO_IO: 'Auto-start failed: io object is missing',
-    
+
     // Timer-related errors
     ERROR_CLEARING_TIMERS_START_ROUND: 'Error clearing existing timers in startRound:',
     ERROR_TIMER_INTERVAL: 'Error in timer interval:',
@@ -123,11 +123,11 @@ const GAME_CONSTANTS = {
     ERROR_CLEARING_TIMERS_END_ROUND: 'Error clearing timers in endRound:',
     ERROR_CLEARING_TIMERS: 'Error clearing timers:',
     ERROR_CLEARING_TIMERS_FORCE_END: 'Error clearing timers in forceEndGame:',
-    
+
     // IO-related errors
     NO_IO_AVAILABLE_END_ROUND: 'No io object available when ending round!',
     CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!',
-    
+
     // Socket handlers errors
     ERROR_IN_SCREEN_CONNECT: 'Error in screen_connect:',
     ERROR_IN_CREATE_GAME: 'Error in create_game:',
@@ -143,12 +143,12 @@ const GAME_CONSTANTS = {
     ERROR_ENDING_ROUND: 'Error ending round:',
     ERROR_SENDING_NOTIFICATIONS: 'Error sending notifications:',
     ERROR_IN_DISCONNECT: 'Error in disconnect handler:',
-    
+
     // Server errors
     UNCAUGHT_EXCEPTION: 'Uncaught Exception:',
     UNHANDLED_REJECTION: 'Unhandled Rejection at:',
     EXPRESS_ERROR: 'Express error:',
-    
+
     // Client-side errors
     INVALID_INVESTMENT_DATA: 'Invalid investment_received data:',
     SOCKET_ERROR: 'Socket error:'
@@ -183,6 +183,8 @@ const GAME_CONSTANTS = {
     CONFIRM_START_GAME_SUFFIX: ' player(s)?',
     ALERT_NO_PLAYERS: 'No players have joined yet. Wait for at least one player to join before starting the game.',
     ERROR_ENTER_NAME: 'Please enter your name',
+    ERROR_ENTER_TEAM_NAME: 'Please enter a team name',
+    ERROR_SELECT_STUDENTS: 'Please select at least one student',
     ERROR_ENTER_VALID_NUMBER: 'Please enter a valid number',
     STATUS_INVESTMENT_SUBMITTED: 'Investment submitted. Waiting for other players...',
     STATUS_TIMES_UP_AUTO_SUBMIT: 'Time\'s up! Your investment was auto-submitted.',
@@ -193,8 +195,10 @@ const GAME_CONSTANTS = {
     ROUND_COMPLETED_FORMAT: 'Round {0} Completed',
     PLACEHOLDER_TEXT: '-',
     PLAYER_NAME_PLACEHOLDER: 'Enter your name',
+    TEAM_NAME_PLACEHOLDER: 'Enter your team name',
     PLAYER_PLURAL_SUFFIX: 's',
-    PLAYER_JOINED_SUFFIX: ' have joined'
+    PLAYER_JOINED_SUFFIX: ' have joined',
+    LOADING_STUDENT_LIST: 'Loading student list...'
   },
 
   // CSS Class Constants
@@ -239,6 +243,10 @@ const GAME_CONSTANTS = {
     EVENT_INSTRUCTOR_DISCONNECTED: 'instructor_disconnected',
     EVENT_PLAYER_DISCONNECTED: 'player_disconnected',
 
+    // Team registration events
+    EVENT_STUDENT_LIST: 'student_list',
+    EVENT_TEAM_REGISTERED: 'team_registered',
+
     // Control events (client → server)
     EVENT_FORCE_END_GAME: 'force_end_game',
     EVENT_SET_MANUAL_START: 'set_manual_start',
@@ -248,7 +256,9 @@ const GAME_CONSTANTS = {
     EVENT_SCREEN_CONNECT: 'screen_connect',
     EVENT_RECONNECT_GAME: 'reconnect_game',
     EVENT_CREATE_GAME: 'create_game',
-    EVENT_JOIN_ACK: 'join_ack'
+    EVENT_JOIN_ACK: 'join_ack',
+    EVENT_GET_STUDENT_LIST: 'get_student_list',
+    EVENT_REGISTER_TEAM: 'register_team'
   },
 
   // Notification Types

@@ -10,9 +10,26 @@
   <div class="container">
     <h1>Solow Growth Model Game</h1>
     <h2 class="subtitle">Student View</h2>
-    
+
+    <!-- Team Registration Form -->
+    <div id="teamRegistrationForm" class="card">
+      <h3>Team Registration</h3>
+      <div class="form-group">
+        <label for="teamName">Team Name:</label>
+        <input type="text" id="teamName" placeholder="Enter your team name">
+      </div>
+      <div class="form-group">
+        <label>Select Team Members:</label>
+        <div id="studentSelectionContainer" class="student-selection">
+          <p>Loading student list...</p>
+        </div>
+      </div>
+      <button id="registerTeamButton" class="button">Register Team</button>
+      <p id="teamRegistrationError" class="error"></p>
+    </div>
+
     <!-- Join Game Form -->
-    <div id="joinForm" class="card">
+    <div id="joinForm" class="card hidden">
       <h3>Join Game</h3>
       <div class="form-group">
         <label for="playerName">Your Name:</label>
@@ -21,7 +38,7 @@
       <button id="joinButton" class="button">Join Game</button>
       <p id="joinError" class="error"></p>
     </div>
-    
+
     <!-- Game UI (hidden until joined) -->
     <div id="gameUI" class="hidden">
       <div class="game-header">
@@ -33,7 +50,7 @@
           <p id="roundStatus">Waiting for game to start...</p>
         </div>
       </div>
-      
+
       <div class="card">
         <div class="economy-stats">
           <div class="stat-box">
@@ -45,12 +62,12 @@
             <p id="output">-</p>
           </div>
         </div>
-        
+
         <div id="investmentUI" class="hidden">
           <h3>Investment Decision</h3>
           <p>How much of your output do you want to invest?</p>
           <p>Time remaining: <span id="timer">-</span> seconds</p>
-          
+
           <div class="investment-controls">
             <input type="range" id="investmentSlider" value="0">
             <div class="investment-values">
@@ -59,11 +76,11 @@
               <span id="maxOutput">-</span>
             </div>
           </div>
-          
+
           <button id="submitInvestment" class="button">Submit Investment</button>
           <p id="investmentStatus"></p>
         </div>
-        
+
         <div id="roundResults" class="hidden">
           <h3>Round Results</h3>
           <div class="results-container">
@@ -83,7 +100,7 @@
           <p id="waitingNextRound">Waiting for next round...</p>
         </div>
       </div>
-      
+
       <div id="gameOverUI" class="hidden card">
         <h3>Game Over</h3>
         <p>Final Results:</p>
@@ -101,9 +118,9 @@
       </div>
     </div>
   </div>
-  
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="/constants.js"></script>
   <script src="/student.js"></script>
 </body>
-</html> 
+</html>
