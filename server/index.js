@@ -26,11 +26,11 @@ const server = http.createServer(app);
 // Set up Socket.IO with test-specific configurations
 const io = isTestEnvironment
   ? new Server(server, {
-      pingTimeout: 2000,   // Reduced ping timeout for faster tests
-      pingInterval: 2000,  // Reduced ping interval for faster tests
-      connectTimeout: 5000, // Reduced connection timeout
-      transports: ['websocket'], // Use only websocket for faster tests
-    })
+    pingTimeout: 2000,   // Reduced ping timeout for faster tests
+    pingInterval: 2000,  // Reduced ping interval for faster tests
+    connectTimeout: 5000, // Reduced connection timeout
+    transports: ['websocket'], // Use only websocket for faster tests
+  })
   : new Server(server);
 
 // Add explicit body parser middleware
@@ -68,7 +68,7 @@ app.get('/screen', (req, res) => {
 setupSocketEvents(io);
 
 // Add global error handler middleware with more detailed logging
-app.use((err, req, res, next) => {
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   console.error(`Express error [${errorId}]:`, err);
   console.error(`Request path: ${req.path}, method: ${req.method}`);
@@ -90,7 +90,7 @@ app.use((err, req, res, next) => {
 });
 
 // Add catch-all 404 handler with more information
-app.use((req, res, next) => {
+app.use((req, res, next) => { // eslint-disable-line no-unused-vars
   console.log(`404 Not Found: ${req.method} ${req.path}`);
   
   // In test environment, provide more information
@@ -118,7 +118,7 @@ if (!isTestEnvironment || process.env.START_SERVER_IN_TEST) {
   server.listen(PORT, () => {
     // Get the actual port that was assigned (especially important when PORT=0)
     const address = server.address();
-    const actualPort = typeof address === 'string' ? PORT : address.port;
+    const actualPort = address && typeof address === 'object' ? address.port : PORT;
     console.log(`Server running on port ${actualPort}`);
     
     // For test environments, write the port to a file for reliable port detection
