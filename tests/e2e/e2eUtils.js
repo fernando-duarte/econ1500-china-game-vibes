@@ -41,15 +41,13 @@ async function startTestServer() {
               resolve({
                 port,
                 url: `http://localhost:${port}`,
-                close: async () => {
-                  // We don't actually close the server here as jest-puppeteer manages its lifecycle
-                  return Promise.resolve();
-                }
+                close: async () => Promise.resolve()
               });
+              return true;
             } catch (error) {
               reject(new Error(`Server started but waitOn failed: ${error.message}`));
+              return false;
             }
-            return true;
           }
         }
         return false;
@@ -65,14 +63,20 @@ async function startTestServer() {
       
       // If port file doesn't exist yet, set up polling
       const pollInterval = setInterval(async () => {
-        const foundPort = await checkPortFile();
-        if (foundPort) {
+        try {
+          const foundPort = await checkPortFile();
+          if (foundPort) {
+            clearInterval(pollInterval);
+          }
+        } catch (error) {
+          console.error('Error in poll interval:', error);
           clearInterval(pollInterval);
+          reject(error);
         }
       }, 300);
       
       // Fallback to parsing stdout if needed
-      const serverProcess = jest.puppeteer.server;
+      const serverProcess = jest.puppeteer && jest.puppeteer.server;
       
       if (serverProcess && serverProcess.stdout) {
         // Regular expression to extract the port number from server output
@@ -104,9 +108,7 @@ async function startTestServer() {
               resolve({
                 port,
                 url: `http://localhost:${port}`,
-                close: async () => {
-                  return Promise.resolve();
-                }
+                close: async () => Promise.resolve()
               });
             } catch (error) {
               reject(new Error(`Server started but waitOn failed: ${error.message}`));
@@ -114,6 +116,9 @@ async function startTestServer() {
           }
         });
       }
+    }).catch(error => {
+      console.error('Error in checkPortFile initial call:', error);
+      reject(error);
     });
   });
 }

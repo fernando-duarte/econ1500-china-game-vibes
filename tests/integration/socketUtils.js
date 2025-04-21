@@ -34,7 +34,7 @@ async function createSocketServer() {
     io,
     getPort: () => {
       const address = httpServer.address();
-      return typeof address === 'string' ? 0 : address.port;
+      return address && typeof address === 'object' ? address.port : 0;
     },
     closeServer: () => {
       return new Promise((resolve, reject) => {
