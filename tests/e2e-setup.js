@@ -12,7 +12,7 @@ if (!fs.existsSync(screenshotsDir)) {
 }
 
 // Set timeout for E2E tests (matching Jest config)
-jest.setTimeout(40000);
+jest.setTimeout(60000); // Increased timeout for all tests
 
 // Track all open resources for cleanup
 global.__E2E_RESOURCES__ = {

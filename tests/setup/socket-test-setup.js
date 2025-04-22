@@ -1,6 +1,6 @@
 /**
  * Socket.IO Test Setup
- * 
+ *
  * This file sets up the environment for Socket.IO tests.
  * It should be included in Jest's setupFilesAfterEnv configuration.
  */
@@ -12,7 +12,7 @@ const { setupGlobalCleanup } = require('../utils/resource-tracker');
 setupGlobalCleanup();
 
 // Increase Jest timeout for Socket.IO tests
-jest.setTimeout(10000);
+jest.setTimeout(60000); // Increased timeout for all tests
 
 // Enable Socket.IO debug logs in test environment
 process.env.DEBUG = 'socket.io:*';

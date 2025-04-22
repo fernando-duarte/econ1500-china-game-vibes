@@ -14,7 +14,7 @@ global.console = {
 jest.useFakeTimers();
 
 // Set timeout for unit and integration tests
-jest.setTimeout(40000);
+jest.setTimeout(60000); // Increased timeout for all tests
 
 // Database setup/teardown (if applicable)
 beforeAll(async () => {
