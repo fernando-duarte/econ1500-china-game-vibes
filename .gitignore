@@ -41,6 +41,11 @@ Thumbs.db
 # Testing
 coverage/
 
+# Experimental test files
+tests/**/*-experimental.test.js
+tests/**/*-debug.test.js
+tests/**/*-wip.test.js
+
 # Misc
 .cache/
 .temp/
@@ -51,4 +56,4 @@ temp/test-server-port.txt
 jest-junit.xml
 
 # E2E test artifacts
-tests/e2e/screenshots/ 
+tests/e2e/screenshots/
