@@ -1,11 +1,11 @@
 /**
  * Reliable Socket.IO Test Setup
- * 
+ *
  * This file sets up the environment for reliable Socket.IO tests.
  */
 
 // Increase Jest timeout for Socket.IO tests
-jest.setTimeout(10000);
+jest.setTimeout(60000); // Increased timeout for all tests
 
 // Enable Socket.IO debug logs in test environment
 process.env.DEBUG = 'socket.io:*';

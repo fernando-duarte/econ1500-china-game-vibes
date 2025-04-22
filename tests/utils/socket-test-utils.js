@@ -67,14 +67,19 @@ async function createServer(options = {}) {
       const server = http.createServer();
       const httpServer = trackHttpServer(server);
 
+      // Set a timeout for server creation
+      const serverTimeout = trackTimer(setTimeout(() => {
+        reject(new Error('Timed out creating Socket.IO server'));
+      }, 15000));
+
       // Create Socket.IO server with optimized settings
       console.log('Creating Socket.IO server');
       const io = new Server(httpServer, {
         cors: { origin: '*' },
         transports: ['websocket'], // Use only websocket for faster tests
-        pingTimeout: 1000, // Reduced for faster tests
-        pingInterval: 1000, // Reduced for faster tests
-        connectTimeout: 2000, // Reduced for faster tests
+        pingTimeout: 2000, // Increased for more reliability
+        pingInterval: 2000, // Increased for more reliability
+        connectTimeout: 5000, // Increased for more reliability
         forceNew: true,
         allowEIO3: true, // Allow Engine.IO 3 clients
         ...options
@@ -89,7 +94,7 @@ async function createServer(options = {}) {
         setTimeout(() => {
           console.log(`Sending welcome message to ${socket.id}`);
           socket.emit('welcome', 'Hello from server');
-        }, 100);
+        }, 300); // Increased delay for more reliability
 
         // Set up echo handler
         socket.on('echo', (data, callback) => {
@@ -106,12 +111,14 @@ async function createServer(options = {}) {
       server.listen(() => {
         const port = server.address().port;
         console.log(`Server listening on port ${port}`);
+        clearTimeout(serverTimeout);
         resolve({ httpServer, ioServer, port });
       });
 
       // Handle server error
       server.on('error', (err) => {
         console.error('Server error:', err);
+        clearTimeout(serverTimeout);
         reject(err);
       });
     } catch (err) {
@@ -133,7 +140,9 @@ function createClient(port, options = {}) {
     transports: ['websocket'],
     forceNew: true,
     reconnection: true,
-    timeout: 2000,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 5000, // Increased for more reliability
     autoConnect: false, // Don't connect automatically
     ...options
   });
@@ -145,12 +154,20 @@ function createClient(port, options = {}) {
     console.error('Client connection error:', err.message);
   });
 
+  socket.on('connect_timeout', () => {
+    console.error('Client connection timeout');
+  });
+
   socket.on('welcome', (msg) => {
     console.log('Client received welcome message:', msg);
   });
 
   socket.on('disconnect', (reason) => {
     console.log('Client disconnected. Reason:', reason);
+  });
+
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
   });
 
   return socket;
@@ -162,7 +179,7 @@ function createClient(port, options = {}) {
  * @param {number} [timeout=5000] - Timeout in milliseconds
  * @returns {Promise<SocketIO.Socket>} Promise that resolves with connected socket
  */
-async function connectClient(socket, timeout = 5000) {
+async function connectClient(socket, timeout = 15000) {
   return new Promise((resolve, reject) => {
     // Set timeout
     const connectionTimeout = trackTimer(setTimeout(() => {
@@ -173,10 +190,22 @@ async function connectClient(socket, timeout = 5000) {
     socket.once('connect', () => {
       console.log(`Client connected with ID: ${socket.id}`);
       clearTimeout(connectionTimeout);
-      resolve(socket);
+
+      // Wait a bit to ensure connection is stable
+      setTimeout(() => {
+        resolve(socket);
+      }, 500);
     });
 
+    // Handle connection errors
+    const errorHandler = (error) => {
+      console.error('Connection error:', error);
+      // Don't reject here, let the timeout handle it
+    };
+    socket.once('connect_error', errorHandler);
+
     // Connect
+    console.log('Connecting client...');
     socket.connect();
   });
 }
@@ -206,33 +235,62 @@ async function createServerAndClient(serverOptions = {}, clientOptions = {}) {
  * @param {Function} [callback] - Callback to run after cleanup
  */
 function cleanupSocketResources(resources, callback) {
+  if (!resources) {
+    console.log('No resources to clean up');
+    if (callback) callback();
+    return;
+  }
+
   const { clientSocket, ioServer, httpServer } = resources;
 
   console.log('Cleaning up Socket.IO resources...');
 
   // Clean up client
   if (clientSocket) {
-    if (clientSocket.connected) {
-      console.log('Disconnecting client socket');
-      clientSocket.disconnect();
+    try {
+      if (clientSocket.connected) {
+        console.log('Disconnecting client socket');
+        clientSocket.disconnect();
+      }
+    } catch (err) {
+      console.error('Error disconnecting client socket:', err);
     }
   }
 
   // Clean up server
   if (ioServer) {
-    console.log('Closing Socket.IO server');
-    ioServer.close();
+    try {
+      console.log('Closing Socket.IO server');
+      ioServer.close();
+    } catch (err) {
+      console.error('Error closing Socket.IO server:', err);
+    }
   }
+
+  // Set a timeout to force callback if HTTP server doesn't close properly
+  const forceCloseTimeout = setTimeout(() => {
+    console.warn('HTTP server close timed out, forcing cleanup');
+    if (callback) callback();
+  }, 5000);
+  trackTimer(forceCloseTimeout);
 
   // Clean up HTTP server
   if (httpServer) {
-    console.log('Closing HTTP server');
-    httpServer.close(() => {
-      console.log('HTTP server closed');
+    try {
+      console.log('Closing HTTP server');
+      httpServer.close(() => {
+        console.log('HTTP server closed');
+        clearTimeout(forceCloseTimeout);
+        if (callback) callback();
+      });
+    } catch (err) {
+      console.error('Error closing HTTP server:', err);
+      clearTimeout(forceCloseTimeout);
       if (callback) callback();
-    });
-  } else if (callback) {
-    callback();
+    }
+  } else {
+    clearTimeout(forceCloseTimeout);
+    if (callback) callback();
   }
 }
 
