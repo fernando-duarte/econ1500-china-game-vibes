@@ -3,45 +3,12 @@
  * Styles specific to the screen dashboard interface
  */
 /* CSS Variables */
-:root {
-  /* Colors */
-  --color-primary: #2c6ecb;
-  --color-primary-dark: #1f5bab;
-  --color-primary-light: #b4c8e8;
-  --color-primary-lightest: #e8f0fe;
-  --color-text: #333;
-  --color-text-light: #455a74;
-  --color-text-dark: #1a3b5d;
-  --color-background: #f4f7fa;
-  --color-card: #fff;
-  --color-border: #ddd;
-  --color-success: #d4edda;
-  --color-error: #e53935;
-  --color-light-bg: #f8f9fa;
-  --color-warning: #ffd700;
-  /* Spacing */
-  --spacing-xs: 5px;
-  --spacing-sm: 8px;
-  --spacing-md: 10px;
-  --spacing-lg: 15px;
-  --spacing-xl: 20px;
-  --spacing-xxl: 30px;
-  /* Typography */
-  --font-size-sm: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 24px;
-  --font-size-xl: 36px;
-  /* Borders */
-  --border-radius-sm: 4px;
-  --border-radius-md: 6px;
-  --border-radius-lg: 8px;
-  /* Effects */
-  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --transition-speed: 0.3s;
-  /* Layout */
-  --stat-box-min-width: 150px;
-}
-
+/* Colors */
+/* Spacing */
+/* Typography */
+/* Borders */
+/* Effects */
+/* Layout */
 .screen-container {
   max-width: 100%;
   width: 100%;

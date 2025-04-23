@@ -1,4 +1,9 @@
-@use 'variables' as *;
+/**
+ * Combined CSS file for development purposes
+ * Includes all styles in one file for easier testing
+ */
+
+@use 'variables' as vars;
 @use 'reset';
 @use 'global';
 @use 'layout';
@@ -6,6 +11,9 @@
 @use 'buttons';
 @use 'forms';
 @use 'game';
-@use 'instructor';
-@use 'screen';
-@use 'utilities'; 
+@use '_instructor' as instructor;
+@use '_screen' as screen;
+@use 'utilities';
+
+// Include CSS variables definition
+@include vars.define-css-variables; 

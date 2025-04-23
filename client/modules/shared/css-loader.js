@@ -1,19 +1,17 @@
 /**
  * CSS Loader Utility
- * Handles progressive loading of modular CSS files
- * with fallback to the original style.css
+ * Handles dynamic loading of modular CSS files
  */
 (function(window) {
   'use strict';
 
   const CSSLoader = {
     /**
-     * Load CSS files in order with proper fallback
+     * Load CSS files in order
      * @param {Array} files - Array of CSS file paths to load
      * @param {Function} callback - Callback function when all files loaded
-     * @param {Boolean} disableOriginal - Whether to disable original CSS
      */
-    loadCSS: function(files, callback, disableOriginal = false) {
+    loadCSS: function(files, callback) {
       if (!Array.isArray(files) || files.length === 0) {
         console.error('No CSS files specified for loading');
         return;
@@ -36,16 +34,6 @@
           // When all files are loaded, execute callback
           if (loaded === files.length && typeof callback === 'function') {
             console.log('All CSS modules loaded successfully');
-            
-            // Optionally disable the original CSS
-            if (disableOriginal) {
-              const originalCSS = document.querySelector('link[href="/style.css"]');
-              if (originalCSS) {
-                console.log('Disabling original CSS');
-                originalCSS.setAttribute('disabled', 'disabled');
-              }
-            }
-            
             callback();
           }
         };
@@ -66,10 +54,16 @@
     },
     
     /**
-     * Enable testing mode with both original and modular CSS
+     * Enable testing mode between different CSS configurations
      * @param {Array} files - CSS modules to test
+     * @param {Array} alternativeFiles - Alternative CSS modules to toggle
      */
-    enableTestMode: function(files) {
+    enableTestMode: function(files, alternativeFiles) {
+      if (!alternativeFiles || !Array.isArray(alternativeFiles)) {
+        console.error('Alternative files must be provided for test mode');
+        return;
+      }
+      
       // Add a testing indicator
       const testIndicator = document.createElement('div');
       testIndicator.id = 'css-test-indicator';
@@ -82,39 +76,56 @@
       testIndicator.style.borderRadius = '3px';
       testIndicator.style.fontSize = '12px';
       testIndicator.style.zIndex = '9999';
-      testIndicator.textContent = 'CSS Test Mode';
+      testIndicator.textContent = 'CSS Test Mode: Default';
       
       document.body.appendChild(testIndicator);
       
-      // Load the CSS files but don't disable original
+      // Load both sets of CSS files
       this.loadCSS(files, () => {
-        console.log('Test mode enabled with CSS modules:', files);
-        
-        // Add toggle button
-        const toggleButton = document.createElement('button');
-        toggleButton.textContent = 'Toggle CSS';
-        toggleButton.style.marginLeft = '10px';
-        
-        // Toggle between original and modular CSS
-        toggleButton.addEventListener('click', () => {
-          const originalCSS = document.querySelector('link[href="/style.css"]');
-          const moduleCSSLinks = document.querySelectorAll('link[data-css-module]');
+        this.loadCSS(alternativeFiles, () => {
+          console.log('Test mode enabled with CSS modules');
           
-          if (originalCSS.hasAttribute('disabled')) {
-            // Enable original, disable modules
-            originalCSS.removeAttribute('disabled');
-            moduleCSSLinks.forEach(link => link.setAttribute('disabled', 'disabled'));
-            testIndicator.textContent = 'CSS Test Mode: Original';
-          } else {
-            // Disable original, enable modules
-            originalCSS.setAttribute('disabled', 'disabled');
-            moduleCSSLinks.forEach(link => link.removeAttribute('disabled'));
-            testIndicator.textContent = 'CSS Test Mode: Modular';
-          }
+          // Disable alternative files initially
+          const alternativeLinks = alternativeFiles.map(file => 
+            document.querySelector(`link[href="${file}"]`)
+          ).filter(Boolean);
+          
+          alternativeLinks.forEach(link => {
+            link.setAttribute('disabled', 'disabled');
+          });
+          
+          // Add toggle button
+          const toggleButton = document.createElement('button');
+          toggleButton.textContent = 'Toggle CSS';
+          toggleButton.style.marginLeft = '10px';
+          
+          // Track which set is active
+          let usingDefault = true;
+          
+          // Toggle between CSS sets
+          toggleButton.addEventListener('click', () => {
+            const defaultLinks = files.map(file => 
+              document.querySelector(`link[href="${file}"]`)
+            ).filter(Boolean);
+            
+            if (usingDefault) {
+              // Disable default, enable alternative
+              defaultLinks.forEach(link => link.setAttribute('disabled', 'disabled'));
+              alternativeLinks.forEach(link => link.removeAttribute('disabled'));
+              testIndicator.textContent = 'CSS Test Mode: Alternative';
+            } else {
+              // Disable alternative, enable default
+              alternativeLinks.forEach(link => link.setAttribute('disabled', 'disabled'));
+              defaultLinks.forEach(link => link.removeAttribute('disabled'));
+              testIndicator.textContent = 'CSS Test Mode: Default';
+            }
+            
+            usingDefault = !usingDefault;
+          });
+          
+          testIndicator.appendChild(toggleButton);
         });
-        
-        testIndicator.appendChild(toggleButton);
-      }, false);
+      });
     }
   };
 
