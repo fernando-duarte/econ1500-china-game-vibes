@@ -1,0 +1,19 @@
+/* Error: It's not clear which file to import. Found:
+ *   client/scss/_instructor.scss
+ *   client/scss/instructor.scss
+ *   ,
+ * 9 | @use 'instructor';
+ *   | ^^^^^^^^^^^^^^^^^
+ *   '
+ *   client/scss/main.scss 9:1  root stylesheet */
+
+body::before {
+  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
+      "Droid Sans Mono", monospace, monospace;
+  white-space: pre;
+  display: block;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-bottom: 2px solid black;
+  content: "Error: It's not clear which file to import. Found:\a   client/scss/_instructor.scss\a   client/scss/instructor.scss\a   \2577 \a 9 \2502  @use 'instructor';\a   \2502  ^^^^^^^^^^^^^^^^^\a   \2575 \a   client/scss/main.scss 9:1  root stylesheet";
+}
