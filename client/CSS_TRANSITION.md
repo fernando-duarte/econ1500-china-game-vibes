@@ -75,8 +75,8 @@ This script will:
 Once the migration is complete and verified in production, you can:
 
 1. ✅ Remove the CSS test mode functionality
-2. Delete the original `style.css` file
-3. Remove the legacy SCSS build scripts
+2. ✅ Delete the original `style.css` file
+3. ✅ Remove the legacy SCSS build scripts
 
 ## Troubleshooting
 

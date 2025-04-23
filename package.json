@@ -5,9 +5,13 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "npm run watch-css & nodemon server/index.js",
-    "build-css": "sass client/scss/main.scss:client/style.css",
-    "watch-css": "sass --watch client/scss/main.scss:client/style.css"
+    "dev": "nodemon server/index.js & npm run watch:css",
+    "build:css": "sass client/scss:client/css --style compressed",
+    "watch:css": "sass client/scss:client/css --watch",
+    "build": "npm run build:css",
+    "optimize:css": "node scripts/optimize-css.js",
+    "migrate:css": "node scripts/final-css-migration.js",
+    "css:transition": "node scripts/css-transition.js"
   },
   "keywords": [
     "classroom",
@@ -20,12 +24,13 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "express": "^5.1.0",
-    "socket.io": "^4.6.1"
+    "socket.io": "^4.6.1",
+    "sass": "^1.66.1"
   },
   "devDependencies": {
+    "clean-css": "^5.3.2",
     "eslint": "^8.56.0",
     "nodemon": "^3.1.9",
-    "sass": "^1.73.3",
     "socket.io-client": "^4.6.1"
   }
 }
