@@ -1,1 +1,37 @@
-*{box-sizing:border-box;margin:0;padding:0}.test-registration-view{font-family:Arial,sans-serif;margin:20px}.test-registration-view .button-group{margin:20px 0}.test-registration-view button{padding:8px 16px;margin-right:10px}.test-registration-view #result{background-color:#f5f5f5;padding:10px;border-radius:4px}.test-registration-view .status{margin-bottom:20px}.test-registration-view .wide-input{width:300px}/*# sourceMappingURL=test-registration.css.map */
+/* CSS Variables */
+/* Colors */
+/* Spacing */
+/* Typography */
+/* Borders */
+/* Effects */
+/* Layout */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.test-registration-view {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+.test-registration-view .button-group {
+  margin: 20px 0;
+}
+.test-registration-view button {
+  padding: 8px 16px;
+  margin-right: 10px;
+}
+.test-registration-view #result {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+}
+.test-registration-view .status {
+  margin-bottom: 20px;
+}
+.test-registration-view .wide-input {
+  width: 300px;
+}
+
+/*# sourceMappingURL=test-registration.css.map */

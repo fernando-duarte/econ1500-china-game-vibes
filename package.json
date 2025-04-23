@@ -9,9 +9,7 @@
     "build:css": "sass client/scss:client/css --style compressed",
     "watch:css": "sass client/scss:client/css --watch",
     "build": "npm run build:css",
-    "optimize:css": "node scripts/optimize-css.js",
-    "migrate:css": "node scripts/final-css-migration.js",
-    "css:transition": "node scripts/css-transition.js"
+    "optimize:css": "node scripts/optimize-css.js"
   },
   "keywords": [
     "classroom",
