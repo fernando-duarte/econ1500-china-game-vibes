@@ -1,0 +1,163 @@
+/**
+ * Core styles for all views
+ * Contains essential styles used by all pages
+ */
+/* CSS Variables */
+/* Colors */
+/* Spacing */
+/* Typography */
+/* Borders */
+/* Effects */
+/* Layout */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-dark);
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: var(--spacing-xxl);
+  color: var(--color-text-light);
+  font-weight: normal;
+}
+
+.placeholder-text {
+  text-align: center;
+  font-style: italic;
+  color: var(--color-text-light);
+  padding: var(--spacing-xl);
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.card {
+  background-color: var(--color-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: var(--spacing-md);
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.flash-update {
+  animation: flashUpdate 1s ease-in-out;
+}
+
+.pulsate {
+  animation: pulsate 1.5s infinite;
+}
+
+:root {
+  /* Colors - Base theme */
+  --color-primary: #2c6ecb;
+  --color-primary-dark: #1f5bab;
+  --color-primary-light: #b4c8e8;
+  --color-primary-lightest: #e8f0fe;
+  --color-text: #333;
+  --color-text-light: #455a74;
+  --color-text-dark: #1a3b5d;
+  --color-background: #f4f7fa;
+  --color-card: #fff;
+  --color-border: #ddd;
+  --color-success: #d4edda;
+  --color-error: #e53935;
+  --color-light-bg: #f8f9fa;
+  --color-warning: #ffd700;
+  /* Colors - Screen dark theme */
+  --color-screen-bg: #111;
+  --color-screen-text: #fff;
+  --color-screen-panel-bg: #222;
+  --color-screen-element-bg: #333;
+  --color-screen-border: #444;
+  --color-screen-border-alt: #555;
+  --color-screen-text-muted: #aaa;
+  --color-screen-highlight-border: #4caf50;
+  --color-screen-highlight-bg: #2d4d2e;
+  --color-screen-autosubmit-bg: #4d4d2e;
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 8px;
+  --spacing-md: 10px;
+  --spacing-lg: 15px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 30px;
+  /* Typography */
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 24px;
+  --font-size-xl: 36px;
+  /* Borders */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  /* Effects */
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+  /* Layout */
+  --stat-box-min-width: 150px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes flashUpdate {
+  0% {
+    background-color: var(--color-primary-lightest);
+  }
+  50% {
+    background-color: var(--color-success);
+  }
+  100% {
+    background-color: var(--color-card);
+  }
+}
+@keyframes pulsate {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+/*# sourceMappingURL=core.css.map */
