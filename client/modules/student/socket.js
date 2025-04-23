@@ -34,6 +34,7 @@
       this.socket.on(CONSTANTS.SOCKET.EVENT_STUDENT_LIST, this.handleStudentList.bind(this));
       this.socket.on('student_list_updated', this.handleStudentListUpdated.bind(this));
       this.socket.on(CONSTANTS.SOCKET.EVENT_TEAM_REGISTERED, this.handleTeamRegistered.bind(this));
+      this.socket.on('team_registration_error', this.handleTeamRegistrationError.bind(this));
 
       // Group: Game state events
       this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, this.handleGameJoined.bind(this));
@@ -93,30 +94,39 @@
 
       if (data.success) {
         // Store team info in game state
-        StudentGame.state.teamName = data.team.name;
-        StudentGame.state.teamMembers = data.team.students;
-        StudentGame.state.currentPlayerName = data.team.name; // Set current player name to team name
+        StudentGame.state.teamName = data.teamName;
+        StudentGame.state.teamMembers = data.students;
+        StudentGame.state.currentPlayerName = data.teamName; // Set current player name to team name
 
         // Clear selected students
         StudentDom.studentData.selectedStudents.clear();
 
-        // Show join UI after successful registration
-        StudentDom.showJoinUI();
-
-        // Pre-fill player name with team name
-        elements.playerName.value = data.team.name;
-
-        // Enable the register button again
+        // Enable the register button again (for other potential registrations)
         elements.registerTeamButton.disabled = false;
 
-        // Automatically join the game with the team name
-        this.joinGame(data.team.name);
+        console.log(`Team registered successfully: ${data.teamName}`);
       } else {
         // Show error message
         elements.teamRegistrationError.textContent = data.error;
         elements.registerTeamButton.disabled = false;
       }
     },
+
+    /**
+     * Handle team registration error
+     * @param {Object} data - Team registration error data
+     */
+    handleTeamRegistrationError: function(data) {
+      SocketUtils.logEvent('Team registration error', data);
+      const elements = StudentDom.elements;
+      
+      // Display the error message
+      elements.teamRegistrationError.textContent = data.error || 'Error registering team';
+      
+      // Re-enable the register button so they can try again
+      elements.registerTeamButton.disabled = false;
+    },
+
     /**
      * Handle connection to server
      */
@@ -542,15 +552,8 @@
      */
     handleError: function (data) {
       SocketUtils.logEvent('Error', data);
-      const elements = StudentDom.elements;
-
-      if (elements.joinError && data.message) {
-        elements.joinError.textContent = data.message;
-      }
-
-      if (elements.joinButton) {
-        elements.joinButton.disabled = false;
-      }
+      // General error handling - log to console
+      console.error('Server error:', data.message);
     },
 
     /**
@@ -580,14 +583,6 @@
      */
     registerTeam: function(teamName, students) {
       this.socket.emit('register_team', { teamName, students });
-    },
-    /**
-     * Join the game with the specified player name
-     * @param {string} playerName - Player's name
-     */
-    joinGame: function (playerName) {
-      if (!playerName) return;
-      this.socket.emit(CONSTANTS.SOCKET.EVENT_JOIN_GAME, { playerName });
     },
 
     /**
