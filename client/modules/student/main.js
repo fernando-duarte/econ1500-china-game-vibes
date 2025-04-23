@@ -29,20 +29,6 @@
 
         StudentSocket.registerTeam(teamName, selectedStudents);
       });
-      // Join game button click event
-      elements.joinButton.addEventListener('click', () => {
-        const name = elements.playerName.value.trim();
-
-        if (!name) {
-          elements.joinError.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_NAME;
-          return;
-        }
-
-        elements.joinError.textContent = '';
-        elements.joinButton.disabled = true;
-
-        StudentSocket.joinGame(name);
-      });
 
       // Handle investment slider and value sync
       elements.investmentSlider.addEventListener('input', () => {

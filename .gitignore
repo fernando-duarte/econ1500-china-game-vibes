@@ -7,7 +7,6 @@ yarn.lock
 .env
 .env.local
 .env.development.local
-.env.test.local
 .env.production.local
 
 # Build output
@@ -38,22 +37,8 @@ Thumbs.db
 .pnp
 .pnp.js
 
-# Testing
-coverage/
-
-# Experimental test files
-tests/**/*-experimental.test.js
-tests/**/*-debug.test.js
-tests/**/*-wip.test.js
-
 # Misc
 .cache/
 .temp/
 tmp/
-temp/test-server-port.txt
-
-# Jest
-jest-junit.xml
-
-# E2E test artifacts
-tests/e2e/screenshots/
+temp/
