@@ -189,123 +189,119 @@ function setupSocketEvents(io) {
       }
     });
 
-
-    // Instructor creates a new game (keeping for backward compatibility)
-    socket.on(CONSTANTS.SOCKET.EVENT_CREATE_GAME, () => {
+    // Handle team registration
+    socket.on('register_team', (data) => {
       try {
-        // Create a new game - this will reset all player data
-        createGame();
-        isInstructor = true;
-
-        // No need to update socket reference, just add to room
-        console.log(`Instructor with ID ${socket.id} joined instructor room`);
-
-        // Map this socket to "instructor" role
-        socket.instructor = true;
-        socket.gameRole = CONSTANTS.GAME_ROLES.INSTRUCTOR;
-        socket.join(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR); // Add instructor to a dedicated room
-
-        console.log('Game created - players reset');
-
-        // Notify the client
-        io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
-          CONSTANTS.SOCKET.EVENT_GAME_CREATED,
-          {
-            manualStartEnabled: gameLogic.game.manualStartEnabled,
-          },
-        );
-
-        // Also notify screens
-        io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
-          CONSTANTS.SOCKET.EVENT_GAME_CREATED,
-        );
-      } catch (error) {
-        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_CREATE_GAME, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
-          message: CONSTANTS.ERROR_MESSAGES.ERROR_CREATING_GAME,
-        });
-      }
-    });
-
-    // Student joins a game
-    socket.on(CONSTANTS.SOCKET.EVENT_JOIN_GAME, ({ playerName: name }) => {
-      try {
-        if (!name) {
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
-            message: CONSTANTS.ERROR_MESSAGES.PLAYER_NAME_REQUIRED,
-          });
+        const { teamName, students } = data;
+        if (!teamName || !students || !Array.isArray(students) || students.length === 0) {
+          socket.emit('team_registration_error', { error: 'Invalid team registration data' });
           return;
         }
 
-        // Assign to the outer scope variable
-        playerName = name.trim();
-
-        // Store player name and role on socket
-        socket.playerName = playerName;
-        socket.gameRole = CONSTANTS.GAME_ROLES.PLAYER;
-        socket.join(CONSTANTS.SOCKET_ROOMS.PLAYERS);
-
-        // Create player-specific room
-        socket.join(getPlayerRoom(playerName));
-
-        console.log(`Player ${playerName} attempting to join`);
-
-        // Use the io instance from the outer scope
-        const result = addPlayer(playerName, socket.id, io); // Pass io here
-
+        console.log(`Team registration requested: ${teamName} with ${students.length} students`);
+        
+        // Register the team
+        const result = teamManager.registerTeam(teamName, students);
+        
         if (result.success) {
-          console.log(`Player joined: ${playerName} with socket ID ${socket.id}`);
-
-          // Check if this is a team join (from previous team registration)
-          const isTeam = socket.teamName === playerName && Array.isArray(socket.teamMembers);
-
-          // If this is a team, store team info in the game player object
-          if (isTeam) {
+          console.log(`Team registered: ${teamName}`);
+          
+          // Store team info on the socket for when they join the game
+          socket.teamName = teamName;
+          socket.teamMembers = students;
+          
+          // Emit join game event automatically after team registration
+          playerName = teamName.trim();
+          
+          // Store player name and role on socket
+          socket.playerName = playerName;
+          socket.gameRole = CONSTANTS.GAME_ROLES.PLAYER;
+          socket.join(CONSTANTS.SOCKET_ROOMS.PLAYERS);
+          
+          // Create player-specific room
+          socket.join(getPlayerRoom(playerName));
+          
+          console.log(`Team ${playerName} automatically joining after registration`);
+          
+          // Use the io instance from the outer scope
+          const joinResult = addPlayer(playerName, socket.id, io);
+          
+          if (joinResult.success) {
+            console.log(`Team joined: ${playerName} with socket ID ${socket.id}`);
+            
+            // Store team info in the game player object
             const gameLogic = require('./gameLogic');
             if (gameLogic.game.players[playerName]) {
               gameLogic.game.players[playerName].isTeam = true;
               gameLogic.game.players[playerName].teamMembers = socket.teamMembers;
             }
+            
+            // Send game joined event to the player
+            io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
+              playerName: playerName,
+              initialCapital: joinResult.initialCapital,
+              initialOutput: joinResult.initialOutput,
+              isGameRunning: gameLogic.game.isGameRunning,
+              round: gameLogic.game.round,
+              autoStart: joinResult.autoStart,
+              manualStartEnabled: joinResult.manualStartEnabled
+            });
+            
+            // Send player_joined to the instructor room with team info
+            console.log(`Sending team_joined to instructor room`);
+            io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+              playerName: playerName,
+              initialCapital: joinResult.initialCapital,
+              initialOutput: joinResult.initialOutput,
+              isTeam: true,
+              teamMembers: socket.teamMembers
+            });
+            
+            // Also notify screens
+            io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
+              playerName,
+              isTeam: true
+            });
+            
+            // Prepare updated student list info for broadcasting
+            const allStudents = teamManager.getStudentList();
+            const studentsInTeams = new Set();
+            const teamInfo = {};
+            
+            // Collect all students who are already in teams and their team info
+            Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
+              team.students.forEach(student => {
+                studentsInTeams.add(student);
+                teamInfo[student] = teamName;
+              });
+            });
+            
+            // Broadcast updated student list to all clients
+            console.log(`Broadcasting updated student list: ${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total`);
+            io.emit('student_list_updated', {
+              allStudents: allStudents,
+              studentsInTeams: Array.from(studentsInTeams),
+              teamInfo: teamInfo,
+              unavailableCount: studentsInTeams.size
+            });
+            
+            // Notify the client about successful team registration
+            socket.emit('team_registered', { 
+              success: true, 
+              teamName, 
+              students 
+            });
+          } else {
+            console.error(`Team join failed after registration: ${playerName}:`, joinResult.error);
+            socket.emit('team_registration_error', { error: joinResult.error });
           }
-
-          // Send game joined event to the player
-          io.to(getPlayerRoom(playerName)).emit(CONSTANTS.SOCKET.EVENT_GAME_JOINED, {
-            playerName: playerName,
-            initialCapital: result.initialCapital,
-            initialOutput: result.initialOutput,
-            isGameRunning: gameLogic.game.isGameRunning,
-            round: gameLogic.game.round,
-            autoStart: result.autoStart,
-            manualStartEnabled: result.manualStartEnabled
-          });
-
-          // Send player_joined to the instructor room with team info if applicable
-          console.log(`Sending ${isTeam ? 'team' : 'player'}_joined to instructor room`);
-          io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
-            playerName: playerName,
-            initialCapital: result.initialCapital,
-            initialOutput: result.initialOutput,
-            isTeam: isTeam,
-            teamMembers: isTeam ? socket.teamMembers : undefined
-          });
-
-          // Also notify screens
-          io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
-            playerName,
-            isTeam: isTeam
-          });
         } else {
-          console.error(
-            `${CONSTANTS.DEBUG_MESSAGES.PLAYER_JOIN_FAILED} ${playerName}:`,
-            result.error,
-          );
-          socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
+          console.log(`Team registration failed: ${result.error}`);
+          socket.emit('team_registration_error', { error: result.error });
         }
       } catch (error) {
-        console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_JOIN_GAME, error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
-          message: CONSTANTS.ERROR_MESSAGES.ERROR_JOINING_GAME,
-        });
+        console.error('Error in team registration:', error);
+        socket.emit('team_registration_error', { error: 'Server error during team registration' });
       }
     });
 
@@ -678,62 +674,6 @@ function setupSocketEvents(io) {
       } catch (error) {
         console.error('Error sending student list:', error);
         socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error retrieving student list' });
-      }
-    });
-
-    // Client registers a team
-    socket.on('register_team', ({ teamName, students }) => {
-      try {
-        console.log(`Team registration request from ${socket.id}: ${teamName} with ${students.length} students`);
-        const result = teamManager.registerTeam(teamName, students);
-
-        if (result.success) {
-          // Send success response to the client
-          socket.emit('team_registered', {
-            success: true,
-            team: result.team
-          });
-          console.log(`Team registered successfully: ${teamName}`);
-
-          // Store team info on socket for later use
-          socket.teamName = teamName.trim();
-          socket.teamMembers = students;
-
-          // Note: We don't automatically add the player here anymore
-          // The client will call joinGame separately
-
-          // Prepare updated student list info for broadcasting
-          const allStudents = teamManager.getStudentList();
-          const studentsInTeams = new Set();
-          const teamInfo = {};
-
-          // Collect all students who are already in teams and their team info
-          Object.entries(teamManager.getTeams()).forEach(([teamName, team]) => {
-            team.students.forEach(student => {
-              studentsInTeams.add(student);
-              teamInfo[student] = teamName;
-            });
-          });
-
-          // Broadcast updated student list to all clients
-          io.emit('student_list_updated', {
-            allStudents: allStudents,
-            studentsInTeams: Array.from(studentsInTeams),
-            teamInfo: teamInfo,
-            unavailableCount: studentsInTeams.size
-          });
-
-          console.log(`Broadcast updated student list: ${allStudents.length - studentsInTeams.size} available out of ${allStudents.length} total`);
-        } else {
-          socket.emit('team_registered', {
-            success: false,
-            error: result.error
-          });
-          console.log(`Team registration failed: ${result.error}`);
-        }
-      } catch (error) {
-        console.error('Error registering team:', error);
-        socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error registering team' });
       }
     });
 
