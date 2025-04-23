@@ -30,26 +30,6 @@
     margin-bottom: var(--spacing-xl);
   }
   
-  .stat-box {
-    text-align: center;
-    padding: var(--spacing-lg);
-    border-radius: var(--border-radius-md);
-    background-color: var(--color-light-bg);
-    min-width: var(--stat-box-min-width);
-  }
-  
-  .stat-box h3,
-  .stat-box h4 {
-    margin-bottom: var(--spacing-md);
-    color: var(--color-text-light);
-  }
-  
-  .stat-box p {
-    font-size: var(--font-size-lg);
-    font-weight: bold;
-    color: var(--color-primary);
-  }
-  
   // Investment controls
   .investment-controls {
     margin: var(--spacing-xl) 0;
