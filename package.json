@@ -5,11 +5,12 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js & npm run watch:css",
+    "dev": "nodemon server/index.js & npm run watch:css & npm run browser-sync",
     "build:css": "sass client/scss:client/css --style compressed",
     "watch:css": "sass client/scss:client/css --watch",
     "build": "npm run build:css",
-    "optimize:css": "node scripts/optimize-css.js"
+    "optimize:css": "node scripts/optimize-css.js",
+    "browser-sync": "browser-sync start --proxy 'localhost:3001' --files 'client/**/*.html, client/**/*.css, client/**/*.js' --port 3002 --no-open"
   },
   "keywords": [
     "classroom",
@@ -22,10 +23,11 @@
   "dependencies": {
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "socket.io": "^4.8.1",
-    "sass": "^1.87.0"
+    "sass": "^1.87.0",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "browser-sync": "^3.0.4",
     "clean-css": "^5.3.3",
     "eslint": "^8.56.0",
     "nodemon": "^3.1.10",
