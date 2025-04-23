@@ -262,7 +262,7 @@ const GAME_CONSTANTS = {
     EVENT_SET_MANUAL_START: 'set_manual_start',
     EVENT_START_GAME: 'start_game',
     EVENT_SUBMIT_INVESTMENT: 'submit_investment',
-    EVENT_JOIN_GAME: 'join_game',
+    EVENT_JOIN_GAME: 'join_game', // Deprecated: Join functionality replaced by team registration
     EVENT_SCREEN_CONNECT: 'screen_connect',
     EVENT_RECONNECT_GAME: 'reconnect_game',
     EVENT_CREATE_GAME: 'create_game',

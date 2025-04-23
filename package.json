@@ -7,15 +7,7 @@
     "start": "node server/index.js",
     "dev": "npm run watch-css & nodemon server/index.js",
     "build-css": "sass client/scss/main.scss:client/style.css",
-    "watch-css": "sass --watch client/scss/main.scss:client/style.css",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:unit": "jest tests/unit",
-    "test:integration": "jest tests/integration",
-    "test:e2e": "node scripts/kill-port.js && jest tests/e2e",
-    "test:ci": "jest --ci --coverage --bail --reporters=default --reporters=jest-junit",
-    "test:report": "jest --coverage && open coverage/lcov-report/index.html"
+    "watch-css": "sass --watch client/scss/main.scss:client/style.css"
   },
   "keywords": [
     "classroom",
@@ -31,18 +23,9 @@
     "socket.io": "^4.6.1"
   },
   "devDependencies": {
-    "@jest/test-sequencer": "^29.7.0",
-    "@types/jest": "^29.5.6",
     "eslint": "^8.56.0",
-    "jest": "^29.7.0",
-    "jest-junit": "^16.0.0",
-    "jest-puppeteer": "^11.0.0",
-    "jsdom": "^22.1.0",
     "nodemon": "^3.1.9",
-    "puppeteer": "^24.6.1",
     "sass": "^1.73.3",
-    "socket.io-client": "^4.6.1",
-    "supertest": "^6.3.3",
-    "wait-on": "^7.2.0"
+    "socket.io-client": "^4.6.1"
   }
 }
