@@ -4,14 +4,17 @@
  */
 
 // Variables and base styles
-@use 'variables' as *;
+@use 'variables' as vars;
 @use 'reset';
 @use 'typography';
 @use 'global';
 @use 'layout';
 @use 'utilities';
 
-// Common animations used by all views
+// Include CSS variables definition in core.css only
+@include vars.define-css-variables;
+
+// Common animations used by all views - defined only once
 @keyframes fadeIn {
   from {
     opacity: 0;

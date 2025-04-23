@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CSS architecture of this application follows a modular approach, organizing styles into logical, role-specific files while maintaining backward compatibility with the legacy single-file approach.
+The CSS architecture of this application follows a modular approach, organizing styles into logical, role-specific files.
 
 ## File Structure
 
@@ -28,8 +28,7 @@ client/
 │   ├── student.scss      # Student view entry
 │   ├── instructor.scss   # Instructor view entry
 │   ├── screen.scss       # Screen view entry
-│   └── main.scss         # Legacy combined entry
-└── style.css             # Legacy compiled CSS (still supported)
+│   └── main.scss         # Combined entry (for development purposes)
 ```
 
 ## Namespacing
@@ -40,19 +39,17 @@ To prevent specificity issues and conflicts, each view has its own namespace:
 - `.instructor-view` - Wraps instructor-specific styles 
 - `.screen-view` - Wraps screen-specific styles (though screen view already uses body.screen-body)
 
-The main HTML files add these classes to the body element dynamically.
+The main HTML files add these classes to the body element.
 
 ## CSS Loading Strategy
 
-The application supports two CSS loading approaches:
+The application loads CSS files in the following order:
 
-1. **Legacy mode**: Loads the single style.css file
-2. **Modular mode**: Loads separate modular CSS files in the following order:
-   - core.css (essential styles)
-   - components.css (reusable components)
-   - [view].css (view-specific styles)
+1. **core.css** - Essential styles used across all views
+2. **components.css** - Reusable UI components
+3. **[view].css** - View-specific styles (student.css, instructor.css, or screen.css)
 
-A test mode allows toggling between these approaches for side-by-side comparison.
+This approach ensures proper cascade order and minimizes CSS conflicts.
 
 ## CSS Modules
 
@@ -104,14 +101,13 @@ npm run watch:css
 npm run dev
 ```
 
-## Testing CSS Changes
+## Testing CSS Variations
 
-The application includes a test mode that allows toggling between legacy and modular CSS:
+The application includes a utility for CSS testing that allows comparing different CSS implementations:
 
-1. Open any view in the browser
-2. A "CSS Test Mode" indicator appears in the bottom-left corner
-3. Click "Toggle CSS" to switch between original and modular CSS
-4. Check for visual differences or issues
+1. Use the CSSLoader utility to load alternative CSS versions
+2. Enable test mode with both default and alternative CSS
+3. Toggle between them to compare visual differences
 
 ## JavaScript CSS Interactions
 
