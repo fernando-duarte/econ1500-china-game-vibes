@@ -1,0 +1,150 @@
+/**
+ * Instructor View Styles
+ * Styles specific to the instructor interface
+ */
+/* CSS Variables */
+/* Colors */
+/* Spacing */
+/* Typography */
+/* Borders */
+/* Effects */
+/* Layout */
+.instructor-view .instructor-container {
+  max-width: 1200px;
+}
+.instructor-view .player-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+.instructor-view .player-item {
+  background-color: var(--color-primary-lightest);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 150px;
+}
+.instructor-view .player-name {
+  font-weight: bold;
+}
+.instructor-view .player-status {
+  margin-left: var(--spacing-md);
+  font-size: 0.85em;
+  color: var(--color-text-dark);
+}
+.instructor-view .player-status.pending {
+  color: var(--color-text-light);
+  font-style: italic;
+}
+.instructor-view .player-submitted {
+  background-color: var(--color-success);
+}
+.instructor-view .player-auto-submitted {
+  background-color: var(--color-warning);
+  font-style: italic;
+}
+.instructor-view .game-status {
+  margin-bottom: var(--spacing-md);
+}
+.instructor-view .admin-controls {
+  margin-top: var(--spacing-lg);
+  text-align: right;
+}
+.instructor-view .join-controls {
+  margin-top: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.instructor-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-xl) 0;
+}
+.instructor-view th, .instructor-view td {
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.instructor-view th {
+  background-color: var(--color-light-bg);
+  font-weight: 600;
+}
+.instructor-view .auto-submitted-row {
+  background-color: rgba(255, 215, 0, 0.2);
+  font-style: italic;
+}
+.instructor-view .winner-display {
+  text-align: center;
+  margin: var(--spacing-xl) 0;
+}
+.instructor-view .winner {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-primary);
+}
+.instructor-view .admin-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 15px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
+  font-weight: bold;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+.instructor-view .admin-notification-info {
+  background-color: var(--color-primary-lightest);
+  color: var(--color-primary-dark);
+}
+.instructor-view .admin-notification-warning {
+  background-color: var(--color-warning);
+  color: var(--color-text-dark);
+}
+.instructor-view .admin-notification-error {
+  background-color: #ffebee;
+  color: var(--color-error);
+}
+.instructor-view .all-submitted-message {
+  font-weight: bold;
+  color: var(--color-text-dark);
+  background-color: var(--color-success);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  display: inline-block;
+  animation: pulsate 1.5s infinite;
+}
+.instructor-view .all-submitted-status {
+  font-weight: bold;
+  color: var(--color-text-dark);
+  background-color: var(--color-success);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  animation: pulsate 1.5s infinite;
+}
+.instructor-view .timer-ending {
+  color: var(--color-primary-dark);
+  font-weight: bold;
+  animation: pulsate 1.5s infinite;
+}
+.instructor-view .status-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--color-success);
+  color: var(--color-text-dark);
+  padding: 10px 15px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
+  font-weight: bold;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/*# sourceMappingURL=instructor.css.map */

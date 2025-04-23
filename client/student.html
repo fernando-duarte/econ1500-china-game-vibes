@@ -1,74 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solow Growth Model Game - Student View</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Student View</title>
+  <link rel="stylesheet" href="/css/core.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/student.css">
 </head>
-<body>
+<body class="student-view">
   <div class="container">
-    <h1>Solow Growth Model Game</h1>
     <h2 class="subtitle">Student View</h2>
-    
-    <!-- Join Game Form -->
-    <div id="joinForm" class="card">
-      <h3>Join Game</h3>
+
+    <!-- Team Registration Form -->
+    <div id="teamRegistrationForm" class="card">
+      <h3>Team Registration</h3>
       <div class="form-group">
-        <label for="gameCode">Game Code:</label>
-        <input type="text" id="gameCode" placeholder="Enter 4-digit code" maxlength="4">
+        <label for="teamName">Team Name:</label>
+        <input type="text" id="teamName" placeholder="Enter your team name">
       </div>
       <div class="form-group">
-        <label for="playerName">Your Name:</label>
-        <input type="text" id="playerName" placeholder="Enter your name">
+        <label>Select Team Members:</label>
+        <div class="search-container">
+          <input type="text" id="studentSearch" placeholder="Search for students..." class="search-input">
+        </div>
+        <div id="studentSelectionContainer" class="student-selection">
+          <p>Loading student list...</p>
+        </div>
       </div>
-      <button id="joinButton" class="button">Join Game</button>
-      <p id="joinError" class="error"></p>
+      <button id="registerTeamButton" class="button">Register Team</button>
+      <p id="teamRegistrationError" class="error"></p>
     </div>
-    
+
     <!-- Game UI (hidden until joined) -->
     <div id="gameUI" class="hidden">
       <div class="game-header">
         <div class="game-info">
           <p>Player: <span id="displayName"></span></p>
-          <p>Game Code: <span id="displayCode"></span></p>
         </div>
         <div class="round-info">
-          <p>Round: <span id="roundNumber">-</span> of 10</p>
+          <p>Round: <span id="roundNumber">-</span> of <span id="totalRounds"></span></p>
           <p id="roundStatus">Waiting for game to start...</p>
         </div>
       </div>
-      
       <div class="card">
         <div class="economy-stats">
           <div class="stat-box">
             <h3>Capital (K)</h3>
-            <p id="capital">100.0</p>
+            <p id="capital">-</p>
           </div>
           <div class="stat-box">
             <h3>Output (Y)</h3>
-            <p id="output">4.6</p>
+            <p id="output">-</p>
+          </div>
+          <div class="round-info">
+            <p>
+              Round: <span id="roundNumberDuplicate">-</span> of
+              <span id="totalRoundsDuplicate"></span>
+            </p>
+            <p id="roundStatusDuplicate">Waiting for game to start...</p>
           </div>
         </div>
-        
+
         <div id="investmentUI" class="hidden">
           <h3>Investment Decision</h3>
           <p>How much of your output do you want to invest?</p>
-          <p>Time remaining: <span id="timer">60</span> seconds</p>
-          
+          <p>Time remaining: <span id="timer">-</span> seconds</p>
+
           <div class="investment-controls">
-            <input type="range" id="investmentSlider" min="0" max="100" value="0" step="0.1">
+            <input type="range" id="investmentSlider" value="0">
             <div class="investment-values">
               <span>0</span>
-              <input type="number" id="investmentValue" min="0" max="100" value="0" step="0.1">
-              <span id="maxOutput">4.6</span>
+              <input type="number" id="investmentValue" value="0">
+              <span id="maxOutput">-</span>
             </div>
           </div>
-          
+
           <button id="submitInvestment" class="button">Submit Investment</button>
           <p id="investmentStatus"></p>
         </div>
-        
+
         <div id="roundResults" class="hidden">
           <h3>Round Results</h3>
           <div class="results-container">
@@ -86,9 +97,11 @@
             </div>
           </div>
           <p id="waitingNextRound">Waiting for next round...</p>
+
+
         </div>
       </div>
-      
+
       <div id="gameOverUI" class="hidden card">
         <h3>Game Over</h3>
         <p>Final Results:</p>
@@ -101,13 +114,15 @@
             <h4>Winner</h4>
             <p id="winner">-</p>
           </div>
+          <div id="finalRankings"></div>
         </div>
-        <div id="finalRankings"></div>
       </div>
     </div>
   </div>
-  
+
   <script src="/socket.io/socket.io.js"></script>
-  <script src="student.js"></script>
+  <script src="/constants.js"></script>
+  <script src="/student.js"></script>
 </body>
-</html> 
+</html>
+

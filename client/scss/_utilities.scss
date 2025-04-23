@@ -1,0 +1,15 @@
+// Animation utility classes can be defined here
+// These rely on the keyframes defined in core.scss
+
+// Utility classes
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.flash-update {
+  animation: flashUpdate 1s ease-in-out;
+}
+
+.pulsate {
+  animation: pulsate 1.5s infinite;
+} 

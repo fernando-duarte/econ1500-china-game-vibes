@@ -1,0 +1,19 @@
+h1 {
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-dark);
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: var(--spacing-xxl);
+  color: var(--color-text-light);
+  font-weight: normal;
+}
+
+.placeholder-text {
+  text-align: center;
+  font-style: italic;
+  color: var(--color-text-light);
+  padding: var(--spacing-xl);
+} 

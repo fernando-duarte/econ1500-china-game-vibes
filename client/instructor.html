@@ -1,86 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solow Growth Model Game - Instructor View</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container instructor-container">
-    <h1>Solow Growth Model Game</h1>
-    <h2 class="subtitle">Instructor Dashboard</h2>
-    
-    <!-- Game Setup -->
-    <div id="gameSetup" class="card">
-      <h3>Game Setup</h3>
-      <button id="createGameButton" class="button">Create New Game</button>
-      <div id="gameCodeDisplay" class="hidden">
-        <p>Share this code with your students:</p>
-        <div class="game-code-box">
-          <span id="gameCode">-</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solow Growth Model Game - Instructor View</title>
+    <link rel="stylesheet" href="/css/core.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/instructor.css" />
+  </head>
+  <body class="instructor-view">
+    <div class="container instructor-container">
+      <h1>Solow Growth Model Game</h1>
+      <h2 class="subtitle">Instructor Dashboard</h2>
+
+      <!-- Game Setup -->
+      <div id="gameSetup" class="card">
+        <h3>Game Setup</h3>
+        <div id="gameStatus">
+          <p>Game is ready for students to join</p>
+          <p>Students can join directly from the student page</p>
+          <p id="playerCount">0 players have joined</p>
         </div>
-        <p id="playerCount">0 players have joined</p>
-        <button id="startGameButton" class="button" disabled>Start Game</button>
+        <div class="join-controls">
+          <div class="toggle-container">
+            <label class="toggle-switch">
+              <input type="checkbox" id="manualStartToggle" checked />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label"
+              >Manual Start Mode:
+              <span id="manualStartStatus">Enabled</span></span
+            >
+          </div>
+          <button id="startGameButton" class="button">Start Game</button>
+        </div>
       </div>
-    </div>
-    
-    <!-- Game Controls -->
-    <div id="gameControls" class="hidden card">
-      <div class="game-status">
-        <h3>Game Status</h3>
-        <p>Round: <span id="roundNumber">-</span> of 10</p>
-        <p id="roundStatus">Waiting for game to start...</p>
+
+      <!-- Game Controls -->
+      <div id="gameControls" class="hidden card">
+        <div class="game-status">
+          <h3>Game Status</h3>
+          <p>
+            Round: <span id="roundNumber">-</span> of
+            <span id="totalRounds"></span>
+          </p>
+          <p id="roundStatus">Waiting for game to start...</p>
+          <p>
+            Time Remaining: <span id="roundTimer" class="timer">-</span> seconds
+          </p>
+        </div>
+        <div class="admin-controls">
+          <button id="forceEndGameButton" class="button button-warning">
+            Force End Game
+          </button>
+        </div>
       </div>
-    </div>
-    
-    <!-- Player List -->
-    <div id="playerListSection" class="hidden card">
-      <h3>Players</h3>
-      <div id="playerList" class="player-list"></div>
-    </div>
-    
-    <!-- Round Results -->
-    <div id="roundResultsSection" class="hidden card">
-      <h3>Round Results</h3>
-      <div id="roundResultsContainer">
-        <table id="roundResultsTable">
+
+      <!-- Player List -->
+      <div id="playerListSection" class="hidden card">
+        <h3>Players</h3>
+        <div id="playerList" class="player-list"></div>
+      </div>
+
+      <!-- Current Round Investments -->
+      <div id="currentInvestmentsSection" class="hidden card">
+        <h3>Current Round Investments</h3>
+        <div class="table-container">
+          <table id="currentInvestmentsTable">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Investment</th>
+              </tr>
+            </thead>
+            <tbody id="currentInvestmentsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Round Results -->
+      <div id="roundResultsSection" class="hidden card">
+        <h3>Round Results</h3>
+        <div id="roundResultsContainer">
+          <table id="roundResultsTable">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Investment</th>
+                <th>New Capital</th>
+                <th>New Output</th>
+              </tr>
+            </thead>
+            <tbody id="roundResultsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Game Over Results -->
+      <div id="gameOverSection" class="hidden card">
+        <h3>Game Over</h3>
+        <div class="winner-display">
+          <h4>Winner:</h4>
+          <p id="winnerName" class="winner">-</p>
+        </div>
+        <h4>Final Rankings</h4>
+        <table id="finalResultsTable">
           <thead>
             <tr>
+              <th>Rank</th>
               <th>Player</th>
-              <th>Investment</th>
-              <th>New Capital</th>
-              <th>New Output</th>
+              <th>Final Output</th>
             </tr>
           </thead>
-          <tbody id="roundResultsBody"></tbody>
+          <tbody id="finalResultsBody"></tbody>
         </table>
+        <button id="resetGameButton" class="button">Create New Game</button>
       </div>
     </div>
-    
-    <!-- Game Over Results -->
-    <div id="gameOverSection" class="hidden card">
-      <h3>Game Over</h3>
-      <div class="winner-display">
-        <h4>Winner:</h4>
-        <p id="winnerName" class="winner">-</p>
-      </div>
-      <h4>Final Rankings</h4>
-      <table id="finalResultsTable">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Player</th>
-            <th>Final Output</th>
-          </tr>
-        </thead>
-        <tbody id="finalResultsBody"></tbody>
-      </table>
-      <button id="resetGameButton" class="button">Create New Game</button>
-    </div>
-  </div>
-  
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="instructor.js"></script>
-</body>
-</html> 
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/constants.js"></script>
+    <script src="/instructor.js"></script>
+  </body>
+</html>
