@@ -39,5 +39,6 @@ const SELECTORS = {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = SELECTORS;
 } else if (typeof window !== 'undefined') {
+  // @ts-ignore - Add SELECTORS to window object
   window.SELECTORS = SELECTORS;
 }
