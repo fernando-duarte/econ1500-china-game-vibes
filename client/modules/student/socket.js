@@ -190,6 +190,11 @@
       // Update round status
       SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_GAME_STARTED);
 
+      // Update duplicate round status if it exists
+      if (document.getElementById('roundStatusDuplicate')) {
+        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTED;
+      }
+
       // Ensure capital and output are displayed
       this.ensureCapitalOutputDisplayed(elements);
     },
@@ -222,6 +227,14 @@
       // Update round number
       SocketUtils.updateElementText(elements.roundNumber, data.roundNumber);
 
+      // Update duplicate round number if it exists
+      if (document.getElementById('roundNumberDuplicate')) {
+        document.getElementById('roundNumberDuplicate').textContent = data.roundNumber;
+      }
+      if (document.getElementById('totalRoundsDuplicate')) {
+        document.getElementById('totalRoundsDuplicate').textContent = CONSTANTS.ROUNDS;
+      }
+
       // Update capital and output values
       this.updateCapitalOutput(elements, data);
 
@@ -230,6 +243,11 @@
         elements.roundStatus,
         CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS,
       );
+
+      // Update duplicate round status if it exists
+      if (document.getElementById('roundStatusDuplicate')) {
+        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
+      }
 
       // Configure investment UI for new round
       this.configureInvestmentUI(elements, data);
@@ -409,6 +427,11 @@
         CONSTANTS.UI_TEXT.STATUS_GAME_OVER,
       );
 
+      // Update duplicate round status if it exists
+      if (document.getElementById('roundStatusDuplicate')) {
+        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
+      }
+
       // Disable all investment controls
       StudentGame.disableInvestmentControls(
         CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS,
@@ -452,6 +475,14 @@
 
       // Update round number
       SocketUtils.updateElementText(elements.roundNumber, data.roundNumber);
+
+      // Update duplicate round number if it exists
+      if (document.getElementById('roundNumberDuplicate')) {
+        document.getElementById('roundNumberDuplicate').textContent = data.roundNumber;
+      }
+      if (document.getElementById('totalRoundsDuplicate')) {
+        document.getElementById('totalRoundsDuplicate').textContent = CONSTANTS.ROUNDS;
+      }
 
       // Update capital and output values
       this.updateCapitalOutput(elements, data);

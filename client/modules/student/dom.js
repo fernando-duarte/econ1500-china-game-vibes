@@ -83,6 +83,17 @@
       elements.waitingNextRound.textContent =
         CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
 
+      // Initialize duplicate elements if they exist
+      if (document.getElementById('roundNumberDuplicate')) {
+        document.getElementById('roundNumberDuplicate').textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+      }
+      if (document.getElementById('totalRoundsDuplicate')) {
+        document.getElementById('totalRoundsDuplicate').textContent = CONSTANTS.ROUNDS;
+      }
+      if (document.getElementById('roundStatusDuplicate')) {
+        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+      }
+
       // Initialize input placeholders
       elements.playerName.placeholder = CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
       elements.teamName.placeholder = CONSTANTS.UI_TEXT.TEAM_NAME_PLACEHOLDER;
