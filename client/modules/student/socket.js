@@ -187,6 +187,9 @@
       SocketUtils.logEvent('Game started');
       const elements = StudentDom.elements;
 
+      // Reset the game UI to hide game over panel and prepare for a new game
+      StudentDom.resetGameUI();
+
       // Update round status
       SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_GAME_STARTED);
 
@@ -247,6 +250,11 @@
       // Update duplicate round status if it exists
       if (document.getElementById('roundStatusDuplicate')) {
         document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
+      }
+
+      // Make sure game over UI is hidden
+      if (elements.gameOverUI && !elements.gameOverUI.classList.contains('hidden')) {
+        StudentDom.resetGameUI();
       }
 
       // Configure investment UI for new round

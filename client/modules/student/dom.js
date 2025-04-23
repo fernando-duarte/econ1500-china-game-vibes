@@ -283,6 +283,37 @@
       this.elements.roundResults.classList.add('hidden');
       this.elements.gameOverUI.classList.remove('hidden');
     },
+
+    /**
+     * Reset the game UI for a new game
+     * Hides game over UI and round results, resets values
+     */
+    resetGameUI: function() {
+      const elements = this.elements;
+
+      // Hide game over UI
+      if (elements.gameOverUI) {
+        elements.gameOverUI.classList.add('hidden');
+      }
+
+      // Hide round results
+      if (elements.roundResults) {
+        elements.roundResults.classList.add('hidden');
+      }
+
+      // Reset investment UI
+      if (elements.investmentUI) {
+        elements.investmentUI.classList.remove('hidden');
+      }
+
+      // Reset status messages
+      if (elements.roundStatus) {
+        elements.roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+      }
+      if (document.getElementById('roundStatusDuplicate')) {
+        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+      }
+    },
     updateFinalRankings: function(finalResults, currentPlayerName) {
       let rankingsHTML = '<ol>';
       finalResults.forEach((result) => {
