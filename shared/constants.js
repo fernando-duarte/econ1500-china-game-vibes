@@ -226,6 +226,7 @@ const GAME_CONSTANTS = {
     PLAYER_NAME: 'player-name',
     PLAYER_STATUS: 'player-status',
     PLAYER_STATUS_PENDING: 'pending',
+    FLASH_UPDATE_ACTIVE: 'flash-update-active', // Class to trigger flash update animation
   },
 
   // Socket.IO Events

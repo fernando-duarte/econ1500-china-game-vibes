@@ -158,10 +158,12 @@
       });
 
       // Add visual highlight to show the table updated
-      currentInvestmentsSection.style.animation = 'none';
-      setTimeout(() => {
-        currentInvestmentsSection.style.animation = `flashUpdate ${CONSTANTS.CSS_ANIMATION_DURATION_SECONDS}s`;
-      }, CONSTANTS.SHORT_UI_DELAY_MS);
+      // Remove the class to reset the animation
+      currentInvestmentsSection.classList.remove(CONSTANTS.CSS.FLASH_UPDATE_ACTIVE);
+      // Force reflow to allow animation to restart
+      void currentInvestmentsSection.offsetWidth;
+      // Add the class back to trigger the animation
+      currentInvestmentsSection.classList.add(CONSTANTS.CSS.FLASH_UPDATE_ACTIVE);
     },
 
     displayStatusMessage: function (

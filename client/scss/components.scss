@@ -143,4 +143,9 @@ input:checked + .toggle-slider {
 
 input:checked + .toggle-slider:before {
   transform: translateX(26px);
+}
+
+.flash-update-active {
+  // Re-triggerable class for the flashUpdate animation
+  animation: flashUpdate 0.5s ease-in-out;
 } 
