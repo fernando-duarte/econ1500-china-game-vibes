@@ -14,12 +14,6 @@
       registerTeamButton: document.getElementById('registerTeamButton'),
       teamRegistrationError: document.getElementById('teamRegistrationError'),
 
-      // Join form elements
-      joinForm: document.getElementById('joinForm'),
-      playerName: document.getElementById('playerName'),
-      joinButton: document.getElementById('joinButton'),
-      joinError: document.getElementById('joinError'),
-
       // Game UI elements
       gameUI: document.getElementById('gameUI'),
       displayName: document.getElementById('displayName'),
@@ -95,7 +89,6 @@
       }
 
       // Initialize input placeholders
-      elements.playerName.placeholder = CONSTANTS.UI_TEXT.PLAYER_NAME_PLACEHOLDER;
       elements.teamName.placeholder = CONSTANTS.UI_TEXT.TEAM_NAME_PLACEHOLDER;
       elements.studentSelectionContainer.innerHTML = CONSTANTS.UI_TEXT.LOADING_STUDENT_LIST;
     },
@@ -213,8 +206,13 @@
         // Add class if student is already in a team
         checkbox.className = isInTeam ? 'student-checkbox student-in-team' : 'student-checkbox';
 
-        // Check if this student was previously selected
-        const isSelected = selectedStudents.has(student);
+        // If student is in a team, remove from selected students set
+        if (isInTeam && selectedStudents.has(student)) {
+          selectedStudents.delete(student);
+        }
+
+        // Check if this student was previously selected and is not in a team
+        const isSelected = !isInTeam && selectedStudents.has(student);
 
         // Create the checkbox HTML
         let checkboxHtml = `
@@ -249,16 +247,6 @@
      */
     showTeamRegistrationUI: function() {
       this.elements.teamRegistrationForm.classList.remove('hidden');
-      this.elements.joinForm.classList.add('hidden');
-      this.elements.gameUI.classList.add('hidden');
-    },
-
-    /**
-     * Show the join game UI and hide other UIs
-     */
-    showJoinUI: function() {
-      this.elements.teamRegistrationForm.classList.add('hidden');
-      this.elements.joinForm.classList.remove('hidden');
       this.elements.gameUI.classList.add('hidden');
     },
 
@@ -267,9 +255,9 @@
      */
     showGameUI: function() {
       this.elements.teamRegistrationForm.classList.add('hidden');
-      this.elements.joinForm.classList.add('hidden');
       this.elements.gameUI.classList.remove('hidden');
     },
+
     showInvestmentUI: function() {
       this.elements.roundResults.classList.add('hidden');
       this.elements.investmentUI.classList.remove('hidden');
