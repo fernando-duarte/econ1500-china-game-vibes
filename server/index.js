@@ -11,10 +11,12 @@ process.on('unhandledRejection', (reason, promise) => {
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 const { Server } = require('socket.io');
 const { setupSocketEvents } = require('./events');
 const CONSTANTS = require('../shared/constants');
 const teamManager = require('./teamManager');
+const sass = require('sass'); // Would need to be installed
 
 // Create Express app
 const app = express();
@@ -30,8 +32,40 @@ app.use(express.urlencoded({ extended: false }));
 // Serve static files from the client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
+// Add cache headers for CSS files
+app.use('/css', (req, res, next) => {
+  // Set cache for 1 week (604800 seconds)
+  res.setHeader('Cache-Control', 'public, max-age=604800');
+  next();
+});
+
 // Serve shared directory for constants
 app.use('/shared', express.static(path.join(__dirname, '../shared')));
+
+// Virtual CSS directory route handler
+app.get('/css/:fileName', (req, res) => {
+  const fileName = req.params.fileName;
+  const scssFilePath = path.join(__dirname, '../client/scss', fileName.replace('.css', '.scss'));
+  
+  // Check if the SCSS file exists
+  if (fs.existsSync(scssFilePath)) {
+    try {
+      // Compile SCSS to CSS
+      const result = sass.compile(scssFilePath);
+      
+      // Send the compiled CSS
+      res.set('Content-Type', 'text/css');
+      res.send(result.css);
+      console.log(`Compiled and served CSS for ${fileName}`);
+    } catch (error) {
+      console.error(`Error compiling SCSS for ${fileName}:`, error);
+      res.status(500).send(`/* Error compiling SCSS: ${error.message} */`);
+    }
+  } else {
+    console.error(`SCSS file not found: ${scssFilePath}`);
+    res.status(404).send(`/* CSS file not found: ${fileName} */`);
+  }
+});
 
 // Serve constants to client
 app.get('/constants.js', (req, res) => {
