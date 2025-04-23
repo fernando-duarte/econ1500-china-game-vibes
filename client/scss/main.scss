@@ -10,10 +10,17 @@
 @use 'typography';
 @use 'buttons';
 @use 'forms';
-@use 'game';
-@use '_instructor' as instructor;
-@use '_screen' as screen;
+// @use 'game'; // Removed - _game.scss deleted/refactored
+// @use '_instructor' as instructor; // Removed - _instructor.scss deleted/merged
+// @use '_screen' as screen; // Removed - _screen.scss deleted/merged
 @use 'utilities';
 
+// It might be more useful now to @use the main entry points:
+// @use 'core';
+// @use 'components';
+// @use 'student';
+// @use 'instructor';
+// @use 'screen';
+
 // Include CSS variables definition
-@include vars.define-css-variables; 
+@include vars.define-css-variables; // This likely belongs only in core.scss now 

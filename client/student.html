@@ -124,22 +124,6 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/constants.js"></script>
   <script src="/student.js"></script>
-  <script>
-    // Direct script to request student list
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, waiting for socket initialization...');
-      // Wait for socket to be initialized
-      setTimeout(function() {
-        console.log('Directly requesting student list...');
-        if (window.StudentSocket) {
-          window.StudentSocket.getStudentList();
-          console.log('Student list request sent directly from inline script');
-        } else {
-          console.error('StudentSocket not found!');
-        }
-      }, 2000);
-    });
-  </script>
 </body>
 </html>
 

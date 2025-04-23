@@ -3,6 +3,7 @@
 // Other files should use the variables without redefining :root
 
 /* Colors */
+// Base theme
 $color-primary: #2c6ecb;
 $color-primary-dark: #1f5bab;
 $color-primary-light: #b4c8e8;
@@ -17,6 +18,18 @@ $color-success: #d4edda;
 $color-error: #e53935;
 $color-light-bg: #f8f9fa;
 $color-warning: #ffd700;
+
+// Screen dark theme colors
+$color-screen-bg: #111;
+$color-screen-text: #fff;
+$color-screen-panel-bg: #222;
+$color-screen-element-bg: #333;
+$color-screen-border: #444;
+$color-screen-border-alt: #555;
+$color-screen-text-muted: #aaa;
+$color-screen-highlight-border: #4caf50;
+$color-screen-highlight-bg: #2d4d2e;
+$color-screen-autosubmit-bg: #4d4d2e;
 
 /* Spacing */
 $spacing-xs: 5px;
@@ -47,7 +60,7 @@ $stat-box-min-width: 150px;
 // This mixin defines the CSS variables in :root - use only in core.scss
 @mixin define-css-variables {
   :root {
-    /* Colors */
+    /* Colors - Base theme */
     --color-primary: #{$color-primary};
     --color-primary-dark: #{$color-primary-dark};
     --color-primary-light: #{$color-primary-light};
@@ -62,6 +75,18 @@ $stat-box-min-width: 150px;
     --color-error: #{$color-error};
     --color-light-bg: #{$color-light-bg};
     --color-warning: #{$color-warning};
+
+    /* Colors - Screen dark theme */
+    --color-screen-bg: #{$color-screen-bg};
+    --color-screen-text: #{$color-screen-text};
+    --color-screen-panel-bg: #{$color-screen-panel-bg};
+    --color-screen-element-bg: #{$color-screen-element-bg};
+    --color-screen-border: #{$color-screen-border};
+    --color-screen-border-alt: #{$color-screen-border-alt};
+    --color-screen-text-muted: #{$color-screen-text-muted};
+    --color-screen-highlight-border: #{$color-screen-highlight-border};
+    --color-screen-highlight-bg: #{$color-screen-highlight-bg};
+    --color-screen-autosubmit-bg: #{$color-screen-autosubmit-bg};
     
     /* Spacing */
     --spacing-xs: #{$spacing-xs};

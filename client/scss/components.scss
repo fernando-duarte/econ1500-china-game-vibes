@@ -145,6 +145,26 @@ input:checked + .toggle-slider:before {
   transform: translateX(26px);
 }
 
+// Stat box component (from _game.scss)
+.stat-box {
+  text-align: center;
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-light-bg); // Note: screen view might override this background
+  min-width: var(--stat-box-min-width);
+  
+  h3, h4 {
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-light);
+  }
+  
+  p {
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    color: var(--color-primary);
+  }
+}
+
 .flash-update-active {
   // Re-triggerable class for the flashUpdate animation
   animation: flashUpdate 0.5s ease-in-out;
