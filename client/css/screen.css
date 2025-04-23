@@ -1,0 +1,164 @@
+/**
+ * Screen Dashboard Styles
+ * Styles specific to the screen dashboard interface
+ */
+/* CSS Variables */
+:root {
+  /* Colors */
+  --color-primary: #2c6ecb;
+  --color-primary-dark: #1f5bab;
+  --color-primary-light: #b4c8e8;
+  --color-primary-lightest: #e8f0fe;
+  --color-text: #333;
+  --color-text-light: #455a74;
+  --color-text-dark: #1a3b5d;
+  --color-background: #f4f7fa;
+  --color-card: #fff;
+  --color-border: #ddd;
+  --color-success: #d4edda;
+  --color-error: #e53935;
+  --color-light-bg: #f8f9fa;
+  --color-warning: #ffd700;
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 8px;
+  --spacing-md: 10px;
+  --spacing-lg: 15px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 30px;
+  /* Typography */
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 24px;
+  --font-size-xl: 36px;
+  /* Borders */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  /* Effects */
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+  /* Layout */
+  --stat-box-min-width: 150px;
+}
+
+.screen-container {
+  max-width: 100%;
+  width: 100%;
+  padding: 1rem;
+}
+
+.screen-container h1,
+.screen-container h2 {
+  text-align: center;
+  color: #fff;
+}
+
+body.screen-body {
+  background-color: #111;
+  color: #fff;
+}
+body.screen-body .dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+@media (min-width: 1200px) {
+  body.screen-body .dashboard {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+body.screen-body .game-status-panel {
+  grid-column: 1/-1;
+  background-color: #222;
+  border-radius: 5px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+body.screen-body .status-indicator {
+  font-size: 1.5em;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  background-color: #333;
+}
+body.screen-body .round-info {
+  font-size: 1.5em;
+}
+body.screen-body .panel {
+  background-color: #222;
+  border-radius: 5px;
+  padding: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+body.screen-body .panel h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+}
+body.screen-body .events-panel {
+  height: 300px;
+  overflow-y: auto;
+}
+body.screen-body .event {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-left: 4px solid #555;
+  background-color: #333;
+}
+body.screen-body .event.highlight {
+  border-left-color: #4caf50;
+  background-color: #2d4d2e;
+}
+body.screen-body .event-time {
+  font-size: 0.8em;
+  color: #aaa;
+}
+body.screen-body .player-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+body.screen-body .player-item {
+  padding: 0.5rem 1rem;
+  background-color: #333;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+body.screen-body .player-submitted {
+  background-color: #2d4d2e;
+}
+body.screen-body .player-auto-submitted {
+  background-color: #4d4d2e;
+}
+body.screen-body .stats-panel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+body.screen-body .stat-box {
+  min-width: 0;
+  text-align: center;
+  padding: 1rem;
+  background-color: #333;
+  border-radius: 5px;
+}
+body.screen-body .stat-box h4 {
+  margin: 0 0 0.5rem 0;
+  color: #aaa;
+}
+body.screen-body .stat-value {
+  font-size: 1.8em;
+  font-weight: bold;
+}
+body.screen-body .timer-display {
+  font-size: 3em;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+/*# sourceMappingURL=screen.css.map */
