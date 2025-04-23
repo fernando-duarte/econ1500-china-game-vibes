@@ -1,0 +1,99 @@
+/**
+ * Instructor View Styles
+ * Styles specific to the instructor interface
+ */
+
+// Re-import variables for standalone use
+@use 'variables' as *;
+
+// Namespace for instructor view
+.instructor-view {
+  .instructor-container {
+    max-width: 1200px;
+  }
+
+  // Player list styles
+  .player-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+  
+  .player-item {
+    background-color: var(--color-primary-lightest);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 150px;
+  }
+  
+  .player-name {
+    font-weight: bold;
+  }
+  
+  .player-status {
+    margin-left: var(--spacing-md);
+    font-size: 0.85em;
+    color: var(--color-text-dark);
+  }
+  
+  .player-status.pending {
+    color: var(--color-text-light);
+    font-style: italic;
+  }
+  
+  .player-submitted {
+    background-color: var(--color-success);
+  }
+  
+  .player-auto-submitted {
+    background-color: var(--color-warning);
+    font-style: italic;
+  }
+  
+  // Game setup and controls
+  .game-status {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .admin-controls {
+    margin-top: var(--spacing-lg);
+    text-align: right;
+  }
+  
+  // Join controls
+  .join-controls {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  // Table styles
+  .auto-submitted-row {
+    background-color: rgba(255, 215, 0, 0.2);
+    font-style: italic;
+  }
+  
+  // Game over
+  .winner-display {
+    text-align: center;
+    margin: var(--spacing-xl) 0;
+  }
+  
+  .winner {
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    color: var(--color-primary);
+  }
+}
+
+// Styles outside namespace that interact with JS
+// These are kept outside to prevent specificity issues
+.auto-submitted-row {
+  background-color: rgba(255, 215, 0, 0.2);
+  font-style: italic;
+} 

@@ -1,0 +1,203 @@
+/**
+ * Student View Styles
+ * Styles specific to the student interface
+ */
+
+// Re-import variables for standalone use
+@use 'variables' as *;
+
+// Namespace for student view
+.student-view {
+  // Student header styles
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .game-info {
+    font-size: var(--font-size-md);
+  }
+  
+  .round-info {
+    font-size: var(--font-size-md);
+  }
+  
+  // Economy stats section
+  .economy-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .stat-box {
+    text-align: center;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    background-color: var(--color-light-bg);
+    min-width: var(--stat-box-min-width);
+  }
+  
+  .stat-box h3,
+  .stat-box h4 {
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-light);
+  }
+  
+  .stat-box p {
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    color: var(--color-primary);
+  }
+  
+  // Investment controls
+  .investment-controls {
+    margin: var(--spacing-xl) 0;
+  }
+  
+  #investmentStatus {
+    margin-top: var(--spacing-md);
+    font-style: italic;
+  }
+  
+  // Results styles
+  .results-container {
+    display: flex;
+    justify-content: space-around;
+    margin: var(--spacing-xl) 0;
+  }
+  
+  .result-box {
+    text-align: center;
+    padding: var(--spacing-md);
+  }
+  
+  .result-box p:first-child {
+    font-weight: bold;
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  #waitingNextRound {
+    text-align: center;
+    font-style: italic;
+    margin-top: var(--spacing-lg);
+  }
+  
+  // Team registration styles
+  .search-container {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+  }
+  
+  .student-selection {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-light-bg);
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .student-checkbox {
+    margin-bottom: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+  }
+  
+  .student-checkbox input[type="checkbox"] {
+    margin-right: var(--spacing-sm);
+  }
+  
+  .student-checkbox label {
+    display: inline;
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+  
+  .student-info {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--color-primary-lightest);
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .student-unavailable-info {
+    color: var(--color-text-dark);
+    font-style: italic;
+    font-size: var(--font-size-sm);
+  }
+  
+  .student-in-team {
+    opacity: 0.6;
+  }
+  
+  .student-in-team label {
+    text-decoration: line-through;
+    color: var(--color-text-light);
+  }
+  
+  .team-info {
+    margin-left: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-style: italic;
+  }
+  
+  .no-results {
+    padding: var(--spacing-md);
+    text-align: center;
+    font-style: italic;
+    color: var(--color-text-light);
+  }
+  
+  // Game over
+  .winner {
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    color: var(--color-primary);
+  }
+  
+  .current-player {
+    font-weight: bold;
+    background-color: var(--color-primary-lightest);
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+  }
+}
+
+// Direct style overrides for student view
+.all-submitted-message,
+.all-submitted-status {
+  font-weight: bold;
+  color: var(--color-text-dark);
+  background-color: var(--color-success);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  display: inline-block;
+  animation: pulsate 1.5s infinite;
+}
+
+.timer-ending {
+  color: var(--color-primary-dark);
+  font-weight: bold;
+  animation: pulsate 1.5s infinite;
+}
+
+.auto-start-msg {
+  background-color: var(--color-warning);
+  color: var(--color-text-dark);
+  font-weight: bold;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  text-align: center;
+  animation: pulsate 2s infinite alternate;
+} 

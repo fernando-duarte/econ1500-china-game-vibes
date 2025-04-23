@@ -1,0 +1,48 @@
+/**
+ * Core styles for all views
+ * Contains essential styles used by all pages
+ */
+
+// Variables and base styles
+@use 'variables' as *;
+@use 'reset';
+@use 'typography';
+@use 'global';
+@use 'layout';
+@use 'utilities';
+
+// Common animations used by all views
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flashUpdate {
+  0% {
+    background-color: var(--color-primary-lightest);
+  }
+  50% {
+    background-color: var(--color-success);
+  }
+  100% {
+    background-color: var(--color-card);
+  }
+}
+
+@keyframes pulsate {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+} 
