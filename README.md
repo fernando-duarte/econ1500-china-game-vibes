@@ -63,3 +63,61 @@ This application serves as a practical demonstration of economic concepts. For f
 - Macroeconomics textbooks covering growth theory
 - Online courses on economic growth models
 - Academic papers on the Solow-Swan model and its applications
+
+## CSS Architecture
+
+The application uses a modular CSS architecture to organize styles logically and reduce file size.
+
+### Organization
+
+Styles are organized into:
+- **Core Styles**: Essential styles shared across all views
+- **Component Styles**: Reusable UI components
+- **View-Specific Styles**: Styles specific to each interface (student, instructor, screen)
+
+### Development
+
+During development, CSS files are compiled from SCSS sources:
+
+```bash
+# Watch SCSS files for changes
+npm run watch:css
+
+# Build compressed CSS
+npm run build:css
+
+# Start development server with CSS watching
+npm run dev
+```
+
+### CSS Testing
+
+The application includes a test mode to compare original CSS with modular CSS:
+
+1. Open any view in a browser
+2. Look for the "CSS Test Mode" indicator in the bottom-left
+3. Use the toggle button to switch between original and modular CSS
+
+### CSS Transition
+
+The application is in the process of transitioning from a monolithic CSS architecture to a modular one. For details on the transition process, see:
+
+- [CSS Architecture Documentation](client/CSS_ARCHITECTURE.md)
+- [CSS Transition Guide](client/CSS_TRANSITION.md)
+
+To complete the transition, run:
+
+```bash
+# Test the modular CSS
+npm run css:transition
+
+# Migrate HTML files to use modular CSS directly
+npm run migrate:css
+
+# Optimize CSS for production
+npm run optimize:css
+```
+
+### Documentation
+
+For detailed information about the CSS architecture, see [CSS_ARCHITECTURE.md](client/CSS_ARCHITECTURE.md).
