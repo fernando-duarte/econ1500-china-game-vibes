@@ -1,6 +1,5 @@
 // instructor.js
 // Load modules in the correct order
-document.write('<script src="/modules/shared/css-loader.js"></script>');
 document.write('<script src="/modules/shared/socket-utils.js"></script>');
 document.write('<script src="/modules/instructor/dom.js"></script>');
 document.write('<script src="/modules/instructor/game.js"></script>');
