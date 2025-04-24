@@ -42,7 +42,7 @@ const GAME_CONSTANTS = {
   AUTO_START_PLAYERS: 3, // Default number of players needed if auto-start is enabled
 
   // Server defaults
-  DEFAULT_PORT: 3000,
+  DEFAULT_PORT: 3001,
 
   // Game state constants
   GAME_STATES: {
