@@ -46,44 +46,26 @@
       finalRankings: document.getElementById('finalRankings'),
     },
 
-    // Methods
-    initializeUI: function () {
+    /**
+     * Initialize the UI elements
+     */
+    initializeUI: function() {
       const elements = this.elements;
-
-      elements.totalRounds.textContent = CONSTANTS.ROUNDS;
-      elements.investmentSlider.step = CONSTANTS.INVESTMENT_STEP;
-      elements.investmentValue.step = CONSTANTS.INVESTMENT_STEP;
-      elements.timer.textContent = CONSTANTS.ROUND_DURATION_SECONDS;
-
-      // Input constraints from constants
-      elements.investmentSlider.min = CONSTANTS.INVESTMENT_MIN;
-      elements.investmentValue.min = CONSTANTS.INVESTMENT_MIN;
-
-      // Initialize placeholder values
-      elements.capital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.output.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.roundNumber.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.maxOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.investmentResult.textContent =
-        CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.newCapital.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.newOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.finalOutput.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-      elements.winner.textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
-
-      // Initialize status messages
-      elements.roundStatus.textContent =
-        CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
-      elements.waitingNextRound.textContent =
-        CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_NEXT_ROUND;
-
-      // Initialize duplicate elements if they exist
-      if (document.getElementById('roundNumberDuplicate')) {
-        document.getElementById('roundNumberDuplicate').textContent = CONSTANTS.UI_TEXT.PLACEHOLDER_TEXT;
+      
+      // Set up rounds info
+      if (elements.totalRounds) {
+        elements.totalRounds.textContent = CONSTANTS.ROUNDS;
       }
+      
       if (document.getElementById('totalRoundsDuplicate')) {
         document.getElementById('totalRoundsDuplicate').textContent = CONSTANTS.ROUNDS;
       }
+      
+      // Set up round status
+      if (elements.roundStatus) {
+        elements.roundStatus.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
+      }
+      
       if (document.getElementById('roundStatusDuplicate')) {
         document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_GAME_START;
       }
@@ -91,6 +73,12 @@
       // Initialize input placeholders
       elements.teamName.placeholder = CONSTANTS.UI_TEXT.TEAM_NAME_PLACEHOLDER;
       elements.studentSelectionContainer.innerHTML = CONSTANTS.UI_TEXT.LOADING_STUDENT_LIST;
+      
+      // Prevent cross-client team name updates by isolating the team name input
+      // This prevents the value from being synchronized across clients
+      const teamNameInput = elements.teamName;
+      teamNameInput.setAttribute('autocomplete', 'off');
+      teamNameInput.setAttribute('data-private', 'true');
     },
 
     // Store student data for filtering
@@ -324,6 +312,67 @@
       setTimeout(() => {
         notification.remove();
       }, CONSTANTS.NOTIFICATION_DISPLAY_MS);
+    },
+
+    /**
+     * Update student availability without changing the whole list
+     * @param {Array} studentsInTeams - Array of student names already in teams
+     * @param {number} unavailableCount - Number of students already in teams
+     */
+    updateStudentAvailability: function(studentsInTeams, unavailableCount) {
+      console.log('Updating student availability:', {
+        newlyUnavailableStudents: studentsInTeams,
+        unavailableCount
+      });
+      
+      // Store the updated availability data
+      this.studentData.studentsInTeams = studentsInTeams || [];
+      this.studentData.unavailableCount = unavailableCount || 0;
+      
+      // Convert studentsInTeams array to a Set for faster lookups
+      const studentsInTeamsSet = new Set(studentsInTeams);
+      
+      // Update UI for each student checkbox
+      this.studentData.allStudents.forEach(student => {
+        const isInTeam = studentsInTeamsSet.has(student);
+        const checkbox = document.getElementById(`student-${student}`);
+        
+        if (checkbox) {
+          // If student is now in a team, disable their checkbox
+          if (isInTeam) {
+            const checkboxParent = checkbox.parentNode;
+            checkbox.disabled = true;
+            
+            // Add the student-in-team class to the parent
+            if (!checkboxParent.classList.contains('student-in-team')) {
+              checkboxParent.classList.add('student-in-team');
+            }
+            
+            // Remove from selected students if they were selected
+            if (this.studentData.selectedStudents.has(student)) {
+              this.studentData.selectedStudents.delete(student);
+              checkbox.checked = false;
+            }
+          }
+        }
+      });
+      
+      // Update the info about unavailable students if any
+      const container = this.elements.studentSelectionContainer;
+      let infoDiv = container.querySelector('.student-info');
+      
+      if (!infoDiv && unavailableCount > 0) {
+        // Create info div if it doesn't exist
+        infoDiv = document.createElement('div');
+        infoDiv.className = 'student-info';
+        container.insertBefore(infoDiv, container.firstChild);
+      }
+      
+      if (infoDiv && unavailableCount > 0) {
+        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${unavailableCount > 1 ? 's' : ''} already in teams.</p>`;
+      } else if (infoDiv) {
+        infoDiv.remove();
+      }
     },
   };
 
