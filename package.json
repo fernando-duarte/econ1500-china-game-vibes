@@ -42,9 +42,6 @@
     "socket.io-client": "^4.8.1"
   },
   "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "git add"
-    ]
+    "*.js": ["eslint --fix"]
   }
 }
