@@ -11,12 +11,10 @@ process.on('unhandledRejection', (reason, promise) => {
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const fs = require('fs');
 const { Server } = require('socket.io');
 const { setupSocketEvents } = require('./events');
 const CONSTANTS = require('../shared/constants');
 const teamManager = require('./teamManager');
-const sass = require('sass'); // Would need to be installed
 
 // Create Express app
 const app = express();
@@ -72,7 +70,7 @@ setupSocketEvents(io);
 
 // Add global error handler middleware
 app.use((err, req, res, _next) => {
-  // eslint-disable-line no-unused-vars
+   
   const errorId =
     Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   console.error(`Express error [${errorId}]:`, err);
@@ -84,7 +82,7 @@ app.use((err, req, res, _next) => {
 
 // Add catch-all 404 handler
 app.use((req, res, _next) => {
-  // eslint-disable-line no-unused-vars
+   
   console.log(`404 Not Found: ${req.method} ${req.path}`);
   res.status(404).send('Not Found');
 });

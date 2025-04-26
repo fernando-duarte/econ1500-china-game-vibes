@@ -5,8 +5,8 @@
  * Useful before running e2e tests to avoid port conflicts
  */
 
-const { execSync } = require("child_process");
-const CONSTANTS = require("../shared/constants");
+const { execSync } = require('child_process');
+const CONSTANTS = require('../shared/constants');
 
 // Use default port or specified port in environment
 const PORT = process.env.PORT || CONSTANTS.DEFAULT_PORT || 3001;
@@ -16,10 +16,10 @@ function killProcessOnPort(port) {
     console.log(`Attempting to kill processes on port ${port}...`);
 
     // Different commands for different operating systems
-    if (process.platform === "win32") {
+    if (process.platform === 'win32') {
       // Windows
       const output = execSync(`netstat -ano | findstr :${port}`).toString();
-      const lines = output.split("\n");
+      const lines = output.split('\n');
       const pids = new Set();
 
       lines.forEach((line) => {
@@ -38,7 +38,7 @@ function killProcessOnPort(port) {
       try {
         // Use lsof to find process IDs
         const output = execSync(`lsof -i :${port} -t`).toString();
-        const pids = output.split("\n").filter(Boolean);
+        const pids = output.split('\n').filter(Boolean);
 
         if (pids.length === 0) {
           console.log(`No processes found using port ${port}`);
@@ -49,7 +49,7 @@ function killProcessOnPort(port) {
           console.log(`Killing process ${pid}...`);
           execSync(`kill -9 ${pid}`);
         });
-      } catch (error) {
+      } catch {
         // If lsof command fails, it's likely that no process is using the port
         console.log(`No processes found using port ${port}`);
       }

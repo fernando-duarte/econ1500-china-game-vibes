@@ -4,7 +4,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const CONSTANTS = require('../shared/constants');
 
 // In-memory store of teams and their members
 const teams = {}; // Reset on server restart

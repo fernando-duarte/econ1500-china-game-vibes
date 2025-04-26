@@ -248,7 +248,7 @@ function setupSocketEvents(io) {
             });
             
             // Send player_joined to the instructor room with team info
-            console.log(`Sending team_joined to instructor room`);
+            console.log('Sending team_joined to instructor room');
             io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
               playerName: playerName,
               initialCapital: joinResult.initialCapital,

@@ -115,12 +115,12 @@ async function minifyCssFiles() {
   // Check if clean-css is installed
   try {
     require.resolve('clean-css');
-  } catch (error) {
+  } catch {
     console.log('clean-css not found, attempting to install...');
     try {
       execSync('npm install clean-css --save-dev', { stdio: 'inherit' });
       console.log('✓ Installed clean-css successfully');
-    } catch (installError) {
+    } catch {
       console.error('× Failed to install clean-css.');
       console.error('Please install it manually: npm install clean-css --save-dev');
       console.error('Then run this script again.');
