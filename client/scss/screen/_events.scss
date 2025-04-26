@@ -1,0 +1,26 @@
+// Screen View: Events Panel
+
+@mixin styles {
+  .events-panel {
+    height: 300px; // Consider variable
+    overflow-y: auto;
+    // Inherits .panel styles for background, padding etc.
+  }
+
+  .event {
+    padding: 0.5rem; // Use spacing variables?
+    margin-bottom: 0.5rem; // Use spacing variables?
+    border-left: 4px solid var(--color-screen-border-alt);
+    background-color: var(--color-screen-element-bg);
+
+    &.highlight {
+      border-left-color: var(--color-screen-highlight-border);
+      background-color: var(--color-screen-highlight-bg);
+    }
+  }
+
+  .event-time {
+    font-size: 0.8em; // Use font size variable?
+    color: var(--color-screen-text-muted);
+  }
+} 

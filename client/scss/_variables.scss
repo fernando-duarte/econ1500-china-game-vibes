@@ -57,61 +57,14 @@ $transition-speed: 0.3s;
 /* Layout */
 $stat-box-min-width: 150px;
 
-// This mixin defines the CSS variables in :root - use only in core.scss
-@mixin define-css-variables {
-  :root {
-    /* Colors - Base theme */
-    --color-primary: #{$color-primary};
-    --color-primary-dark: #{$color-primary-dark};
-    --color-primary-light: #{$color-primary-light};
-    --color-primary-lightest: #{$color-primary-lightest};
-    --color-text: #{$color-text};
-    --color-text-light: #{$color-text-light};
-    --color-text-dark: #{$color-text-dark};
-    --color-background: #{$color-background};
-    --color-card: #{$color-card};
-    --color-border: #{$color-border};
-    --color-success: #{$color-success};
-    --color-error: #{$color-error};
-    --color-light-bg: #{$color-light-bg};
-    --color-warning: #{$color-warning};
+// Base: Forwarding variable partials
 
-    /* Colors - Screen dark theme */
-    --color-screen-bg: #{$color-screen-bg};
-    --color-screen-text: #{$color-screen-text};
-    --color-screen-panel-bg: #{$color-screen-panel-bg};
-    --color-screen-element-bg: #{$color-screen-element-bg};
-    --color-screen-border: #{$color-screen-border};
-    --color-screen-border-alt: #{$color-screen-border-alt};
-    --color-screen-text-muted: #{$color-screen-text-muted};
-    --color-screen-highlight-border: #{$color-screen-highlight-border};
-    --color-screen-highlight-bg: #{$color-screen-highlight-bg};
-    --color-screen-autosubmit-bg: #{$color-screen-autosubmit-bg};
+@forward './base/colors';
+@forward './base/spacing';
+@forward './base/typography_vars';
+@forward './base/borders';
+@forward './base/effects';
+@forward './base/layout_vars';
 
-    /* Spacing */
-    --spacing-xs: #{$spacing-xs};
-    --spacing-sm: #{$spacing-sm};
-    --spacing-md: #{$spacing-md};
-    --spacing-lg: #{$spacing-lg};
-    --spacing-xl: #{$spacing-xl};
-    --spacing-xxl: #{$spacing-xxl};
-
-    /* Typography */
-    --font-size-sm: #{$font-size-sm};
-    --font-size-md: #{$font-size-md};
-    --font-size-lg: #{$font-size-lg};
-    --font-size-xl: #{$font-size-xl};
-
-    /* Borders */
-    --border-radius-sm: #{$border-radius-sm};
-    --border-radius-md: #{$border-radius-md};
-    --border-radius-lg: #{$border-radius-lg};
-
-    /* Effects */
-    --box-shadow: #{$box-shadow};
-    --transition-speed: #{$transition-speed};
-
-    /* Layout */
-    --stat-box-min-width: #{$stat-box-min-width};
-  }
-}
+// Mixin 'define-css-variables' has been moved to core.scss
+// where it has access to the forwarded variables via the 'vars' namespace.

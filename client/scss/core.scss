@@ -1,24 +1,89 @@
 /**
- * Core styles for all views
- * Contains essential styles used by all pages
+ * Core Styles
+ * Imports essential base styles, variables, and utilities.
+ * Should be included by all view-specific SCSS files.
  */
 
-// Variables and base styles
-@use 'variables' as vars;
-@use 'reset';
-@use 'typography';
-@use 'global';
-@use 'layout';
-@use 'utilities';
+// Import base partials using the 'vars' namespace for variables
+@use '_variables' as vars;
+@use 'base/reset';
+@use 'base/global';
+// @use 'base/layout'; // Removed - Content moved to components
+@use 'base/typography';
+@use '_utilities';
 
-// Include CSS variables definition in core.css only
-@include vars.define-css-variables;
+// Define CSS Variables Mixin
+// This mixin uses the variables forwarded through 'base/variables'
+// under the 'vars' namespace established above.
+@mixin define-css-variables {
+  :root {
+    // Colors - Base theme
+    --color-primary: #{vars.$color-primary};
+    --color-primary-dark: #{vars.$color-primary-dark};
+    --color-primary-light: #{vars.$color-primary-light};
+    --color-primary-lightest: #{vars.$color-primary-lightest};
+    --color-text: #{vars.$color-text};
+    --color-text-light: #{vars.$color-text-light};
+    --color-text-dark: #{vars.$color-text-dark};
+    --color-background: #{vars.$color-background};
+    --color-card: #{vars.$color-card};
+    --color-border: #{vars.$color-border};
+    --color-success: #{vars.$color-success};
+    --color-error: #{vars.$color-error};
+    --color-light-bg: #{vars.$color-light-bg};
+    --color-warning: #{vars.$color-warning};
 
-// Common animations used by all views - defined only once
+    // Colors - Screen dark theme
+    --color-screen-bg: #{vars.$color-screen-bg};
+    --color-screen-text: #{vars.$color-screen-text};
+    --color-screen-panel-bg: #{vars.$color-screen-panel-bg};
+    --color-screen-element-bg: #{vars.$color-screen-element-bg};
+    --color-screen-border: #{vars.$color-screen-border};
+    --color-screen-border-alt: #{vars.$color-screen-border-alt};
+    --color-screen-text-muted: #{vars.$color-screen-text-muted};
+    --color-screen-highlight-border: #{vars.$color-screen-highlight-border};
+    --color-screen-highlight-bg: #{vars.$color-screen-highlight-bg};
+    --color-screen-autosubmit-bg: #{vars.$color-screen-autosubmit-bg};
+
+    // Spacing
+    --spacing-xs: #{vars.$spacing-xs};
+    --spacing-sm: #{vars.$spacing-sm};
+    --spacing-md: #{vars.$spacing-md};
+    --spacing-lg: #{vars.$spacing-lg};
+    --spacing-xl: #{vars.$spacing-xl};
+    --spacing-xxl: #{vars.$spacing-xxl};
+
+    // Typography
+    --font-size-sm: #{vars.$font-size-sm};
+    --font-size-md: #{vars.$font-size-md};
+    --font-size-lg: #{vars.$font-size-lg};
+    --font-size-xl: #{vars.$font-size-xl};
+
+    // Borders
+    --border-radius-sm: #{vars.$border-radius-sm};
+    --border-radius-md: #{vars.$border-radius-md};
+    --border-radius-lg: #{vars.$border-radius-lg};
+
+    // Effects
+    --box-shadow: #{vars.$box-shadow};
+    --transition-speed: #{vars.$transition-speed};
+
+    // Layout
+    --stat-box-min-width: #{vars.$stat-box-min-width};
+  }
+}
+
+// Include the CSS variables in the output of core.css
+// This should only be done ONCE across all compiled CSS.
+@include define-css-variables;
+
+// Define common animations (Keyframes)
+// These are included here so they are defined once in core.css
+// Utility classes that use these animations are in _utilities.scss
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px); // Subtle lift
   }
   to {
     opacity: 1;
@@ -28,24 +93,30 @@
 
 @keyframes flashUpdate {
   0% {
+    background-color: transparent; // Start transparent
+  }
+  25% {
     background-color: var(--color-primary-lightest);
   }
-  50% {
-    background-color: var(--color-success);
+  75% {
+    background-color: var(--color-primary-lightest);
   }
   100% {
-    background-color: var(--color-card);
+    background-color: transparent; // End transparent
   }
 }
 
 @keyframes pulsate {
   0% {
-    opacity: 0.7;
-  }
-  50% {
+    transform: scale(1);
     opacity: 1;
   }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.8;
+  }
   100% {
-    opacity: 0.7;
+    transform: scale(1);
+    opacity: 1;
   }
 }

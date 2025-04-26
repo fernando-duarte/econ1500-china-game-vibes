@@ -1,0 +1,20 @@
+// Component: Investment Values Input
+
+.investment-values {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin-top: 8px;
+  
+  span {
+    flex: 0 0 auto;
+    min-width: 30px;
+  }
+  
+  input[type="number"] {
+    width: 4em;
+    text-align: center;
+    margin: 0 10px;
+  }
+} 

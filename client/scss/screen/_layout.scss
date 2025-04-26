@@ -1,0 +1,45 @@
+// Screen View: Layout
+
+@mixin styles {
+  .dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem; // Use spacing variable?
+    margin-top: 1rem; // Use spacing variable?
+  }
+
+  @media (min-width: 1200px) { // Consider layout variable for breakpoint
+    .dashboard {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+
+  .game-status-panel {
+    grid-column: 1 / -1;
+    background-color: var(--color-screen-panel-bg);
+    border-radius: var(--border-radius-sm); // Use variable
+    padding: 1rem; // Use spacing variable?
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .panel {
+    background-color: var(--color-screen-panel-bg);
+    border-radius: var(--border-radius-sm); // Use variable
+    padding: 1rem; // Use spacing variable?
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); // Use effect variable?
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid var(--color-screen-border);
+      padding-bottom: 0.5rem; // Use spacing variable?
+    }
+  }
+
+  .stats-panel {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem; // Use spacing variable?
+  }
+} 

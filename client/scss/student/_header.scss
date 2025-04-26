@@ -1,0 +1,17 @@
+// Student View: Header
+
+@mixin styles {
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .game-info {
+    font-size: var(--font-size-md);
+  }
+
+  .round-info {
+    font-size: var(--font-size-md);
+  }
+} 

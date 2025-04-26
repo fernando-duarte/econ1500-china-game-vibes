@@ -1,3 +1,5 @@
+// Base: Global Styles
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
@@ -6,11 +8,11 @@ body {
 }
 
 .container {
-  max-width: 1000px;
+  max-width: 1000px; // Consider variable
   margin: 0 auto;
   padding: var(--spacing-xl);
 }
 
 .hidden {
   display: none !important;
-}
+} 

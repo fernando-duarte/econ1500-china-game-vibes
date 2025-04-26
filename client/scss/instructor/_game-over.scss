@@ -1,0 +1,14 @@
+// Instructor View: Game Over Display
+
+@mixin styles {
+  .winner-display {
+    text-align: center;
+    margin: var(--spacing-xl) 0;
+  }
+
+  .winner {
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    color: var(--color-primary);
+  }
+} 

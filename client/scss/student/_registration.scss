@@ -1,0 +1,78 @@
+// Student View: Team Registration
+
+@mixin styles {
+  .search-container {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .search-input {
+    // Consider extending a common input style if available
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+  }
+
+  .student-selection {
+    max-height: 200px; // Consider making this a variable
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-light-bg);
+    border-radius: var(--border-radius-sm);
+  }
+
+  .student-checkbox {
+    margin-bottom: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+
+    input[type='checkbox'] {
+      margin-right: var(--spacing-sm);
+    }
+
+    label {
+      display: inline;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+  }
+
+  .student-info {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--color-primary-lightest);
+    border-radius: var(--border-radius-sm);
+  }
+
+  .student-unavailable-info {
+    color: var(--color-text-dark);
+    font-style: italic;
+    font-size: var(--font-size-sm);
+  }
+
+  .student-in-team {
+    opacity: 0.6;
+
+    label {
+      text-decoration: line-through;
+      color: var(--color-text-light);
+    }
+  }
+
+  .team-info {
+    margin-left: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-style: italic;
+  }
+
+  .no-results {
+    padding: var(--spacing-md);
+    text-align: center;
+    font-style: italic;
+    color: var(--color-text-light);
+  }
+} 

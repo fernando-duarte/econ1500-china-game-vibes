@@ -1,0 +1,27 @@
+// Student View: Results Display
+
+@mixin styles {
+  .results-container {
+    display: flex;
+    justify-content: space-around;
+    margin: var(--spacing-xl) 0;
+  }
+
+  .result-box {
+    text-align: center;
+    padding: var(--spacing-md);
+
+    // Style for the label/title within the result box
+    p:first-child {
+      font-weight: bold;
+      margin-bottom: var(--spacing-xs);
+    }
+    // Add styling for the value paragraph if needed
+  }
+
+  #waitingNextRound {
+    text-align: center;
+    font-style: italic;
+    margin-top: var(--spacing-lg);
+  }
+} 

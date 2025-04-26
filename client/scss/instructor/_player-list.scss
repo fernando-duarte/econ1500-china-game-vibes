@@ -1,0 +1,47 @@
+// Instructor View: Player List
+
+@mixin styles {
+  // Player list styles
+  .player-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+
+  .player-item {
+    background-color: var(--color-primary-lightest);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 150px; // Consider making this a variable
+  }
+
+  .player-name {
+    font-weight: bold;
+  }
+
+  .player-status {
+    margin-left: var(--spacing-md);
+    font-size: 0.85em;
+    color: var(--color-text-dark);
+
+    &.pending {
+      color: var(--color-text-light);
+      font-style: italic;
+    }
+  }
+
+  .player-submitted {
+    // This class might be applied to .player-item
+    background-color: var(--color-success);
+  }
+
+  .player-auto-submitted {
+    // This class might be applied to .player-item
+    background-color: var(--color-warning);
+    font-style: italic;
+  }
+} 

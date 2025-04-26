@@ -1,0 +1,30 @@
+// Screen View: Stat Box Overrides
+
+@mixin styles {
+  // Override common stat-box for screen theme
+  .stat-box {
+    min-width: 0; // Override min-width from common component
+    text-align: center;
+    padding: 1rem; // Use spacing variables?
+    background-color: var(--color-screen-element-bg);
+    border-radius: var(--border-radius-sm); // Use variable
+
+    h4 {
+      margin: 0 0 0.5rem 0; // Use spacing variables?
+      color: var(--color-screen-text-muted);
+    }
+
+    // Style for the value itself
+    p,
+    .stat-value { // Target both <p> and potentially a specific class
+      font-size: 1.8em; // Use font size variable?
+      font-weight: bold;
+      color: var(--color-screen-text); // Use main screen text color
+    }
+  }
+
+  // Specific class if needed for the value
+  // .stat-value {
+  //   // Already covered above
+  // }
+} 

@@ -1,3 +1,6 @@
+@use '_variables' as vars; // Changed from ./base/variables
+@use 'components/investment-values'; // Changed from ./components/investment-values
+
 .form-group {
   margin-bottom: var(--spacing-lg);
 }
@@ -8,93 +11,21 @@ label {
   font-weight: 500;
 }
 
-input {
-  &[type='text'],
-  &[type='number'] {
-    width: 100%;
-    padding: var(--spacing-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-sm);
-    font-size: var(--font-size-md);
-  }
-
-  &[type='range'] {
-    width: 100%;
-    margin: var(--spacing-md) 0;
-  }
+input[type='text'],
+input[type='number'] {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
 }
 
-.investment-values {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  input {
-    width: 100px;
-    text-align: center;
-  }
+input[type='range'] {
+  width: 100%;
+  margin: var(--spacing-md) 0;
 }
 
 .error {
   color: var(--color-error);
   margin-top: var(--spacing-md);
-}
-
-.toggle {
-  &-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: var(--spacing-md);
-  }
-
-  &-switch {
-    display: inline-block;
-    position: relative;
-    width: 50px;
-    height: 24px;
-    margin-right: var(--spacing-md);
-
-    input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-  }
-
-  &-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--color-border);
-    transition: 0.4s;
-    border-radius: 24px;
-
-    &:before {
-      position: absolute;
-      content: '';
-      height: 16px;
-      width: 16px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-  }
-
-  &-label {
-    font-weight: 500;
-    color: var(--color-text-dark);
-  }
-}
-
-input:checked + .toggle-slider {
-  background-color: var(--color-primary);
-
-  &:before {
-    transform: translateX(26px);
-  }
 }

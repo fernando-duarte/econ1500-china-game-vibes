@@ -1,0 +1,35 @@
+// Screen View: Player List
+
+@mixin styles {
+  .player-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem; // Use spacing variable?
+  }
+
+  .player-item {
+    padding: 0.5rem 1rem; // Use spacing variables?
+    background-color: var(--color-screen-element-bg);
+    border-radius: var(--border-radius-sm); // Use variable
+    display: flex;
+    align-items: center;
+    // Add player name styling if needed
+  }
+
+  // Combined submitted class styling
+  .player-submitted,
+  .player-auto-submitted {
+    // Common styles for submitted states
+  }
+
+  .player-submitted {
+    background-color: var(--color-screen-highlight-bg);
+    // Add any specific styling for normally submitted
+  }
+
+  .player-auto-submitted {
+    background-color: var(--color-screen-autosubmit-bg);
+    // Add any specific styling for auto-submitted (e.g., italics)
+    font-style: italic; // Example
+  }
+} 

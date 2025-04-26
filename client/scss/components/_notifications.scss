@@ -1,0 +1,45 @@
+// Component: Notifications
+
+// Status indicators and notifications
+.status-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--color-success);
+  color: var(--color-text-dark);
+  padding: 10px 15px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
+  font-weight: bold;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.admin-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 15px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
+  font-weight: bold;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.admin-notification-info {
+  background-color: var(--color-primary-lightest);
+  color: var(--color-primary-dark);
+}
+
+.admin-notification-warning {
+  background-color: var(--color-warning);
+  color: var(--color-text-dark);
+}
+
+.admin-notification-error {
+  background-color: #ffebee;
+  color: var(--color-error);
+} 

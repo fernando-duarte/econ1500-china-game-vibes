@@ -1,0 +1,13 @@
+// Student View: Investment Controls
+
+@mixin styles {
+  .investment-controls {
+    margin: var(--spacing-xl) 0;
+    // Assumes content is using components like range sliders, number inputs
+  }
+
+  #investmentStatus {
+    margin-top: var(--spacing-md);
+    font-style: italic;
+  }
+} 

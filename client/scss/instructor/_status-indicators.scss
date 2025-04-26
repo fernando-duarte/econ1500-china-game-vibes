@@ -1,0 +1,32 @@
+// Instructor View: Status Indicators
+
+@mixin styles {
+  // All Submitted Styling
+  .all-submitted {
+    &-message {
+      font-weight: bold;
+      color: var(--color-text-dark);
+      background-color: var(--color-success);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--border-radius-sm);
+      display: inline-block;
+      animation: pulsate 1.5s infinite; // Ensure pulsate animation is defined (e.g., in _utilities.scss)
+    }
+
+    &-status {
+      font-weight: bold;
+      color: var(--color-text-dark);
+      background-color: var(--color-success);
+      padding: var(--spacing-sm);
+      border-radius: var(--border-radius-sm);
+      animation: pulsate 1.5s infinite;
+    }
+  }
+
+  // Timer Ending Styling
+  .timer-ending {
+    color: var(--color-primary-dark);
+    font-weight: bold;
+    animation: pulsate 1.5s infinite;
+  }
+} 

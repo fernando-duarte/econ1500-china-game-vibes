@@ -1,191 +1,46 @@
 /**
  * Instructor View Styles
- * Styles specific to the instructor interface
+ * Main entry point for instructor-specific styles.
  */
 
-// Re-import variables for standalone use
-@use 'variables' as vars;
+// Import core and common styles
+@use './core.scss'; 
+@use './components.scss'; 
+@use './_variables.scss' as vars; 
+
+// Import instructor-specific partials
+// @use 'instructor/layout'; // File doesn't exist - commenting out
+@use 'instructor/player-list';
+@use 'instructor/game-controls';
+@use 'instructor/game-over';
+@use 'instructor/status-indicators';
 
 // Namespace for instructor view
 .instructor-view {
+  // Any top-level instructor view styles that don't fit in partials
   .instructor-container {
     max-width: 1200px;
   }
 
-  // Player list styles
-  .player-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
-  }
+  // Include styles from partials within the namespace
+  // @include layout.styles; // Commented out as layout partial is not available
+  @include player-list.styles;
+  @include game-controls.styles;
+  @include game-over.styles;
+  @include status-indicators.styles;
 
-  .player-item {
-    background-color: var(--color-primary-lightest);
-    border-radius: var(--border-radius-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-sm);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-width: 150px;
-  }
+  // Use common components directly (already namespaced or global)
+  // Example: Use button styles from _buttons.scss (via components.scss)
+  // button {
+  //   @extend %button-base; // If using extends
+  // }
 
-  .player-name {
-    font-weight: bold;
-  }
-
-  .player-status {
-    margin-left: var(--spacing-md);
-    font-size: 0.85em;
-    color: var(--color-text-dark);
-  }
-
-  .player-status.pending {
-    color: var(--color-text-light);
-    font-style: italic;
-  }
-
-  .player-submitted {
-    background-color: var(--color-success);
-  }
-
-  .player-auto-submitted {
-    background-color: var(--color-warning);
-    font-style: italic;
-  }
-
-  // Game setup and controls
-  .game-status {
-    margin-bottom: var(--spacing-md);
-  }
-
-  .admin-controls {
-    margin-top: var(--spacing-lg);
-    text-align: right;
-  }
-
-  // Join controls
-  .join-controls {
-    margin-top: var(--spacing-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-  }
-
-  // Table styles
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: var(--spacing-xl) 0;
-  }
-
-  th,
-  td {
-    padding: var(--spacing-md) var(--spacing-lg);
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  th {
-    background-color: var(--color-light-bg);
-    font-weight: 600;
-  }
-
+  // Use table styles from _tables.scss (via components.scss)
   .auto-submitted-row {
-    background-color: rgba(255, 215, 0, 0.2);
+    background-color: rgba(vars.$color-warning, 0.2);
     font-style: italic;
-  }
-
-  // Game over
-  .winner-display {
-    text-align: center;
-    margin: var(--spacing-xl) 0;
-  }
-
-  .winner {
-    font-size: var(--font-size-lg);
-    font-weight: bold;
-    color: var(--color-primary);
-  }
-
-  // Admin Notifications (from _instructor.scss)
-  .admin-notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 15px;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--box-shadow);
-    z-index: 1000;
-    font-weight: bold;
-    text-align: center;
-    animation: fadeIn 0.3s ease-in-out;
-
-    &-info {
-      background-color: var(--color-primary-lightest);
-      color: var(--color-primary-dark);
-    }
-
-    &-warning {
-      background-color: var(--color-warning);
-      color: var(--color-text-dark);
-    }
-
-    &-error {
-      background-color: #ffebee;
-      color: var(--color-error);
-    }
-  }
-
-  // All Submitted Styling (from _instructor.scss)
-  .all-submitted {
-    &-message {
-      font-weight: bold;
-      color: var(--color-text-dark);
-      background-color: var(--color-success);
-      padding: var(--spacing-sm) var(--spacing-md);
-      border-radius: var(--border-radius-sm);
-      display: inline-block;
-      animation: pulsate 1.5s infinite;
-    }
-
-    &-status {
-      font-weight: bold;
-      color: var(--color-text-dark);
-      background-color: var(--color-success);
-      padding: var(--spacing-sm);
-      border-radius: var(--border-radius-sm);
-      animation: pulsate 1.5s infinite;
-    }
-  }
-
-  // Timer Ending Styling (from _instructor.scss)
-  .timer-ending {
-    color: var(--color-primary-dark);
-    font-weight: bold;
-    animation: pulsate 1.5s infinite;
-  }
-
-  // Status Message Styling (from _instructor.scss)
-  .status-message {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: var(--color-success);
-    color: var(--color-text-dark);
-    padding: 10px 15px;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--box-shadow);
-    z-index: 1000;
-    font-weight: bold;
-    animation: fadeIn 0.3s ease-in-out;
   }
 }
 
-// Styles outside namespace that interact with JS
-// These are kept outside to prevent specificity issues
-// .auto-submitted-row {
-//   background-color: rgba(255, 215, 0, 0.2);
-//   font-style: italic;
-// }
+// Note: Specificity might require some global overrides if needed,
+// but aim to keep styles within the .instructor-view namespace.

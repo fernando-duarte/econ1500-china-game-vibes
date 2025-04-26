@@ -1,0 +1,21 @@
+// Screen View: Status Indicators
+
+@mixin styles {
+  .status-indicator {
+    font-size: 1.5em; // Use font size variable?
+    font-weight: bold;
+    padding: 0.5rem 1rem; // Use spacing variables?
+    border-radius: var(--border-radius-sm); // Use variable
+    background-color: var(--color-screen-element-bg);
+  }
+
+  .round-info {
+    font-size: 1.5em; // Use font size variable?
+  }
+
+  .timer-display {
+    font-size: 3em; // Use font size variable?
+    text-align: center;
+    margin: 1rem 0; // Use spacing variables?
+  }
+} 

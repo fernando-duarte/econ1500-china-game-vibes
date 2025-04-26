@@ -1,0 +1,21 @@
+// Instructor View: Game Controls
+
+@mixin styles {
+  // Game setup and controls
+  .game-status {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .admin-controls {
+    margin-top: var(--spacing-lg);
+    text-align: right;
+  }
+
+  // Join controls
+  .join-controls {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+} 

@@ -1,0 +1,12 @@
+// Student View: Miscellaneous Styles
+
+@mixin styles {
+  .current-player {
+    font-weight: bold;
+    background-color: var(--color-primary-lightest);
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+  }
+
+  // .auto-start-msg is handled globally for now
+} 

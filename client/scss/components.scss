@@ -1,174 +1,20 @@
 /**
- * Common UI components shared across views
- * These components are used in multiple views but may
- * have view-specific styling applied elsewhere
+ * Aggregates common UI component styles shared across views.
  */
 
-// Re-import variables for standalone use
-@use 'variables' as vars;
+// Re-import variables for standalone compilation if needed, though often not necessary if compiled via a main file.
+// @use 'variables' as vars;
 
-// Import component styles
-@use 'buttons';
-@use 'forms';
+// Import base component styles that are reused often
+@use '_buttons.scss';
+@use '_forms.scss';
 
-// Common components
-.card {
-  background-color: var(--color-card);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--box-shadow);
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
-}
+// Import specific component partials
+@use 'components/cards';
+@use 'components/tables';
+@use 'components/notifications';
+@use 'components/toggles';
+@use 'components/stat-boxes';
 
-.table-container {
-  overflow-x: auto;
-  margin-top: var(--spacing-md);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: var(--spacing-xl) 0;
-}
-
-th,
-td {
-  padding: var(--spacing-md) var(--spacing-lg);
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-}
-
-th {
-  background-color: var(--color-light-bg);
-  font-weight: 600;
-}
-
-// Status indicators and notifications
-.status-message {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: var(--color-success);
-  color: var(--color-text-dark);
-  padding: 10px 15px;
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  z-index: 1000;
-  font-weight: bold;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.admin-notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 15px;
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  z-index: 1000;
-  font-weight: bold;
-  text-align: center;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.admin-notification-info {
-  background-color: var(--color-primary-lightest);
-  color: var(--color-primary-dark);
-}
-
-.admin-notification-warning {
-  background-color: var(--color-warning);
-  color: var(--color-text-dark);
-}
-
-.admin-notification-error {
-  background-color: #ffebee;
-  color: var(--color-error);
-}
-
-// Common layout elements
-.toggle-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.toggle-switch {
-  display: inline-block;
-  position: relative;
-  width: 50px;
-  height: 24px;
-  margin-right: var(--spacing-md);
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--color-border);
-  transition: 0.4s;
-  border-radius: 24px;
-}
-
-.toggle-slider:before {
-  position: absolute;
-  content: '';
-  height: 16px;
-  width: 16px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-
-.toggle-label {
-  font-weight: 500;
-  color: var(--color-text-dark);
-}
-
-input:checked + .toggle-slider {
-  background-color: var(--color-primary);
-}
-
-input:checked + .toggle-slider:before {
-  transform: translateX(26px);
-}
-
-// Stat box component (from _game.scss)
-.stat-box {
-  text-align: center;
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius-md);
-  background-color: var(
-    --color-light-bg
-  ); // Note: screen view might override this background
-  min-width: var(--stat-box-min-width);
-
-  h3,
-  h4 {
-    margin-bottom: var(--spacing-md);
-    color: var(--color-text-light);
-  }
-
-  p {
-    font-size: var(--font-size-lg);
-    font-weight: bold;
-    color: var(--color-primary);
-  }
-}
-
-.flash-update-active {
-  // Re-triggerable class for the flashUpdate animation
-  animation: flashUpdate 0.5s ease-in-out;
-}
+// Any component styles that don't fit elsewhere *could* go here,
+// but ideally, this file only contains @use rules.
