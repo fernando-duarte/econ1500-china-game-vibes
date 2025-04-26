@@ -210,9 +210,17 @@
       const elements = InstructorDom.elements;
       const count = InstructorGame.state.players.length;
 
+      // Add detailed log before updating DOM
+      console.log(
+        `[InstructorSocket] Updating playerCount element. Found element: ${!!elements.playerCount}. Current count: ${count}`
+      );
+
       if (elements.playerCount) {
         const countText = `${count} player${count !== 1 ? CONSTANTS.UI_TEXT.PLAYER_PLURAL_SUFFIX : ''}${CONSTANTS.UI_TEXT.PLAYER_JOINED_SUFFIX}`;
         elements.playerCount.textContent = countText;
+        console.log(
+          `[InstructorSocket] Set playerCount textContent to: "${countText}"`
+        ); // Log after setting
       }
     },
 

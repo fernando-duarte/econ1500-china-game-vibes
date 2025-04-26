@@ -74,7 +74,7 @@
   display: flex;
   align-items: center;
 }
-.student-view .student-checkbox input[type='checkbox'] {
+.student-view .student-checkbox input[type=checkbox] {
   margin-right: var(--spacing-sm);
 }
 .student-view .student-checkbox label {
@@ -94,24 +94,11 @@
   font-size: var(--font-size-sm);
 }
 .student-view .student-in-team {
-  opacity: 0.7;
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-  position: relative;
+  opacity: 0.6;
 }
 .student-view .student-in-team label {
   text-decoration: line-through;
   color: var(--color-text-light);
-  font-style: italic;
-  cursor: not-allowed;
-}
-.student-view .student-in-team::after {
-  content: '✕';
-  position: absolute;
-  right: var(--spacing-sm);
-  color: var(--color-danger, #dc3545);
-  font-weight: bold;
 }
 .student-view .team-info {
   margin-left: var(--spacing-sm);
