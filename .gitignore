@@ -46,6 +46,7 @@ temp/
 # Student data - untracked
 student_avatars/
 student_photos/
+student_avatars_matched/
 
 # Python scripts for student data processing
 # TEMP: match_avatars.py can be deleted once no longer needed
