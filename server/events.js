@@ -1,44 +1,42 @@
-const {
-  createGame,
-  addPlayer,
-  startGame,
-  startRound,
-  // submitInvestment imported but used indirectly through event handlers
-  playerReconnect,
-  playerDisconnect,
-} = require('./gameLogic');
+// const {
+//   // createGame,
+//   // startGame,
+//   // forceEndGame,
+//   // setManualStartMode,
+//   // checkAutoStart,
+//   // endGame,
+// } = require('./gameLogic');
+const { game } = require('./gameState');
+const { getPlayerRoom } = require('./gameUtils');
 
 const teamManager = require('./teamManager');
 const CONSTANTS = require('../shared/constants');
-
-/**
- * Get the room identifier for a specific player
- * @param {string} playerName - The name of the player
- * @return {string} The room identifier for the player
- */
-function getPlayerRoom(playerName) {
-  return `${CONSTANTS.SOCKET_ROOMS.PLAYER_PREFIX}${playerName}`;
-}
+const playerManager = require('./playerManager');
+const roundManager = require('./roundManager');
+const gameLifecycle = require('./gameLifecycle');
 
 /**
  * Set up Socket.IO event handlers
  */
 function setupSocketEvents(io) {
   // Store io instance in gameLogic for auto-start functionality
-  const gameLogic = require('./gameLogic');
+  // const gameLogic = require('./gameLogic');
 
   // Save IO instance for game functions
-  gameLogic.game.currentIo = io;
+  // gameLogic.game.currentIo = io;
+  game.currentIo = io;
   console.log('Stored IO instance for game functions');
 
   // Make gameLogic available to all event handlers
 
   // Create a game automatically on server start
-  createGame();
+  // createGame();
+  gameLifecycle.createGame();
   console.log('Game created automatically on server start');
 
   // Enable manual start mode by default
-  gameLogic.setManualStartMode(true);
+  // setManualStartMode(true);
+  gameLifecycle.setManualStartMode(true);
   console.log('Manual start mode enabled by default');
 
   // Load student list on server start
@@ -101,17 +99,17 @@ function setupSocketEvents(io) {
 
       // Notify the instructor client that a game is already created
       socket.emit(CONSTANTS.SOCKET.EVENT_GAME_CREATED, {
-        manualStartEnabled: gameLogic.game.manualStartEnabled,
+        manualStartEnabled: game.manualStartEnabled,
       });
 
       // Send existing players to the instructor
-      const players = Object.keys(gameLogic.game.players);
+      const players = Object.keys(game.players);
       console.log(
         `Sending existing ${players.length} players to instructor: ${players.join(', ')}`
       );
 
       players.forEach((playerName) => {
-        const player = gameLogic.game.players[playerName];
+        const player = game.players[playerName];
         const isTeam = player.isTeam || false;
 
         socket.emit(CONSTANTS.SOCKET.EVENT_PLAYER_JOINED, {
@@ -138,17 +136,17 @@ function setupSocketEvents(io) {
         socket.join(CONSTANTS.SOCKET_ROOMS.SCREENS);
 
         // Send current game state if available
-        if (gameLogic.game) {
+        if (game) {
           const stateData = {
-            isGameRunning: gameLogic.game.isGameRunning,
-            roundNumber: gameLogic.game.round,
-            timeRemaining: gameLogic.game.timeRemaining,
+            isGameRunning: game.isGameRunning,
+            roundNumber: game.round,
+            timeRemaining: game.timeRemaining,
           };
 
           // If the game is running and a round is active, send more data
           if (
-            gameLogic.game.isGameRunning &&
-            gameLogic.game.round >= CONSTANTS.FIRST_ROUND_NUMBER
+            game.isGameRunning &&
+            game.round >= CONSTANTS.FIRST_ROUND_NUMBER
           ) {
             io.to(CONSTANTS.SOCKET_ROOMS.SCREENS).emit(
               CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
@@ -210,7 +208,7 @@ function setupSocketEvents(io) {
           );
 
           // Use the io instance from the outer scope
-          const joinResult = addPlayer(playerName, socket.id, io);
+          const joinResult = playerManager.addPlayer(playerName, socket.id);
 
           if (joinResult.success) {
             console.log(
@@ -218,12 +216,15 @@ function setupSocketEvents(io) {
             );
 
             // Store team info in the game player object
-            const gameLogic = require('./gameLogic');
-            if (gameLogic.game.players[playerName]) {
-              gameLogic.game.players[playerName].isTeam = true;
-              gameLogic.game.players[playerName].teamMembers =
-                socket.teamMembers;
+            if (game.players[playerName]) {
+              game.players[playerName].isTeam = true;
+              game.players[playerName].teamMembers = socket.teamMembers;
             }
+
+            // Check for auto-start *after* player is successfully added
+            const autoStartResult = game.manualStartEnabled
+              ? false
+              : gameLifecycle.checkAutoStart(io);
 
             // Send game joined event to the player
             io.to(getPlayerRoom(playerName)).emit(
@@ -232,9 +233,9 @@ function setupSocketEvents(io) {
                 playerName: playerName,
                 initialCapital: joinResult.initialCapital,
                 initialOutput: joinResult.initialOutput,
-                isGameRunning: gameLogic.game.isGameRunning,
-                round: gameLogic.game.round,
-                autoStart: joinResult.autoStart,
+                isGameRunning: game.isGameRunning,
+                round: game.round,
+                autoStart: autoStartResult,
                 manualStartEnabled: joinResult.manualStartEnabled,
               }
             );
@@ -329,7 +330,7 @@ function setupSocketEvents(io) {
         playerName = name.trim();
 
         // Try to reconnect the player
-        const result = playerReconnect(playerName, socket.id);
+        const result = playerManager.playerReconnect(playerName, socket.id);
 
         if (result.success) {
           // Join the players room
@@ -345,7 +346,6 @@ function setupSocketEvents(io) {
             result.isGameRunning &&
             result.round >= CONSTANTS.FIRST_ROUND_NUMBER
           ) {
-            const gameLogic = require('./gameLogic');
             io.to(getPlayerRoom(playerName)).emit(
               CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
               {
@@ -353,7 +353,7 @@ function setupSocketEvents(io) {
                 capital: result.capital,
                 output: result.output,
                 submitted: result.submitted,
-                timeRemaining: gameLogic.game.timeRemaining,
+                timeRemaining: game.timeRemaining,
               }
             );
           }
@@ -389,7 +389,7 @@ function setupSocketEvents(io) {
           return;
         }
 
-        const result = startGame();
+        const result = gameLifecycle.startGame();
 
         if (result.success) {
           console.log('Game started');
@@ -400,7 +400,7 @@ function setupSocketEvents(io) {
           );
 
           // Start the first round
-          startRound(io);
+          roundManager.startRound(io);
         } else {
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: result.error });
         }
@@ -425,8 +425,7 @@ function setupSocketEvents(io) {
         console.log('Instructor requested force end game');
 
         // Force end current round and game
-        const gameLogic = require('./gameLogic');
-        const result = gameLogic.forceEndGame(io);
+        const result = gameLifecycle.forceEndGame(io);
 
         if (!result.success) {
           socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
@@ -456,8 +455,7 @@ function setupSocketEvents(io) {
           `Instructor requested to ${enabled ? 'enable' : 'disable'} manual start mode`
         );
 
-        const gameLogic = require('./gameLogic');
-        const result = gameLogic.setManualStartMode(enabled);
+        const result = gameLifecycle.setManualStartMode(enabled);
 
         if (result.success) {
           console.log(`Manual start mode ${enabled ? 'enabled' : 'disabled'}`);
@@ -469,9 +467,9 @@ function setupSocketEvents(io) {
           );
 
           // If switching to auto mode (disabling manual start), check if we should auto-start based on current player count
-          if (!enabled && !gameLogic.game.isGameRunning) {
+          if (!enabled && !game.isGameRunning) {
             console.log('Checking for auto-start after toggling to auto mode');
-            gameLogic.checkAutoStart(io);
+            gameLifecycle.checkAutoStart(io);
           }
         }
       } catch (error) {
@@ -508,18 +506,17 @@ function setupSocketEvents(io) {
             `Processing investment from ${playerName}: ${investment}`
           );
 
-          const gameLogic = require('./gameLogic');
           // Debug game state
           console.log('Game state:', {
-            isGameRunning: gameLogic.game.isGameRunning,
-            round: gameLogic.game.round,
-            playerCount: Object.keys(gameLogic.game.players).length,
+            isGameRunning: game.isGameRunning,
+            round: game.round,
+            playerCount: Object.keys(game.players).length,
             instructorRoomSize:
               io.sockets.adapter.rooms.get(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR)
                 ?.size || 0,
           });
 
-          const result = gameLogic.submitInvestment(
+          const result = roundManager.submitInvestment(
             playerName,
             investment,
             isAutoSubmit
@@ -559,7 +556,7 @@ function setupSocketEvents(io) {
             );
 
             // Check if the round should end (all players submitted)
-            if (gameLogic.game.pendingEndRound) {
+            if (game.pendingEndRound) {
               console.log(
                 'All players have submitted - ending round immediately'
               );
@@ -591,11 +588,11 @@ function setupSocketEvents(io) {
 
                 // Clear timers safely
                 try {
-                  if (gameLogic.game.roundTimer) {
-                    clearTimeout(gameLogic.game.roundTimer);
+                  if (game.roundTimer) {
+                    clearTimeout(game.roundTimer);
                   }
-                  if (gameLogic.game.timerInterval) {
-                    clearInterval(gameLogic.game.timerInterval);
+                  if (game.timerInterval) {
+                    clearInterval(game.timerInterval);
                   }
                 } catch (timerError) {
                   console.error(
@@ -607,7 +604,7 @@ function setupSocketEvents(io) {
                 // Add a slight delay before ending the round to allow for UI updates
                 setTimeout(() => {
                   try {
-                    gameLogic.endRound(io);
+                    roundManager.endRound(io);
                   } catch (endRoundError) {
                     console.error(
                       CONSTANTS.DEBUG_MESSAGES.ERROR_ENDING_ROUND,
@@ -735,7 +732,7 @@ function setupSocketEvents(io) {
         }
 
         // Mark player as disconnected
-        playerDisconnect(socket.id);
+        playerManager.playerDisconnect(socket.id);
       } catch (error) {
         console.error(CONSTANTS.DEBUG_MESSAGES.ERROR_IN_DISCONNECT, error);
       }
