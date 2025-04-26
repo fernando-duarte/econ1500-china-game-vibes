@@ -9,7 +9,7 @@ Add your documentation files for the application here.
 ### Future documentation to consider:
 
 - Game mechanics and rules
-- Installation guide 
+- Installation guide
 - Deployment instructions
 - API documentation
 - User guides (student, instructor, screen views)

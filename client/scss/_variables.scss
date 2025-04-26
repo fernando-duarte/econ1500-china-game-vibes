@@ -87,7 +87,7 @@ $stat-box-min-width: 150px;
     --color-screen-highlight-border: #{$color-screen-highlight-border};
     --color-screen-highlight-bg: #{$color-screen-highlight-bg};
     --color-screen-autosubmit-bg: #{$color-screen-autosubmit-bg};
-    
+
     /* Spacing */
     --spacing-xs: #{$spacing-xs};
     --spacing-sm: #{$spacing-sm};
@@ -95,23 +95,23 @@ $stat-box-min-width: 150px;
     --spacing-lg: #{$spacing-lg};
     --spacing-xl: #{$spacing-xl};
     --spacing-xxl: #{$spacing-xxl};
-    
+
     /* Typography */
     --font-size-sm: #{$font-size-sm};
     --font-size-md: #{$font-size-md};
     --font-size-lg: #{$font-size-lg};
     --font-size-xl: #{$font-size-xl};
-    
+
     /* Borders */
     --border-radius-sm: #{$border-radius-sm};
     --border-radius-md: #{$border-radius-md};
     --border-radius-lg: #{$border-radius-lg};
-    
+
     /* Effects */
     --box-shadow: #{$box-shadow};
     --transition-speed: #{$transition-speed};
-    
+
     /* Layout */
     --stat-box-min-width: #{$stat-box-min-width};
   }
-} 
+}

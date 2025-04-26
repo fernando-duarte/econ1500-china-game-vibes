@@ -74,7 +74,7 @@
   display: flex;
   align-items: center;
 }
-.student-view .student-checkbox input[type=checkbox] {
+.student-view .student-checkbox input[type='checkbox'] {
   margin-right: var(--spacing-sm);
 }
 .student-view .student-checkbox label {

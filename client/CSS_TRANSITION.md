@@ -107,5 +107,5 @@ Now that the CSS architecture transition is complete, future CSS work should:
 
 1. Continue using the modular approach
 2. Add new styles to the appropriate SCSS files
-3. Keep variables centralized in _variables.scss
-4. Maintain the namespacing pattern for view-specific styles 
+3. Keep variables centralized in \_variables.scss
+4. Maintain the namespacing pattern for view-specific styles

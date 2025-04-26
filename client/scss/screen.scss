@@ -23,20 +23,20 @@
 body.screen-body {
   background-color: #111;
   color: #fff;
-  
+
   .dashboard {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-top: 1rem;
   }
-  
+
   @media (min-width: 1200px) {
     .dashboard {
       grid-template-columns: 2fr 1fr;
     }
   }
-  
+
   .game-status-panel {
     grid-column: 1/-1;
     background-color: #222;
@@ -46,7 +46,7 @@ body.screen-body {
     justify-content: space-between;
     align-items: center;
   }
-  
+
   .status-indicator {
     font-size: 1.5em;
     font-weight: bold;
@@ -54,52 +54,52 @@ body.screen-body {
     border-radius: 5px;
     background-color: #333;
   }
-  
+
   .round-info {
     font-size: 1.5em;
   }
-  
+
   .panel {
     background-color: #222;
     border-radius: 5px;
     padding: 1rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   }
-  
+
   .panel h3 {
     margin-top: 0;
     border-bottom: 1px solid #444;
     padding-bottom: 0.5rem;
   }
-  
+
   .events-panel {
     height: 300px;
     overflow-y: auto;
   }
-  
+
   .event {
     padding: 0.5rem;
     margin-bottom: 0.5rem;
     border-left: 4px solid #555;
     background-color: #333;
   }
-  
+
   .event.highlight {
     border-left-color: #4caf50;
     background-color: #2d4d2e;
   }
-  
+
   .event-time {
     font-size: 0.8em;
     color: #aaa;
   }
-  
+
   .player-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  
+
   .player-item {
     padding: 0.5rem 1rem;
     background-color: #333;
@@ -107,21 +107,21 @@ body.screen-body {
     display: flex;
     align-items: center;
   }
-  
+
   .player-submitted {
     background-color: #2d4d2e;
   }
-  
+
   .player-auto-submitted {
     background-color: #4d4d2e;
   }
-  
+
   .stats-panel {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
-  
+
   .stat-box {
     min-width: 0;
     text-align: center;
@@ -129,20 +129,20 @@ body.screen-body {
     background-color: #333;
     border-radius: 5px;
   }
-  
+
   .stat-box h4 {
     margin: 0 0 0.5rem 0;
     color: #aaa;
   }
-  
+
   .stat-value {
     font-size: 1.8em;
     font-weight: bold;
   }
-  
+
   .timer-display {
     font-size: 3em;
     text-align: center;
     margin: 1rem 0;
   }
-} 
+}

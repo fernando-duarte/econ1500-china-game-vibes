@@ -7,27 +7,27 @@
   font-size: var(--font-size-md);
   cursor: pointer;
   transition: background-color var(--transition-speed);
-  
+
   &:hover {
     background-color: var(--color-primary-dark);
   }
-  
+
   &:disabled {
     background-color: var(--color-primary-light);
     cursor: not-allowed;
   }
-  
+
   &-warning {
     background-color: var(--color-warning);
     color: var(--color-text-dark);
-    
+
     &:hover {
       background-color: #e6c300;
     }
   }
-  
+
   &-enabled {
     background-color: var(--color-primary);
     cursor: pointer;
   }
-} 
+}

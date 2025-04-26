@@ -265,7 +265,8 @@ input:checked + .toggle-slider:before {
   background-color: var(--color-light-bg);
   min-width: var(--stat-box-min-width);
 }
-.stat-box h3, .stat-box h4 {
+.stat-box h3,
+.stat-box h4 {
   margin-bottom: var(--spacing-md);
   color: var(--color-text-light);
 }

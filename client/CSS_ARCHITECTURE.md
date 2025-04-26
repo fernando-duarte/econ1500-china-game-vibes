@@ -36,7 +36,7 @@ client/
 To prevent specificity issues and conflicts, each view has its own namespace:
 
 - `.student-view` - Wraps student-specific styles
-- `.instructor-view` - Wraps instructor-specific styles 
+- `.instructor-view` - Wraps instructor-specific styles
 - `.screen-view` - Wraps screen-specific styles (though screen view already uses body.screen-body)
 
 The main HTML files add these classes to the body element.
@@ -54,16 +54,20 @@ This approach ensures proper cascade order and minimizes CSS conflicts.
 ## CSS Modules
 
 ### core.css
+
 Contains essential styles used across all views:
+
 - Variables
 - Reset
-- Typography 
+- Typography
 - Global styles
 - Layout utilities
 - Common animations
 
 ### components.css
+
 Contains reusable UI components:
+
 - Buttons
 - Forms
 - Cards
@@ -73,7 +77,9 @@ Contains reusable UI components:
 - Toggle switches
 
 ### view-specific CSS
+
 Each view's CSS focuses exclusively on its own UI needs:
+
 - **student.css**: Team registration, game interface, investment controls
 - **instructor.css**: Player list, game controls, results tables
 - **screen.css**: Dashboard layout, event log, stats display
@@ -85,7 +91,7 @@ When adding new styles:
 1. Determine if the style is core, a component, or view-specific
 2. Add to the appropriate SCSS file
 3. If creating a new component:
-   - Add styles to components.scss or create a new _component.scss partial
+   - Add styles to components.scss or create a new \_component.scss partial
    - Document the component's usage
 
 ## Building CSS
@@ -123,6 +129,7 @@ These classes must remain consistent across CSS modules to ensure proper functio
 ## Animation Dependencies
 
 All animations are defined in core.css to ensure they're available to all components:
+
 - `fadeIn` - Used for notifications
 - `flashUpdate` - Used for highlighting updated content
-- `pulsate` - Used for drawing attention to UI elements 
+- `pulsate` - Used for drawing attention to UI elements

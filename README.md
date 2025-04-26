@@ -71,6 +71,7 @@ The application uses a modular CSS architecture to organize styles logically and
 ### Organization
 
 Styles are organized into:
+
 - **Core Styles**: Essential styles shared across all views
 - **Component Styles**: Reusable UI components
 - **View-Specific Styles**: Styles specific to each interface (student, instructor, screen)

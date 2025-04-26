@@ -9,4 +9,4 @@ interface Window {
   InstructorSocket?: any;
   ScreenSocket?: any;
   CSSLoader?: any;
-} 
+}
