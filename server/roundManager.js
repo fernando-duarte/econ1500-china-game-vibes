@@ -5,7 +5,11 @@
 
 const { clearRoundTimers } = require('./roundUtils/timerManager');
 const { submitInvestment } = require('./roundUtils/investmentProcessor');
-const { startRound, endRound } = require('./roundUtils/roundLifecycle');
+const { startRound } = require('./roundUtils/startRound');
+const { endRound } = require('./roundUtils/endRound');
+// const { game } = require('./gameState'); // Not directly used in exports
+// const { initializePlayers } = require('./playerManager'); // Moved to game setup logic
+// const { resetTeams } = require('./teamManager'); // Moved to game setup logic
 
 module.exports = {
   startRound, // from roundLifecycle
