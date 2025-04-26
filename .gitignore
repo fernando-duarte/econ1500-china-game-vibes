@@ -48,4 +48,5 @@ student_avatars/
 student_photos/
 
 # Python scripts for student data processing
-/match_avatars.py  # TEMP: This line can be deleted once the script is no longer needed
+# TEMP: match_avatars.py can be deleted once no longer needed
+match_avatars.py
