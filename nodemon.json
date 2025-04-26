@@ -1,0 +1,11 @@
+{
+  "watch": ["server/", "shared/"],
+  "ext": "js,json",
+  "ignore": ["node_modules/", "client/"],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": "500",
+  "colours": true,
+  "restartable": "rs"
+} 
