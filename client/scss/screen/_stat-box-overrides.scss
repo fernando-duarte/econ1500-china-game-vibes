@@ -22,7 +22,8 @@
 
     // Style for the value itself
     p,
-    .stat-value { // Target both <p> and potentially a specific class
+    .stat-value {
+      // Target both <p> and potentially a specific class
       font-size: var(--font-size-lg); // Use font size variable
       font-weight: bold;
       color: var(--color-screen-text); // Use main screen text color
@@ -33,4 +34,4 @@
   // .stat-value {
   //   // Already covered above
   // }
-} 
+}

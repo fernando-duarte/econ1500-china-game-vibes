@@ -12,7 +12,8 @@
     margin-top: 1rem; // Use spacing variable?
   }
 
-  @media (min-width: 1200px) { // Consider layout variable for breakpoint
+  @media (min-width: 1200px) {
+    // Consider layout variable for breakpoint
     .dashboard {
       grid-template-columns: 2fr 1fr;
     }
@@ -46,4 +47,4 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem; // Use spacing variable?
   }
-} 
+}

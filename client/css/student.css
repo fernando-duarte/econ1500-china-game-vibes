@@ -21,7 +21,7 @@
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-background);
@@ -233,7 +233,7 @@ h1 {
   flex: 0 0 auto;
   min-width: 30px;
 }
-.investment-values input[type=number] {
+.investment-values input[type='number'] {
   width: 4em;
   text-align: center;
   margin: 0 10px;
@@ -249,8 +249,8 @@ label {
   font-weight: 500;
 }
 
-input[type=text],
-input[type=number] {
+input[type='text'],
+input[type='number'] {
   width: 100%;
   padding: var(--spacing-md);
   border: 1px solid var(--color-border);
@@ -258,7 +258,7 @@ input[type=number] {
   font-size: var(--font-size-md);
 }
 
-input[type=range] {
+input[type='range'] {
   width: 100%;
   margin: var(--spacing-md) 0;
 }
@@ -376,7 +376,7 @@ th {
 
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 16px;
   width: 16px;
   left: 4px;
@@ -477,7 +477,7 @@ input:checked + .toggle-slider:before {
   display: flex;
   align-items: center;
 }
-.student-view .student-checkbox input[type=checkbox] {
+.student-view .student-checkbox input[type='checkbox'] {
   margin-right: var(--spacing-sm);
 }
 .student-view .student-checkbox label {

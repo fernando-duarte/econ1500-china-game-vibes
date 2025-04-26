@@ -5,9 +5,9 @@
  */
 
 // Import core and common styles
-@use './core.scss'; 
-@use './components.scss'; 
-@use './_variables.scss' as vars; 
+@use './core.scss';
+@use './components.scss';
+@use './_variables.scss' as vars;
 
 // Import instructor-specific partials
 @use 'instructor/player-list';
