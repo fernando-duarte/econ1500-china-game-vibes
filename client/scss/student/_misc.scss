@@ -1,4 +1,8 @@
-// Student View: Miscellaneous Styles
+/**
+ * Student Miscellaneous Styles
+ * Contains various utility styles specific to the student view.
+ * Includes helper classes and minor components not categorized elsewhere.
+ */
 
 @mixin styles {
   .current-player {
@@ -8,5 +12,15 @@
     border-radius: var(--border-radius-sm);
   }
 
-  // .auto-start-msg is handled globally for now
+  // Moved from student.scss global scope
+  .auto-start-msg {
+    background-color: var(--color-warning);
+    color: var(--color-text-dark);
+    font-weight: bold;
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    text-align: center;
+    animation: pulsate 2s infinite alternate; // Ensure pulsate defined in core
+  }
 } 

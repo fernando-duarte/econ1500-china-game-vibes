@@ -1,6 +1,7 @@
 /**
- * Screen Dashboard Styles
- * Main entry point for screen-specific styles.
+ * Screen View Styles
+ * Main stylesheet for the screen/projector display interface.
+ * Includes layout, components, and screen-specific overrides.
  */
 
 // Import core and common styles
@@ -13,7 +14,7 @@
 @use 'screen/status';
 @use 'screen/events';
 @use 'screen/player-list';
-@use 'screen/stat-box';
+@use 'screen/stat-box-overrides';
 
 // Apply base screen styles to body
 body.screen-body {
@@ -24,7 +25,7 @@ body.screen-body {
   .screen-container {
     max-width: 100%;
     width: 100%;
-    padding: 1rem; // Consider using spacing variables
+    padding: var(--spacing-md); // Use spacing variable
 
     h1,
     h2 {
@@ -38,7 +39,7 @@ body.screen-body {
   @include status.styles;
   @include events.styles;
   @include player-list.styles;
-  @include stat-box.styles; // Apply screen-specific stat box styles
+  @include stat-box-overrides.styles;
 
   // Apply overrides to common components for screen theme
   .panel {

@@ -1,6 +1,7 @@
 /**
  * Instructor View Styles
- * Main entry point for instructor-specific styles.
+ * Main stylesheet for the instructor/administrator interface.
+ * Includes game management, monitoring, and control features.
  */
 
 // Import core and common styles
@@ -9,7 +10,6 @@
 @use './_variables.scss' as vars; 
 
 // Import instructor-specific partials
-// @use 'instructor/layout'; // File doesn't exist - commenting out
 @use 'instructor/player-list';
 @use 'instructor/game-controls';
 @use 'instructor/game-over';
@@ -23,7 +23,6 @@
   }
 
   // Include styles from partials within the namespace
-  // @include layout.styles; // Commented out as layout partial is not available
   @include player-list.styles;
   @include game-controls.styles;
   @include game-over.styles;

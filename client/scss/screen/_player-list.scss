@@ -1,14 +1,18 @@
-// Screen View: Player List
+/**
+ * Screen Player List
+ * Defines styles for the player list as displayed on the screen view.
+ * Optimized for large display visibility and real-time updates.
+ */
 
 @mixin styles {
   .player-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem; // Use spacing variable?
+    gap: var(--spacing-sm); // Use spacing variable
   }
 
   .player-item {
-    padding: 0.5rem 1rem; // Use spacing variables?
+    padding: var(--spacing-sm) var(--spacing-md); // Use spacing variables
     background-color: var(--color-screen-element-bg);
     border-radius: var(--border-radius-sm); // Use variable
     display: flex;

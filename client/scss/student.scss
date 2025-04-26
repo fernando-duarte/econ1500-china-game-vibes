@@ -1,5 +1,6 @@
 /**
  * Student View Styles
+ * Main stylesheet for the student/participant interface.
  * Main entry point for student-specific styles.
  */
 
@@ -26,16 +27,13 @@
   @include registration.styles;
   @include misc.styles;
 
-  // Potentially consolidate .economy-stats with .stat-box from components
+  // Container for economy stats display
   .economy-stats {
-    // Option 1: Extend common stat-box
-    // @extend .stat-box; // Need to ensure .stat-box is available globally or via mixin
-
-    // Option 2: Keep specific styles if different
+    // Styles for the container itself
     display: flex;
     justify-content: space-around;
     margin-bottom: var(--spacing-xl);
-    // Add specific child element styling if needed
+    // Styles for direct children (e.g., individual stat boxes) might be needed here or applied directly
   }
 
   // Game Over winner display (Consider moving to a partial if complex)
@@ -50,14 +48,3 @@
 // .all-submitted-message, .all-submitted-status, .timer-ending
 // should ideally be handled by common components/status indicators
 // imported via components.scss
-
-.auto-start-msg {
-  background-color: var(--color-warning);
-  color: var(--color-text-dark);
-  font-weight: bold;
-  padding: var(--spacing-md);
-  margin-top: var(--spacing-md);
-  border-radius: var(--border-radius-sm);
-  text-align: center;
-  animation: pulsate 2s infinite alternate; // Ensure pulsate defined
-}

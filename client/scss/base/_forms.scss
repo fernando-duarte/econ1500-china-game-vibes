@@ -1,3 +1,9 @@
+/**
+ * Form Styles
+ * Defines styling for form elements including inputs, selects, and form layouts.
+ * Establishes consistent form appearance across the application.
+ */
+
 @use '_variables' as vars; // Changed from ./base/variables
 @use 'components/investment-values'; // Changed from ./components/investment-values
 

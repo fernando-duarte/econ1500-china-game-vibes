@@ -10,7 +10,7 @@
 @use 'base/global';
 // @use 'base/layout'; // Removed - Content moved to components
 @use 'base/typography';
-@use '_utilities';
+@use 'base/utilities';
 
 // Define CSS Variables Mixin
 // This mixin uses the variables forwarded through 'base/variables'

@@ -1,3 +1,9 @@
+/**
+ * Stat Box Overrides
+ * Provides screen-specific styling overrides for stat box components.
+ * Adapts the base stat box styles for the screen display context.
+ */
+
 // Screen View: Stat Box Overrides
 
 @mixin styles {
@@ -5,19 +11,19 @@
   .stat-box {
     min-width: 0; // Override min-width from common component
     text-align: center;
-    padding: 1rem; // Use spacing variables?
+    padding: var(--spacing-md); // Use spacing variable
     background-color: var(--color-screen-element-bg);
     border-radius: var(--border-radius-sm); // Use variable
 
     h4 {
-      margin: 0 0 0.5rem 0; // Use spacing variables?
+      margin: 0 0 var(--spacing-sm) 0; // Use spacing variable
       color: var(--color-screen-text-muted);
     }
 
     // Style for the value itself
     p,
     .stat-value { // Target both <p> and potentially a specific class
-      font-size: 1.8em; // Use font size variable?
+      font-size: var(--font-size-lg); // Use font size variable
       font-weight: bold;
       color: var(--color-screen-text); // Use main screen text color
     }

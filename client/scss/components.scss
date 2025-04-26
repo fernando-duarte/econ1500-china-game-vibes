@@ -1,13 +1,15 @@
 /**
- * Aggregates common UI component styles shared across views.
+ * Component Styles
+ * Imports and compiles all component-specific styles.
+ * These components are reused across multiple views in the application.
  */
 
 // Re-import variables for standalone compilation if needed, though often not necessary if compiled via a main file.
 // @use 'variables' as vars;
 
 // Import base component styles that are reused often
-@use '_buttons.scss';
-@use '_forms.scss';
+@use 'base/buttons';
+@use 'base/forms';
 
 // Import specific component partials
 @use 'components/cards';
