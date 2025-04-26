@@ -15,7 +15,7 @@
       totalRounds: document.getElementById('totalRounds'),
       roundStatus: document.getElementById('roundStatus'),
       currentInvestmentsSection: document.getElementById(
-        'currentInvestmentsSection',
+        'currentInvestmentsSection'
       ),
       currentInvestmentsBody: document.getElementById('currentInvestmentsBody'),
       roundResultsSection: document.getElementById('roundResultsSection'),
@@ -42,24 +42,24 @@
       console.log('DOM Elements check:');
       console.log(
         'currentInvestmentsSection found:',
-        !!elements.currentInvestmentsSection,
+        !!elements.currentInvestmentsSection
       );
       console.log(
         'currentInvestmentsBody found:',
-        !!elements.currentInvestmentsBody,
+        !!elements.currentInvestmentsBody
       );
 
       // Style check
       console.log(
         'currentInvestmentsSection classes:',
-        elements.currentInvestmentsSection.className,
+        elements.currentInvestmentsSection.className
       );
     },
 
     updatePlayerList: function (
       players,
       submittedPlayers,
-      autoSubmittedPlayers,
+      autoSubmittedPlayers
     ) {
       console.log('Updating player list - players:', players);
       console.log('Submitted players:', submittedPlayers);
@@ -95,10 +95,10 @@
         playerElement.innerHTML = `
           <span class="${CONSTANTS.CSS.PLAYER_NAME}">${player}</span>
           ${
-  isSubmitted
-    ? `<span class="${CONSTANTS.CSS.PLAYER_STATUS}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_SUBMITTED}</span>`
-    : `<span class="${CONSTANTS.CSS.PLAYER_STATUS} ${CONSTANTS.CSS.PLAYER_STATUS_PENDING}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_PENDING}</span>`
-  }
+            isSubmitted
+              ? `<span class="${CONSTANTS.CSS.PLAYER_STATUS}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_SUBMITTED}</span>`
+              : `<span class="${CONSTANTS.CSS.PLAYER_STATUS} ${CONSTANTS.CSS.PLAYER_STATUS_PENDING}">${CONSTANTS.UI_TEXT.STATUS_PLAYER_PENDING}</span>`
+          }
         `;
 
         playerList.appendChild(playerElement);
@@ -147,7 +147,7 @@
 
         // Format investment with consistent decimal precision
         const formattedInvestment = parseFloat(data.investment).toFixed(
-          CONSTANTS.DECIMAL_PRECISION,
+          CONSTANTS.DECIMAL_PRECISION
         );
 
         row.innerHTML = `
@@ -159,16 +159,20 @@
 
       // Add visual highlight to show the table updated
       // Remove the class to reset the animation
-      currentInvestmentsSection.classList.remove(CONSTANTS.CSS.FLASH_UPDATE_ACTIVE);
+      currentInvestmentsSection.classList.remove(
+        CONSTANTS.CSS.FLASH_UPDATE_ACTIVE
+      );
       // Force reflow to allow animation to restart
       void currentInvestmentsSection.offsetWidth;
       // Add the class back to trigger the animation
-      currentInvestmentsSection.classList.add(CONSTANTS.CSS.FLASH_UPDATE_ACTIVE);
+      currentInvestmentsSection.classList.add(
+        CONSTANTS.CSS.FLASH_UPDATE_ACTIVE
+      );
     },
 
     displayStatusMessage: function (
       message,
-      duration = CONSTANTS.STATUS_MESSAGE_DISPLAY_MS,
+      duration = CONSTANTS.STATUS_MESSAGE_DISPLAY_MS
     ) {
       const statusElement = document.createElement('div');
       statusElement.textContent = message;

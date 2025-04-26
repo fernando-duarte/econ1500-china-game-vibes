@@ -12,6 +12,7 @@
     "build": "npm run lint && npm run build:css",
     "optimize:css": "node scripts/optimize-css.js",
     "browser-sync": "browser-sync start --proxy 'localhost:3001' --files 'client/**/*.html, client/**/*.css, client/**/*.js' --port 3002 --no-open --notify false --ui-port 3003",
+    "format": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepare": "husky"
@@ -35,10 +36,13 @@
     "browser-sync": "^3.0.4",
     "clean-css": "^5.3.3",
     "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6",
     "globals": "^16.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
     "nodemon": "^3.1.10",
+    "prettier": "^3.5.3",
     "socket.io-client": "^4.8.1"
   },
   "lint-staged": {

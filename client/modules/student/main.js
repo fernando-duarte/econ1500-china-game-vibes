@@ -19,15 +19,19 @@
       elements.registerTeamButton.addEventListener('click', () => {
         const teamName = elements.teamName.value.trim();
         if (!teamName) {
-          elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_ENTER_TEAM_NAME;
+          elements.teamRegistrationError.textContent =
+            CONSTANTS.UI_TEXT.ERROR_ENTER_TEAM_NAME;
           return;
         }
 
         // Get selected students from our tracked selections
-        const selectedStudents = Array.from(StudentDom.studentData.selectedStudents);
+        const selectedStudents = Array.from(
+          StudentDom.studentData.selectedStudents
+        );
 
         if (selectedStudents.length === 0) {
-          elements.teamRegistrationError.textContent = CONSTANTS.UI_TEXT.ERROR_SELECT_STUDENTS;
+          elements.teamRegistrationError.textContent =
+            CONSTANTS.UI_TEXT.ERROR_SELECT_STUDENTS;
           return;
         }
 
@@ -48,7 +52,7 @@
         if (!isNaN(value)) {
           const clampedValue = Math.min(
             Math.max(CONSTANTS.INVESTMENT_MIN, value),
-            StudentGame.state.currentOutput,
+            StudentGame.state.currentOutput
           );
           elements.investmentValue.value = clampedValue;
           elements.investmentSlider.value = clampedValue;
@@ -68,11 +72,11 @@
 
         StudentSocket.submitInvestment(investment);
         StudentGame.disableInvestmentControls(
-          CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED,
+          CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED
         );
       });
     },
-    init: function() {
+    init: function () {
       // Initialize UI
       StudentDom.initializeUI();
 

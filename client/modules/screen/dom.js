@@ -98,7 +98,7 @@ window.screenDOM.updateAverages = function () {
   if (capitalValues.length > 0) {
     const total = capitalValues.reduce(
       (sum, value) => sum + parseFloat(value),
-      0,
+      0
     );
     const average = total / capitalValues.length;
     avgCapital.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);
@@ -108,7 +108,7 @@ window.screenDOM.updateAverages = function () {
   if (outputValues.length > 0) {
     const total = outputValues.reduce(
       (sum, value) => sum + parseFloat(value),
-      0,
+      0
     );
     const average = total / outputValues.length;
     avgOutput.textContent = average.toFixed(CONSTANTS.DECIMAL_PRECISION);

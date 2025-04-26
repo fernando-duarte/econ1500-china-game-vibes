@@ -124,10 +124,10 @@ function addPlayer(playerName, socketId, io) {
   return {
     success: true,
     initialCapital: parseFloat(
-      initialCapital.toFixed(CONSTANTS.DECIMAL_PRECISION),
+      initialCapital.toFixed(CONSTANTS.DECIMAL_PRECISION)
     ),
     initialOutput: parseFloat(
-      initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION),
+      initialOutput.toFixed(CONSTANTS.DECIMAL_PRECISION)
     ),
     autoStart: autoStartResult,
     manualStartEnabled: game.manualStartEnabled, // Send manual start mode status to client
@@ -141,7 +141,7 @@ function checkAutoStart(io) {
   // Accept io here
   // Only count connected players
   const connectedPlayerCount = Object.values(game.players).filter(
-    (player) => player.connected,
+    (player) => player.connected
   ).length;
 
   // Only proceed with auto-start if manual start is NOT enabled
@@ -154,7 +154,7 @@ function checkAutoStart(io) {
     console.log(
       'Auto-starting game with',
       connectedPlayerCount,
-      'connected players',
+      'connected players'
     );
     const startResult = startGame();
 
@@ -163,7 +163,7 @@ function checkAutoStart(io) {
       console.log('Game started successfully via auto-start');
       // Broadcast game started to all players and instructors
       io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(
-        CONSTANTS.SOCKET.EVENT_GAME_STARTED,
+        CONSTANTS.SOCKET.EVENT_GAME_STARTED
       );
 
       // Start the first round immediately instead of scheduling it
@@ -173,7 +173,7 @@ function checkAutoStart(io) {
     } else if (!startResult.success) {
       console.error(
         CONSTANTS.DEBUG_MESSAGES.AUTO_START_FAILED,
-        startResult.error,
+        startResult.error
       );
     } else if (!io) {
       console.error(CONSTANTS.DEBUG_MESSAGES.AUTO_START_FAILED_NO_IO);
@@ -234,7 +234,7 @@ function startRound(io) {
   } catch (timerError) {
     console.error(
       CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS_START_ROUND,
-      timerError,
+      timerError
     );
   }
 
@@ -246,16 +246,15 @@ function startRound(io) {
         game.timeRemaining = Math.max(
           0,
           Math.ceil(
-            (game.roundEndTime - Date.now()) /
-              CONSTANTS.MILLISECONDS_PER_SECOND,
-          ),
+            (game.roundEndTime - Date.now()) / CONSTANTS.MILLISECONDS_PER_SECOND
+          )
         );
 
         // Emit timer update to all clients
         if (io) {
           io.to(CONSTANTS.SOCKET_ROOMS.ALL).emit(
             CONSTANTS.SOCKET.EVENT_TIMER_UPDATE,
-            { timeRemaining: game.timeRemaining },
+            { timeRemaining: game.timeRemaining }
           );
         }
 
@@ -268,7 +267,7 @@ function startRound(io) {
       } catch (intervalError) {
         console.error(
           CONSTANTS.DEBUG_MESSAGES.ERROR_TIMER_INTERVAL,
-          intervalError,
+          intervalError
         );
       }
     }, CONSTANTS.MILLISECONDS_PER_SECOND); // Update every second
@@ -287,14 +286,14 @@ function startRound(io) {
       } catch (timeoutError) {
         console.error(
           CONSTANTS.DEBUG_MESSAGES.ERROR_ROUND_END_TIMEOUT,
-          timeoutError,
+          timeoutError
         );
       }
     }, CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND);
   } catch (timerSetupError) {
     console.error(
       CONSTANTS.DEBUG_MESSAGES.ERROR_SETTING_UP_TIMERS,
-      timerSetupError,
+      timerSetupError
     );
   }
 
@@ -306,13 +305,13 @@ function startRound(io) {
         {
           roundNumber: game.round,
           capital: parseFloat(
-            player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION),
+            player.capital.toFixed(CONSTANTS.DECIMAL_PRECISION)
           ),
           output: parseFloat(
-            player.output.toFixed(CONSTANTS.DECIMAL_PRECISION),
+            player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)
           ),
           timeRemaining: game.timeRemaining,
-        },
+        }
       );
     }
   });
@@ -325,7 +324,7 @@ function startRound(io) {
   // Always broadcast to the instructor room
   io.to(CONSTANTS.SOCKET_ROOMS.INSTRUCTOR).emit(
     CONSTANTS.SOCKET.EVENT_ROUND_START,
-    instructorData,
+    instructorData
   );
 
   return { success: true };
@@ -354,15 +353,17 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
   }
 
   const player = game.players[playerName];
-  
+
   // Check if player has already submitted for this round
   if (player.investment !== null) {
-    console.log(`Player ${playerName} already submitted investment for round ${game.round}`);
-    return { 
-      success: true, 
+    console.log(
+      `Player ${playerName} already submitted investment for round ${game.round}`
+    );
+    return {
+      success: true,
       investment: player.investment,
-      allSubmitted: false, 
-      alreadySubmitted: true 
+      allSubmitted: false,
+      alreadySubmitted: true,
     };
   }
 
@@ -375,23 +376,24 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
 
   // Count connected players and submitted investments
   const connectedPlayers = Object.values(game.players).filter(
-    (p) => p.connected,
+    (p) => p.connected
   ).length;
   const submittedPlayers = Object.values(game.players).filter(
-    (p) => p.connected && p.investment !== null,
+    (p) => p.connected && p.investment !== null
   ).length;
 
   console.log(
-    `Investment submission status: ${submittedPlayers}/${connectedPlayers} players have submitted`,
+    `Investment submission status: ${submittedPlayers}/${connectedPlayers} players have submitted`
   );
 
   // Check if all connected players have submitted their investments
-  const allSubmitted = submittedPlayers === connectedPlayers && connectedPlayers > 0;
+  const allSubmitted =
+    submittedPlayers === connectedPlayers && connectedPlayers > 0;
 
   // If all players have submitted, end the round early
   if (allSubmitted) {
     console.log(
-      'All players have submitted investments - preparing to end round early',
+      'All players have submitted investments - preparing to end round early'
     );
     clearTimeout(game.roundTimer);
     // Set the flag to end the round on next IO event
@@ -427,7 +429,7 @@ function endRound(io) {
   } catch (timerError) {
     console.error(
       CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS_END_ROUND,
-      timerError,
+      timerError
     );
   }
 
@@ -485,7 +487,7 @@ function endRound(io) {
       {
         roundNumber: game.round,
         results,
-      },
+      }
     );
 
     // Also send round summary to screen clients
@@ -495,7 +497,7 @@ function endRound(io) {
       {
         roundNumber: game.round,
         results,
-      },
+      }
     );
   } else {
     console.error(CONSTANTS.DEBUG_MESSAGES.NO_IO_AVAILABLE_END_ROUND);
@@ -513,7 +515,7 @@ function endRound(io) {
 
   // We haven't reached the last round yet, so start the next round
   console.log(
-    `Round ${game.round - 1} completed. Advancing to round ${game.round}`,
+    `Round ${game.round - 1} completed. Advancing to round ${game.round}`
   );
 
   // Start the next round
@@ -538,7 +540,7 @@ function endGame(io) {
 
   Object.entries(game.players).forEach(([playerName, player]) => {
     const finalOutput = parseFloat(
-      player.output.toFixed(CONSTANTS.DECIMAL_PRECISION),
+      player.output.toFixed(CONSTANTS.DECIMAL_PRECISION)
     );
 
     finalResults.push({
@@ -563,7 +565,7 @@ function endGame(io) {
       {
         finalResults,
         winner,
-      },
+      }
     );
 
     // Send to instructor room
@@ -573,7 +575,7 @@ function endGame(io) {
       {
         finalResults,
         winner,
-      },
+      }
     );
 
     // Send to screen clients
@@ -583,7 +585,7 @@ function endGame(io) {
       {
         finalResults,
         winner,
-      },
+      }
     );
   }
 
@@ -639,7 +641,7 @@ function forceEndGame(io) {
   } catch (timerError) {
     console.error(
       CONSTANTS.DEBUG_MESSAGES.ERROR_CLEARING_TIMERS_FORCE_END,
-      timerError,
+      timerError
     );
   }
 
@@ -658,7 +660,7 @@ function forceEndGame(io) {
       {
         message: CONSTANTS.NOTIFICATION_MESSAGES.GAME_ENDING,
         type: CONSTANTS.NOTIFICATION.TYPE_WARNING,
-      },
+      }
     );
   }
 

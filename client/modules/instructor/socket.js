@@ -40,11 +40,11 @@
     registerConnectionEvents: function () {
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_CONNECT,
-        this.handleConnect.bind(this),
+        this.handleConnect.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_DISCONNECT,
-        this.handleDisconnect.bind(this),
+        this.handleDisconnect.bind(this)
       );
     },
 
@@ -54,19 +54,19 @@
     registerGameManagementEvents: function () {
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_GAME_CREATED,
-        this.handleGameCreated.bind(this),
+        this.handleGameCreated.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_GAME_STARTED,
-        this.handleGameStarted.bind(this),
+        this.handleGameStarted.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_GAME_OVER,
-        this.handleGameOver.bind(this),
+        this.handleGameOver.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_MANUAL_START_MODE,
-        this.handleManualStartMode.bind(this),
+        this.handleManualStartMode.bind(this)
       );
     },
 
@@ -76,11 +76,11 @@
     registerPlayerEvents: function () {
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_PLAYER_JOINED,
-        this.handlePlayerJoined.bind(this),
+        this.handlePlayerJoined.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED,
-        this.handlePlayerDisconnected.bind(this),
+        this.handlePlayerDisconnected.bind(this)
       );
     },
 
@@ -90,23 +90,23 @@
     registerRoundEvents: function () {
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_ROUND_START,
-        this.handleRoundStart.bind(this),
+        this.handleRoundStart.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
-        this.handleInvestmentReceived.bind(this),
+        this.handleInvestmentReceived.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
-        this.handleAllSubmitted.bind(this),
+        this.handleAllSubmitted.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY,
-        this.handleRoundSummary.bind(this),
+        this.handleRoundSummary.bind(this)
       );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_TIMER_UPDATE,
-        this.handleTimerUpdate.bind(this),
+        this.handleTimerUpdate.bind(this)
       );
     },
 
@@ -117,7 +117,7 @@
       this.socket.on(CONSTANTS.SOCKET.EVENT_ERROR, this.handleError.bind(this));
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_ADMIN_NOTIFICATION,
-        this.handleAdminNotification.bind(this),
+        this.handleAdminNotification.bind(this)
       );
     },
 
@@ -184,7 +184,7 @@
       InstructorDom.updatePlayerList(
         InstructorGame.state.players,
         InstructorGame.state.submittedPlayers,
-        InstructorGame.state.autoSubmittedPlayers,
+        InstructorGame.state.autoSubmittedPlayers
       );
 
       // Update player count
@@ -193,7 +193,7 @@
       // Show notification for reconnection
       if (data.isReconnect) {
         InstructorDom.displayStatusMessage(
-          `${data.playerName} reconnected to the game`,
+          `${data.playerName} reconnected to the game`
         );
       }
 
@@ -240,7 +240,7 @@
       // Make sure current investments section is visible
       if (elements.currentInvestmentsSection) {
         elements.currentInvestmentsSection.classList.remove(
-          CONSTANTS.CSS.HIDDEN,
+          CONSTANTS.CSS.HIDDEN
         );
       }
 
@@ -286,11 +286,11 @@
       InstructorDom.updatePlayerList(
         InstructorGame.state.players,
         InstructorGame.state.submittedPlayers,
-        InstructorGame.state.autoSubmittedPlayers,
+        InstructorGame.state.autoSubmittedPlayers
       );
 
       InstructorDom.updateCurrentInvestmentsTable(
-        InstructorGame.state.currentRoundInvestments,
+        InstructorGame.state.currentRoundInvestments
       );
 
       // Show round results section if it's not the first round
@@ -304,7 +304,7 @@
       // Show current investments section
       if (elements.currentInvestmentsSection) {
         elements.currentInvestmentsSection.classList.remove(
-          CONSTANTS.CSS.HIDDEN,
+          CONSTANTS.CSS.HIDDEN
         );
       }
     },
@@ -326,7 +326,7 @@
       InstructorGame.recordInvestment(
         data.playerName,
         data.investment,
-        data.isAutoSubmit,
+        data.isAutoSubmit
       );
 
       // Ensure investments section is visible
@@ -334,18 +334,18 @@
       if (
         elements.currentInvestmentsSection &&
         elements.currentInvestmentsSection.classList.contains(
-          CONSTANTS.CSS.HIDDEN,
+          CONSTANTS.CSS.HIDDEN
         )
       ) {
         elements.currentInvestmentsSection.classList.remove(
-          CONSTANTS.CSS.HIDDEN,
+          CONSTANTS.CSS.HIDDEN
         );
       }
 
       // Update the investments table with a slight delay to ensure DOM updates
       setTimeout(() => {
         InstructorDom.updateCurrentInvestmentsTable(
-          InstructorGame.state.currentRoundInvestments,
+          InstructorGame.state.currentRoundInvestments
         );
       }, CONSTANTS.MEDIUM_UI_DELAY_MS);
 
@@ -353,16 +353,16 @@
       InstructorDom.updatePlayerList(
         InstructorGame.state.players,
         InstructorGame.state.submittedPlayers,
-        InstructorGame.state.autoSubmittedPlayers,
+        InstructorGame.state.autoSubmittedPlayers
       );
 
       // Display status message
       const formattedInvestment = SocketUtils.formatNumber(
         data.investment,
-        CONSTANTS.DECIMAL_PRECISION,
+        CONSTANTS.DECIMAL_PRECISION
       );
       InstructorDom.displayStatusMessage(
-        `${data.playerName} submitted their investment: ${formattedInvestment}`,
+        `${data.playerName} submitted their investment: ${formattedInvestment}`
       );
 
       // Check for all submitted
@@ -409,7 +409,7 @@
         // Restore previous status after the early end
         setTimeout(() => {
           elements.roundStatus.classList.remove(
-            CONSTANTS.CSS.ALL_SUBMITTED_STATUS,
+            CONSTANTS.CSS.ALL_SUBMITTED_STATUS
           );
         }, data.timeRemaining * CONSTANTS.MILLISECONDS_PER_SECOND);
       }
@@ -482,7 +482,7 @@
       // Format investment with consistent decimal precision
       const formattedInvestment = SocketUtils.formatNumber(
         result.investment,
-        CONSTANTS.DECIMAL_PRECISION,
+        CONSTANTS.DECIMAL_PRECISION
       );
       const autoSubmitSuffix = result.isAutoSubmit
         ? CONSTANTS.UI_TEXT.AUTO_SUBMIT_SUFFIX
@@ -582,7 +582,7 @@
 
       if (data && data.playerName) {
         InstructorDom.displayStatusMessage(
-          `${data.playerName} disconnected from the game`,
+          `${data.playerName} disconnected from the game`
         );
       }
     },
@@ -601,7 +601,7 @@
       notification.textContent = data.message;
       notification.classList.add(
         CONSTANTS.CSS.ADMIN_NOTIFICATION,
-        `${CONSTANTS.CSS.ADMIN_NOTIFICATION_PREFIX}${data.type || CONSTANTS.NOTIFICATION.DEFAULT_TYPE}`,
+        `${CONSTANTS.CSS.ADMIN_NOTIFICATION_PREFIX}${data.type || CONSTANTS.NOTIFICATION.DEFAULT_TYPE}`
       );
 
       document.body.appendChild(notification);

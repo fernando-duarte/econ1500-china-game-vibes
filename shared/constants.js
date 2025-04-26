@@ -127,7 +127,8 @@ const GAME_CONSTANTS = {
 
     // IO-related errors
     NO_IO_AVAILABLE_END_ROUND: 'No io object available when ending round!',
-    CANNOT_START_NEXT_ROUND: 'Cannot start next round - no io object available!',
+    CANNOT_START_NEXT_ROUND:
+      'Cannot start next round - no io object available!',
 
     // Socket handlers errors
     ERROR_IN_SCREEN_CONNECT: 'Error in screen_connect:',
@@ -195,7 +196,7 @@ const GAME_CONSTANTS = {
     STATUS_INVESTMENT_SUBMITTED:
       'Investment submitted. Waiting for other players...',
     STATUS_TIMES_UP_AUTO_SUBMIT:
-      'Time\'s up! Your investment was auto-submitted.',
+      "Time's up! Your investment was auto-submitted.",
     STATUS_GAME_OVER_NO_INVESTMENTS:
       'Game is over. No more investments can be made.',
     ALL_SUBMITTED_NOTIFICATION:
@@ -208,7 +209,7 @@ const GAME_CONSTANTS = {
     TEAM_NAME_PLACEHOLDER: 'Enter your team name',
     PLAYER_PLURAL_SUFFIX: 's',
     PLAYER_JOINED_SUFFIX: ' have joined',
-    LOADING_STUDENT_LIST: 'Loading student list...'
+    LOADING_STUDENT_LIST: 'Loading student list...',
   },
 
   // CSS Class Constants
@@ -269,7 +270,7 @@ const GAME_CONSTANTS = {
     EVENT_CREATE_GAME: 'create_game',
     EVENT_JOIN_ACK: 'join_ack',
     EVENT_GET_STUDENT_LIST: 'get_student_list',
-    EVENT_REGISTER_TEAM: 'register_team'
+    EVENT_REGISTER_TEAM: 'register_team',
   },
 
   // Notification Types
@@ -298,7 +299,7 @@ const GAME_CONSTANTS = {
 const CALCULATED_CONSTANTS = {
   INITIAL_OUTPUT: Math.pow(
     GAME_CONSTANTS.INITIAL_CAPITAL,
-    GAME_CONSTANTS.ALPHA,
+    GAME_CONSTANTS.ALPHA
   ).toFixed(GAME_CONSTANTS.DECIMAL_PRECISION),
 };
 

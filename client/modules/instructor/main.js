@@ -45,7 +45,7 @@
 
         if (
           confirm(
-            `${CONSTANTS.UI_TEXT.CONFIRM_START_GAME_PREFIX}${InstructorGame.state.players.length}${CONSTANTS.UI_TEXT.CONFIRM_START_GAME_SUFFIX}`,
+            `${CONSTANTS.UI_TEXT.CONFIRM_START_GAME_PREFIX}${InstructorGame.state.players.length}${CONSTANTS.UI_TEXT.CONFIRM_START_GAME_SUFFIX}`
           )
         ) {
           InstructorSocket.startGame();

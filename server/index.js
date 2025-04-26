@@ -70,19 +70,17 @@ setupSocketEvents(io);
 
 // Add global error handler middleware
 app.use((err, req, res, _next) => {
-   
   const errorId =
     Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   console.error(`Express error [${errorId}]:`, err);
   console.error(`Request path: ${req.path}, method: ${req.method}`);
-  
+
   // Don't expose error details
   res.status(500).send('Server error occurred');
 });
 
 // Add catch-all 404 handler
 app.use((req, res, _next) => {
-   
   console.log(`404 Not Found: ${req.method} ${req.path}`);
   res.status(404).send('Not Found');
 });

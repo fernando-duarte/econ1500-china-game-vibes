@@ -20,8 +20,14 @@
      */
     initializeSocketEvents: function () {
       // Group: Connection events
-      this.socket.on(CONSTANTS.SOCKET.EVENT_CONNECT, this.handleConnect.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_DISCONNECT, this.handleDisconnect.bind(this));
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_CONNECT,
+        this.handleConnect.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_DISCONNECT,
+        this.handleDisconnect.bind(this)
+      );
 
       // Test event
       this.socket.on('test_event', (data) => {
@@ -31,30 +37,63 @@
       });
 
       // Group: Team registration events
-      this.socket.on(CONSTANTS.SOCKET.EVENT_STUDENT_LIST, this.handleStudentList.bind(this));
-      this.socket.on('student_list_updated', this.handleStudentListUpdated.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_TEAM_REGISTERED, this.handleTeamRegistered.bind(this));
-      this.socket.on('team_registration_error', this.handleTeamRegistrationError.bind(this));
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_STUDENT_LIST,
+        this.handleStudentList.bind(this)
+      );
+      this.socket.on(
+        'student_list_updated',
+        this.handleStudentListUpdated.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_TEAM_REGISTERED,
+        this.handleTeamRegistered.bind(this)
+      );
+      this.socket.on(
+        'team_registration_error',
+        this.handleTeamRegistrationError.bind(this)
+      );
 
       // Group: Game state events
-      this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_JOINED, this.handleGameJoined.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_STARTED, this.handleGameStarted.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_ROUND_START, this.handleRoundStart.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED, this.handleInvestmentReceived.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED, this.handleAllSubmitted.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_ROUND_END, this.handleRoundEnd.bind(this));
-      this.socket.on(CONSTANTS.SOCKET.EVENT_GAME_OVER, this.handleGameOver.bind(this));
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_GAME_JOINED,
+        this.handleGameJoined.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_GAME_STARTED,
+        this.handleGameStarted.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_ROUND_START,
+        this.handleRoundStart.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
+        this.handleInvestmentReceived.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
+        this.handleAllSubmitted.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_ROUND_END,
+        this.handleRoundEnd.bind(this)
+      );
+      this.socket.on(
+        CONSTANTS.SOCKET.EVENT_GAME_OVER,
+        this.handleGameOver.bind(this)
+      );
 
       // Group: Utility events
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
-        this.handleStateSnapshot.bind(this),
+        this.handleStateSnapshot.bind(this)
       );
       this.socket.on('timer_update', this.handleTimerUpdate.bind(this));
       this.socket.on(CONSTANTS.SOCKET.EVENT_ERROR, this.handleError.bind(this));
       this.socket.on(
         'admin_notification',
-        this.handleAdminNotification.bind(this),
+        this.handleAdminNotification.bind(this)
       );
     },
 
@@ -62,12 +101,19 @@
      * Handle student list response
      * @param {Object} data - Student list data
      */
-    handleStudentList: function(data) {
+    handleStudentList: function (data) {
       console.log('Student list received from server:', data);
       SocketUtils.logEvent('Student list received', data);
       if (data && data.allStudents) {
-        console.log(`Populating student list with ${data.allStudents.length} students`);
-        StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+        console.log(
+          `Populating student list with ${data.allStudents.length} students`
+        );
+        StudentDom.populateStudentList(
+          data.allStudents,
+          data.studentsInTeams,
+          data.teamInfo,
+          data.unavailableCount
+        );
       } else {
         console.error('Invalid student list data received:', data);
       }
@@ -77,16 +123,24 @@
      * Handle student list updates
      * @param {Object} data - Updated student list data
      */
-    handleStudentListUpdated: function(data) {
+    handleStudentListUpdated: function (data) {
       SocketUtils.logEvent('Student list updated', data);
-      
+
       // If we receive a full update, always refresh the complete list
       if (data.allStudents) {
         // Full update from server
-        StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+        StudentDom.populateStudentList(
+          data.allStudents,
+          data.studentsInTeams,
+          data.teamInfo,
+          data.unavailableCount
+        );
       } else if (data.studentsInTeams) {
         // For partial updates, always update the availability status to keep UI in sync
-        StudentDom.updateStudentAvailability(data.studentsInTeams, data.unavailableCount);
+        StudentDom.updateStudentAvailability(
+          data.studentsInTeams,
+          data.unavailableCount
+        );
       }
     },
 
@@ -94,7 +148,7 @@
      * Handle team registration response
      * @param {Object} data - Team registration result
      */
-    handleTeamRegistered: function(data) {
+    handleTeamRegistered: function (data) {
       SocketUtils.logEvent('Team registration response', data);
       const elements = StudentDom.elements;
 
@@ -122,13 +176,14 @@
      * Handle team registration error
      * @param {Object} data - Team registration error data
      */
-    handleTeamRegistrationError: function(data) {
+    handleTeamRegistrationError: function (data) {
       SocketUtils.logEvent('Team registration error', data);
       const elements = StudentDom.elements;
-      
+
       // Display the error message
-      elements.teamRegistrationError.textContent = data.error || 'Error registering team';
-      
+      elements.teamRegistrationError.textContent =
+        data.error || 'Error registering team';
+
       // Re-enable the register button so they can try again
       elements.registerTeamButton.disabled = false;
     },
@@ -167,7 +222,9 @@
 
       // Update UI elements
       this.updatePlayerInfo(elements, data);
-      console.log(`Successfully joined game as ${StudentGame.state.currentPlayerName}`);
+      console.log(
+        `Successfully joined game as ${StudentGame.state.currentPlayerName}`
+      );
 
       // Show game interface
       StudentDom.showGameUI();
@@ -180,7 +237,10 @@
      */
     updatePlayerInfo: function (elements, data) {
       // Update player name display
-      SocketUtils.updateElementText(elements.displayName, StudentGame.state.currentPlayerName);
+      SocketUtils.updateElementText(
+        elements.displayName,
+        StudentGame.state.currentPlayerName
+      );
 
       // Set initial capital if provided
       if (data.initialCapital !== undefined) {
@@ -207,11 +267,15 @@
       StudentDom.resetGameUI();
 
       // Update round status
-      SocketUtils.updateElementText(elements.roundStatus, CONSTANTS.UI_TEXT.STATUS_GAME_STARTED);
+      SocketUtils.updateElementText(
+        elements.roundStatus,
+        CONSTANTS.UI_TEXT.STATUS_GAME_STARTED
+      );
 
       // Update duplicate round status if it exists
       if (document.getElementById('roundStatusDuplicate')) {
-        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTED;
+        document.getElementById('roundStatusDuplicate').textContent =
+          CONSTANTS.UI_TEXT.STATUS_GAME_STARTED;
       }
 
       // Ensure capital and output are displayed
@@ -230,7 +294,11 @@
       ) {
         elements.capital.textContent = StudentGame.state.lastCapital;
       }
-      if (elements.output && elements.output.textContent === '-' && StudentGame.state.lastOutput) {
+      if (
+        elements.output &&
+        elements.output.textContent === '-' &&
+        StudentGame.state.lastOutput
+      ) {
         elements.output.textContent = StudentGame.state.lastOutput;
       }
     },
@@ -248,10 +316,12 @@
 
       // Update duplicate round number if it exists
       if (document.getElementById('roundNumberDuplicate')) {
-        document.getElementById('roundNumberDuplicate').textContent = data.roundNumber;
+        document.getElementById('roundNumberDuplicate').textContent =
+          data.roundNumber;
       }
       if (document.getElementById('totalRoundsDuplicate')) {
-        document.getElementById('totalRoundsDuplicate').textContent = CONSTANTS.ROUNDS;
+        document.getElementById('totalRoundsDuplicate').textContent =
+          CONSTANTS.ROUNDS;
       }
 
       // Update capital and output values
@@ -260,16 +330,20 @@
       // Update round status
       SocketUtils.updateElementText(
         elements.roundStatus,
-        CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS,
+        CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS
       );
 
       // Update duplicate round status if it exists
       if (document.getElementById('roundStatusDuplicate')) {
-        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
+        document.getElementById('roundStatusDuplicate').textContent =
+          CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
       }
 
       // Make sure game over UI is hidden
-      if (elements.gameOverUI && !elements.gameOverUI.classList.contains('hidden')) {
+      if (
+        elements.gameOverUI &&
+        !elements.gameOverUI.classList.contains('hidden')
+      ) {
         StudentDom.resetGameUI();
       }
 
@@ -343,7 +417,9 @@
       StudentGame.state.hasSubmittedInvestment = true;
 
       // Disable the investment controls
-      StudentGame.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED);
+      StudentGame.disableInvestmentControls(
+        CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED
+      );
     },
 
     /**
@@ -394,7 +470,7 @@
       // Update round status
       SocketUtils.updateElementText(
         elements.roundStatus,
-        CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED,
+        CONSTANTS.UI_TEXT.STATUS_ROUND_COMPLETED
       );
     },
 
@@ -432,8 +508,8 @@
       const elements = StudentDom.elements;
 
       // Find this player's result
-      const playerResult = data.finalResults.find(r =>
-        r.playerName === StudentGame.state.currentPlayerName
+      const playerResult = data.finalResults.find(
+        (r) => r.playerName === StudentGame.state.currentPlayerName
       );
 
       // Update UI with player's results
@@ -445,7 +521,7 @@
       // Generate rankings
       StudentDom.updateFinalRankings(
         data.finalResults,
-        StudentGame.state.currentPlayerName,
+        StudentGame.state.currentPlayerName
       );
 
       // Hide round content and show game over UI
@@ -454,17 +530,18 @@
       // Update round status
       SocketUtils.updateElementText(
         elements.roundStatus,
-        CONSTANTS.UI_TEXT.STATUS_GAME_OVER,
+        CONSTANTS.UI_TEXT.STATUS_GAME_OVER
       );
 
       // Update duplicate round status if it exists
       if (document.getElementById('roundStatusDuplicate')) {
-        document.getElementById('roundStatusDuplicate').textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
+        document.getElementById('roundStatusDuplicate').textContent =
+          CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
       }
 
       // Disable all investment controls
       StudentGame.disableInvestmentControls(
-        CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS,
+        CONSTANTS.UI_TEXT.STATUS_GAME_OVER_NO_INVESTMENTS
       );
     },
 
@@ -477,7 +554,10 @@
       if (!playerResult) return;
 
       // Update final output display
-      SocketUtils.updateElementText(elements.finalOutput, playerResult.finalOutput);
+      SocketUtils.updateElementText(
+        elements.finalOutput,
+        playerResult.finalOutput
+      );
 
       // Update main capital/output display
       if (playerResult.finalCapital || playerResult.capital) {
@@ -489,7 +569,7 @@
       if (playerResult.finalOutput) {
         SocketUtils.updateElementText(
           elements.output,
-          playerResult.finalOutput,
+          playerResult.finalOutput
         );
         StudentGame.state.lastOutput = playerResult.finalOutput;
       }
@@ -508,10 +588,12 @@
 
       // Update duplicate round number if it exists
       if (document.getElementById('roundNumberDuplicate')) {
-        document.getElementById('roundNumberDuplicate').textContent = data.roundNumber;
+        document.getElementById('roundNumberDuplicate').textContent =
+          data.roundNumber;
       }
       if (document.getElementById('totalRoundsDuplicate')) {
-        document.getElementById('totalRoundsDuplicate').textContent = CONSTANTS.ROUNDS;
+        document.getElementById('totalRoundsDuplicate').textContent =
+          CONSTANTS.ROUNDS;
       }
 
       // Update capital and output values
@@ -547,13 +629,15 @@
       }
 
       // Auto-submit if time is below threshold and no submission yet
-      if (data.timeRemaining <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS &&
-          !StudentGame.state.hasSubmittedInvestment &&
-          elements.investmentSlider) {
+      if (
+        data.timeRemaining <= CONSTANTS.AUTO_SUBMIT_THRESHOLD_SECONDS &&
+        !StudentGame.state.hasSubmittedInvestment &&
+        elements.investmentSlider
+      ) {
         const currentInvestment = parseFloat(elements.investmentSlider.value);
         this.submitInvestment(currentInvestment, true);
         StudentGame.disableInvestmentControls(
-          CONSTANTS.UI_TEXT.STATUS_TIME_EXPIRED,
+          CONSTANTS.UI_TEXT.STATUS_TIME_EXPIRED
         );
       }
     },
@@ -582,10 +666,12 @@
     /**
      * Request student list from server
      */
-    getStudentList: function() {
+    getStudentList: function () {
       console.log('Requesting student list from server...');
       this.socket.emit(CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST);
-      console.log(`Sent ${CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST} event to server`);
+      console.log(
+        `Sent ${CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST} event to server`
+      );
     },
 
     /**
@@ -593,7 +679,7 @@
      * @param {string} teamName - Team name
      * @param {Array} students - Array of selected student names
      */
-    registerTeam: function(teamName, students) {
+    registerTeam: function (teamName, students) {
       this.socket.emit('register_team', { teamName, students });
     },
 
@@ -602,10 +688,10 @@
      * @param {number} investment - Amount to invest
      * @param {boolean} [isAutoSubmit=false] - Whether this is an auto-submission
      */
-    submitInvestment: function(investment, isAutoSubmit = false) {
+    submitInvestment: function (investment, isAutoSubmit = false) {
       this.socket.emit(CONSTANTS.SOCKET.EVENT_SUBMIT_INVESTMENT, {
         investment: parseFloat(investment),
-        isAutoSubmit
+        isAutoSubmit,
       });
     },
   };

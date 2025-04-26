@@ -10,7 +10,7 @@ let content = fs.readFileSync(teamManagerPath, 'utf8');
 
 // Replace the teams object initialization with an empty object
 content = content.replace(
-  '// In-memory store of teams and their members\nconst teams = {};', 
+  '// In-memory store of teams and their members\nconst teams = {};',
   '// In-memory store of teams and their members\nconst teams = {}; // Reset on server restart'
 );
 

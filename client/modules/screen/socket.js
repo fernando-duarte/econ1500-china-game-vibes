@@ -29,69 +29,69 @@ window.screenSocket = {
     // Group: Connection events
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_CONNECT,
-      this.handlers.onConnect.bind(this),
+      this.handlers.onConnect.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_DISCONNECT,
-      this.handlers.onDisconnect.bind(this),
+      this.handlers.onDisconnect.bind(this)
     );
 
     // Group: Player events
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_PLAYER_JOINED,
-      this.handlers.onPlayerJoined.bind(this),
+      this.handlers.onPlayerJoined.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_PLAYER_DISCONNECTED,
-      this.handlers.onPlayerDisconnected.bind(this),
+      this.handlers.onPlayerDisconnected.bind(this)
     );
 
     // Group: Game state events
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_GAME_CREATED,
-      this.handlers.onGameCreated.bind(this),
+      this.handlers.onGameCreated.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_GAME_STARTED,
-      this.handlers.onGameStarted.bind(this),
+      this.handlers.onGameStarted.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_ROUND_START,
-      this.handlers.onRoundStart.bind(this),
+      this.handlers.onRoundStart.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_INVESTMENT_RECEIVED,
-      this.handlers.onInvestmentReceived.bind(this),
+      this.handlers.onInvestmentReceived.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_ALL_SUBMITTED,
-      this.handlers.onAllSubmitted.bind(this),
+      this.handlers.onAllSubmitted.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_ROUND_SUMMARY,
-      this.handlers.onRoundSummary.bind(this),
+      this.handlers.onRoundSummary.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_GAME_OVER,
-      this.handlers.onGameOver.bind(this),
+      this.handlers.onGameOver.bind(this)
     );
 
     // Group: Utility events
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_STATE_SNAPSHOT,
-      this.handlers.onStateSnapshot.bind(this),
+      this.handlers.onStateSnapshot.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_TIMER_UPDATE,
-      this.handlers.onTimerUpdate.bind(this),
+      this.handlers.onTimerUpdate.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_ERROR,
-      this.handlers.onError.bind(this),
+      this.handlers.onError.bind(this)
     );
     this.socket.on(
       CONSTANTS.SOCKET.EVENT_INSTRUCTOR_DISCONNECTED,
-      this.handlers.onInstructorDisconnected.bind(this),
+      this.handlers.onInstructorDisconnected.bind(this)
     );
   },
 };
@@ -160,7 +160,7 @@ window.screenSocket.handlers = {
     window.screenDOM.addEvent(
       'player_disconnected',
       `Player ${data.playerName} disconnected`,
-      true,
+      true
     );
   },
 
@@ -241,7 +241,7 @@ window.screenSocket.handlers = {
     window.screenDOM.addEvent(
       'round_start',
       `Round ${data.roundNumber} started`,
-      true,
+      true
     );
   },
 
@@ -262,7 +262,7 @@ window.screenSocket.handlers = {
     window.screenGame.recordInvestment(
       data.playerName,
       data.investment,
-      data.isAutoSubmit,
+      data.isAutoSubmit
     );
 
     // Update display
@@ -272,7 +272,7 @@ window.screenSocket.handlers = {
     const autoText = data.isAutoSubmit ? ' (auto-submitted)' : '';
     window.screenDOM.addEvent(
       'investment',
-      `${data.playerName} invested ${data.investment}${autoText}`,
+      `${data.playerName} invested ${data.investment}${autoText}`
     );
   },
 
@@ -313,7 +313,7 @@ window.screenSocket.handlers = {
       elements.gameStatus.textContent =
         CONSTANTS.UI_TEXT.ROUND_COMPLETED_FORMAT.replace(
           '{0}',
-          data.roundNumber,
+          data.roundNumber
         );
     }
 
@@ -332,7 +332,7 @@ window.screenSocket.handlers = {
     window.screenDOM.addEvent(
       'round_end',
       `Round ${data.roundNumber} completed`,
-      true,
+      true
     );
   },
 
@@ -368,7 +368,7 @@ window.screenSocket.handlers = {
     window.screenDOM.addEvent(
       'game_over',
       `Game over! Winner: ${data.winner}`,
-      true,
+      true
     );
   },
 
@@ -421,7 +421,7 @@ window.screenSocket.handlers = {
     window.screenDOM.addEvent(
       'instructor_disconnected',
       'Instructor disconnected from server',
-      true,
+      true
     );
   },
 
@@ -434,7 +434,7 @@ window.screenSocket.handlers = {
     window.screenDOM.addEvent(
       'error',
       `${CONSTANTS.UI_TEXT.ERROR_PREFIX}${data.message}`,
-      true,
+      true
     );
   },
 };

@@ -55,7 +55,7 @@ window.screenGame.resetForNewRound = function () {
 window.screenGame.recordInvestment = function (
   playerName,
   investment,
-  isAutoSubmit,
+  isAutoSubmit
 ) {
   // Store the investment
   if (investment !== undefined) {

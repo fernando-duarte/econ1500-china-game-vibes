@@ -14,12 +14,15 @@ let studentList = [];
  * @param {string} filePath - Path to the student list file
  * @returns {Array} - Array of student names
  */
-function loadStudentList(filePath = path.join(__dirname, '../data/students.txt')) {
+function loadStudentList(
+  filePath = path.join(__dirname, '../data/students.txt')
+) {
   try {
     const data = fs.readFileSync(filePath, 'utf8');
-    studentList = data.split('\n')
-      .map(name => name.trim())
-      .filter(name => name.length > 0);
+    studentList = data
+      .split('\n')
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
     console.log(`Loaded ${studentList.length} students from file`);
     return studentList;
   } catch (error) {
@@ -50,7 +53,11 @@ function findStudentTeam(studentName) {
  */
 function registerTeam(teamName, studentNames) {
   // Validate team name
-  if (!teamName || typeof teamName !== 'string' || teamName.trim().length === 0) {
+  if (
+    !teamName ||
+    typeof teamName !== 'string' ||
+    teamName.trim().length === 0
+  ) {
     return { success: false, error: 'Invalid team name' };
   }
 
@@ -60,11 +67,13 @@ function registerTeam(teamName, studentNames) {
   }
 
   // Validate student names against the loaded list
-  const invalidStudents = studentNames.filter(name => !studentList.includes(name));
+  const invalidStudents = studentNames.filter(
+    (name) => !studentList.includes(name)
+  );
   if (invalidStudents.length > 0) {
     return {
       success: false,
-      error: `Invalid student names: ${invalidStudents.join(', ')}`
+      error: `Invalid student names: ${invalidStudents.join(', ')}`,
     };
   }
 
@@ -78,10 +87,12 @@ function registerTeam(teamName, studentNames) {
   }
 
   if (studentsInTeams.length > 0) {
-    const errorDetails = studentsInTeams.map(item => `${item.student} (in team ${item.team})`).join(', ');
+    const errorDetails = studentsInTeams
+      .map((item) => `${item.student} (in team ${item.team})`)
+      .join(', ');
     return {
       success: false,
-      error: `The following students are already in teams: ${errorDetails}`
+      error: `The following students are already in teams: ${errorDetails}`,
     };
   }
 
@@ -89,14 +100,16 @@ function registerTeam(teamName, studentNames) {
   teams[teamName] = {
     name: teamName,
     students: studentNames,
-    createdAt: Date.now()
+    createdAt: Date.now(),
   };
 
-  console.log(`Team registered: ${teamName} with ${studentNames.length} students`);
+  console.log(
+    `Team registered: ${teamName} with ${studentNames.length} students`
+  );
 
   return {
     success: true,
-    team: teams[teamName]
+    team: teams[teamName],
   };
 }
 
@@ -113,7 +126,9 @@ function getTeams() {
  * @returns {Array} - Array of student names
  */
 function getStudentList() {
-  console.log(`getStudentList called, returning ${studentList.length} students`);
+  console.log(
+    `getStudentList called, returning ${studentList.length} students`
+  );
   if (studentList.length === 0) {
     console.warn('Student list is empty! Attempting to reload from file...');
     return loadStudentList();
@@ -130,14 +145,14 @@ function getAvailableStudents() {
   const studentsInTeams = new Set();
 
   // Collect all students who are already in teams
-  Object.values(teams).forEach(team => {
-    team.students.forEach(student => {
+  Object.values(teams).forEach((team) => {
+    team.students.forEach((student) => {
       studentsInTeams.add(student);
     });
   });
 
   // Filter the student list to only include students not in teams
-  return studentList.filter(student => !studentsInTeams.has(student));
+  return studentList.filter((student) => !studentsInTeams.has(student));
 }
 
 /**
@@ -155,7 +170,7 @@ function getTeam(teamName) {
  */
 function clearTeams() {
   // Clear the teams object
-  Object.keys(teams).forEach(key => delete teams[key]);
+  Object.keys(teams).forEach((key) => delete teams[key]);
   console.log('All teams have been cleared');
   return true;
 }
@@ -168,5 +183,5 @@ module.exports = {
   getAvailableStudents,
   findStudentTeam,
   getTeam,
-  clearTeams
+  clearTeams,
 };
