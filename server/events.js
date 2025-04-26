@@ -211,7 +211,7 @@ function setupSocketEvents(io) {
           socket.teamMembers = students;
           
           // Emit join game event automatically after team registration
-          playerName = teamName.trim();
+          const playerName = teamName.trim();
           
           // Store player name and role on socket
           socket.playerName = playerName;

@@ -14,8 +14,7 @@
     "browser-sync": "browser-sync start --proxy 'localhost:3001' --files 'client/**/*.html, client/**/*.css, client/**/*.js' --port 3002 --no-open --notify false --ui-port 3003",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky",
-    "precommit": "lint-staged"
+    "prepare": "husky"
   },
   "keywords": [
     "classroom",
@@ -42,6 +41,8 @@
     "socket.io-client": "^4.8.1"
   },
   "lint-staged": {
-    "*.js": ["eslint --fix"]
+    "*.js": [
+      "eslint --fix"
+    ]
   }
 }
