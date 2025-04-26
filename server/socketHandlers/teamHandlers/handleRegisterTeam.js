@@ -125,13 +125,13 @@ function handleRegisterTeam(
           students,
         });
 
-        io.emit('student_list_updated', { // Broadcast full update
+        io.emit('student_list_updated', {
+          // Broadcast full update
           allStudents: allStudents,
           studentsInTeams: Array.from(studentsInTeams),
           teamInfo: teamInfo,
           unavailableCount: studentsInTeams.size,
         });
-
       } else {
         // Handle failure to add the team as a player
         console.error(
@@ -156,4 +156,4 @@ function handleRegisterTeam(
   }
 }
 
-module.exports = handleRegisterTeam; 
+module.exports = handleRegisterTeam;

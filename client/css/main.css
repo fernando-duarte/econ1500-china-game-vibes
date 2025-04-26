@@ -16,7 +16,7 @@
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-background);
@@ -104,14 +104,15 @@ label {
   font-weight: 500;
 }
 
-input[type=text], input[type=number] {
+input[type='text'],
+input[type='number'] {
   width: 100%;
   padding: var(--spacing-md);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-md);
 }
-input[type=range] {
+input[type='range'] {
   width: 100%;
   margin: var(--spacing-md) 0;
 }
@@ -161,7 +162,7 @@ input[type=range] {
 }
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 16px;
   width: 16px;
   left: 4px;

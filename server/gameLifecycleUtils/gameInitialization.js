@@ -39,4 +39,4 @@ function setManualStartMode(enabled) {
 module.exports = {
   createGame,
   setManualStartMode,
-}; 
+};

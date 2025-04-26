@@ -16,10 +16,10 @@ function handleGetStudentList(socket, teamManager, CONSTANTS) {
     });
 
     const responseData = {
-      allStudents: allStudents,                     // List of all possible student names
+      allStudents: allStudents, // List of all possible student names
       studentsInTeams: Array.from(studentsInTeams), // List of students currently in a team
-      teamInfo: teamInfo,                           // Map of student -> team name
-      unavailableCount: studentsInTeams.size,       // Count of students in teams
+      teamInfo: teamInfo, // Map of student -> team name
+      unavailableCount: studentsInTeams.size, // Count of students in teams
     };
 
     console.log(
@@ -34,12 +34,13 @@ function handleGetStudentList(socket, teamManager, CONSTANTS) {
     // Use the constant for the event name
     socket.emit(CONSTANTS.SOCKET.EVENT_STUDENT_LIST, responseData);
     console.log(`Sent student list to client: ${socket.id} (direct request)`);
-
   } catch (error) {
     console.error('Error sending student list (direct request):', error);
     // Use the constant for the error event
-    socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, { message: 'Error retrieving student list' });
+    socket.emit(CONSTANTS.SOCKET.EVENT_ERROR, {
+      message: 'Error retrieving student list',
+    });
   }
 }
 
-module.exports = handleGetStudentList; 
+module.exports = handleGetStudentList;

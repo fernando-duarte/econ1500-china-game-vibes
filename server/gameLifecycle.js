@@ -16,10 +16,10 @@ const {
 } = require('./gameLifecycleUtils/gameControl');
 
 module.exports = {
-  createGame,         // from gameInitialization
+  createGame, // from gameInitialization
   setManualStartMode, // from gameInitialization
-  startGame,          // from gameControl
-  checkAutoStart,     // from gameControl
-  endGame,            // from gameControl
-  forceEndGame,       // from gameControl
+  startGame, // from gameControl
+  checkAutoStart, // from gameControl
+  endGame, // from gameControl
+  forceEndGame, // from gameControl
 };

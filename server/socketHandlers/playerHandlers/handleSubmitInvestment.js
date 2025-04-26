@@ -100,11 +100,16 @@ function handleSubmitInvestment(
           setTimeout(() => {
             try {
               // Check game state again before ending, in case something changed
-              if (game.state === CONSTANTS.GAME_STATES.ACTIVE && game.pendingEndRound) {
-                 console.log("Executing delayed endRound call.");
-                 roundManager.endRound(io);
+              if (
+                game.state === CONSTANTS.GAME_STATES.ACTIVE &&
+                game.pendingEndRound
+              ) {
+                console.log('Executing delayed endRound call.');
+                roundManager.endRound(io);
               } else {
-                 console.log(`Skipping delayed endRound call. Game state: ${game.state}, Pending: ${game.pendingEndRound}`);
+                console.log(
+                  `Skipping delayed endRound call. Game state: ${game.state}, Pending: ${game.pendingEndRound}`
+                );
               }
             } catch (endRoundError) {
               console.error(
@@ -144,4 +149,4 @@ function handleSubmitInvestment(
   }
 }
 
-module.exports = handleSubmitInvestment; 
+module.exports = handleSubmitInvestment;

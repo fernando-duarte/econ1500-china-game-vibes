@@ -21,4 +21,4 @@ function clearRoundTimers() {
 
 module.exports = {
   clearRoundTimers,
-}; 
+};

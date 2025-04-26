@@ -45,10 +45,14 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
     (p) => p.investment !== null
   );
 
-  const allSubmitted = submittedConnectedPlayers.length === connectedPlayers.length && connectedPlayers.length > 0;
+  const allSubmitted =
+    submittedConnectedPlayers.length === connectedPlayers.length &&
+    connectedPlayers.length > 0;
 
   if (allSubmitted) {
-    console.log('All connected players submitted, preparing to end round early.');
+    console.log(
+      'All connected players submitted, preparing to end round early.'
+    );
     clearRoundTimers(); // Stop the regular timer
     game.pendingEndRound = true; // Signal that the round should end
     game.allSubmittedTime = Date.now(); // Record time for potential UI delay
@@ -64,4 +68,4 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
 
 module.exports = {
   submitInvestment,
-}; 
+};

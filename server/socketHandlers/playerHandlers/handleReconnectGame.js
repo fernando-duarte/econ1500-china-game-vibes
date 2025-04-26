@@ -74,4 +74,4 @@ function handleReconnectGame(
   }
 }
 
-module.exports = handleReconnectGame; 
+module.exports = handleReconnectGame;

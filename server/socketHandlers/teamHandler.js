@@ -6,12 +6,12 @@ const handleGetStudentList = require('./teamHandlers/handleGetStudentList');
 function registerTeamEventHandlers(
   io,
   socket,
-  teamManager,      // Required by both handlers
-  playerManager,    // Required by handleRegisterTeam
-  gameLifecycle,    // Required by handleRegisterTeam
-  getPlayerRoom,    // Required by handleRegisterTeam
-  CONSTANTS,        // Required by both handlers
-  game              // Required by handleRegisterTeam
+  teamManager, // Required by both handlers
+  playerManager, // Required by handleRegisterTeam
+  gameLifecycle, // Required by handleRegisterTeam
+  getPlayerRoom, // Required by handleRegisterTeam
+  CONSTANTS, // Required by both handlers
+  game // Required by handleRegisterTeam
 ) {
   socket.on(CONSTANTS.SOCKET.EVENT_REGISTER_TEAM, (data) =>
     handleRegisterTeam(

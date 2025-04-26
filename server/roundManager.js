@@ -8,8 +8,8 @@ const { submitInvestment } = require('./roundUtils/investmentProcessor');
 const { startRound, endRound } = require('./roundUtils/roundLifecycle');
 
 module.exports = {
-  startRound,          // from roundLifecycle
-  submitInvestment,    // from investmentProcessor
-  endRound,            // from roundLifecycle
-  clearRoundTimers,    // from timerManager
+  startRound, // from roundLifecycle
+  submitInvestment, // from investmentProcessor
+  endRound, // from roundLifecycle
+  clearRoundTimers, // from timerManager
 };
