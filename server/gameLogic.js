@@ -354,6 +354,17 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
   }
 
   const player = game.players[playerName];
+  
+  // Check if player has already submitted for this round
+  if (player.investment !== null) {
+    console.log(`Player ${playerName} already submitted investment for round ${game.round}`);
+    return { 
+      success: true, 
+      investment: player.investment,
+      allSubmitted: false, 
+      alreadySubmitted: true 
+    };
+  }
 
   // Validate investment
   const validInvestment = validateInvestment(investment, player.output);
@@ -375,7 +386,7 @@ function submitInvestment(playerName, investment, isAutoSubmit = false) {
   );
 
   // Check if all connected players have submitted their investments
-  const allSubmitted = submittedPlayers === connectedPlayers;
+  const allSubmitted = submittedPlayers === connectedPlayers && connectedPlayers > 0;
 
   // If all players have submitted, end the round early
   if (allSubmitted) {

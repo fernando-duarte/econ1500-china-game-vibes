@@ -79,8 +79,14 @@
      */
     handleStudentListUpdated: function(data) {
       SocketUtils.logEvent('Student list updated', data);
-      if (data && data.allStudents) {
+      
+      // If we receive a full update, always refresh the complete list
+      if (data.allStudents) {
+        // Full update from server
         StudentDom.populateStudentList(data.allStudents, data.studentsInTeams, data.teamInfo, data.unavailableCount);
+      } else if (data.studentsInTeams) {
+        // For partial updates, always update the availability status to keep UI in sync
+        StudentDom.updateStudentAvailability(data.studentsInTeams, data.unavailableCount);
       }
     },
 
@@ -332,6 +338,12 @@
       if (element && data && data.investment !== undefined) {
         element.textContent = data.investment;
       }
+
+      // Ensure the student's investment state is properly updated
+      StudentGame.state.hasSubmittedInvestment = true;
+
+      // Disable the investment controls
+      StudentGame.disableInvestmentControls(CONSTANTS.UI_TEXT.STATUS_INVESTMENT_SUBMITTED);
     },
 
     /**

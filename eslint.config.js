@@ -1,18 +1,26 @@
 // @ts-check
-const defineConfig = require('eslint/config').defineConfig;
+const { defineConfig, globalIgnores } = require('eslint/config');
+const js = require('@eslint/js');
+const globals = require('globals');
 
-module.exports = defineConfig([
+module.exports = defineConfig(
+  // Global ignores
+  globalIgnores(['node_modules/**']),
+
+  // Include recommended rules as a base
+  js.configs.recommended,
+
+  // All JavaScript files
   {
-    // Global ignores
-    ignores: ['node_modules/**']
-  },
-  {
-    // All JavaScript files
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'commonjs',
       globals: {
+        // Import standard globals
+        ...globals.node,
+        ...globals.browser,
+        
         // Custom globals used in the application
         CONSTANTS: 'readonly',
         io: 'readonly',
@@ -26,17 +34,6 @@ module.exports = defineConfig([
         ScreenGame: 'readonly',
         ScreenSocket: 'readonly',
         SocketUtils: 'readonly',
-        // Common browser globals
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        location: 'readonly',
-        alert: 'readonly',
-        confirm: 'readonly',
       }
     },
     linterOptions: {
@@ -50,5 +47,21 @@ module.exports = defineConfig([
       semi: ['error', 'always'],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     }
+  },
+  
+  // Server-side JavaScript files
+  {
+    files: ['server/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    }
+  },
+  
+  // Client-side JavaScript files
+  {
+    files: ['client/**/*.js'],
+    languageOptions: {
+      sourceType: 'module',
+    }
   }
-]); 
+); 

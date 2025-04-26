@@ -8,6 +8,13 @@
     initializeDOMEventHandlers: function () {
       const elements = StudentDom.elements;
 
+      // Add keyup event for team name to prevent real-time updating across clients
+      elements.teamName.addEventListener('input', (e) => {
+        // We only store the value locally, without broadcasting
+        // This prevents cross-client updates
+        e.stopPropagation();
+      });
+
       // Team registration button click event
       elements.registerTeamButton.addEventListener('click', () => {
         const teamName = elements.teamName.value.trim();
