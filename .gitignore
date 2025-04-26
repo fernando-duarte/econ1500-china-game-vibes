@@ -46,3 +46,6 @@ temp/
 # Student data - untracked
 student_avatars/
 student_photos/
+
+# Python scripts for student data processing
+match_avatars.py
