@@ -1,135 +1,118 @@
 # Code Organization Guidelines
 
-## File Length Guidelines
+These guidelines help keep our codebase clean, modular, and easy to maintain. Adhering to them improves readability, reduces merge conflicts, and streamlines testing.
 
-Files in this project should not exceed 200 lines of code (excluding comments and blank lines). This limit helps maintain code readability, testability, and encourages proper modularization.
+---
 
-## How to Split Long Files
+## 1. File Length Limit
 
-When you encounter a file that exceeds the 200-line limit, consider the following strategies for splitting it:
+- **Max length:** 200 lines of actual code (comments and blank lines excluded).  
+- **Enforcement:** The `scripts/check-file-length.js` pre-commit hook will reject any file exceeding this limit.
 
-### JavaScript Files
+---
 
-1. **Module Pattern**: Group related functionality into separate modules.
-   ```javascript
-   // Before: one large file with multiple concerns
-   const LargeModule = {
-     featureA: function() { /* ... */ },
-     featureB: function() { /* ... */ },
-     // many more features
-   };
+## 2. Breaking Up Oversized Files
 
-   // After: split into multiple files
-   // featureA.js
-   const FeatureA = {
-     method1: function() { /* ... */ },
-     method2: function() { /* ... */ },
-   };
+When a file grows beyond 200 lines, split it along logical boundaries. Here are common patterns:
 
-   // featureB.js
-   const FeatureB = {
-     method1: function() { /* ... */ },
-     method2: function() { /* ... */ },
-   };
-   ```
+### 2.1 JavaScript
 
-2. **Event Handlers**: Group event handlers by type or functionality.
-   ```javascript
-   // Before: all event handlers in one file
-   const AllEventHandlers = {
-     handleClick: function() { /* ... */ },
-     handleSubmit: function() { /* ... */ },
-     handleMouseover: function() { /* ... */ },
-     // many more handlers
-   };
+1. **By Feature/Module**  
+   - **Before:** One large file with many unrelated functions.  
+   - **After:**  
+     ```
+     /features/
+       ├─ feature-A/
+       │   ├─ index.js        ← exports public API
+       │   └─ implementation.js
+       └─ feature-B/
+           ├─ index.js
+           └─ implementation.js
+     ```
 
-   // After: split by type
-   // userEvents.js
-   const UserEventHandlers = {
-     handleClick: function() { /* ... */ },
-     handleKeyPress: function() { /* ... */ },
-   };
+2. **By Event Handlers**  
+   - Group handlers by domain:
+     ```
+     /events/
+       ├─ connectionHandlers.js
+       ├─ gameStateHandlers.js
+       ├─ roundHandlers.js
+       └─ investmentHandlers.js
+     /socket.js               ← imports & wires up handlers
+     ```
 
-   // formEvents.js
-   const FormEventHandlers = {
-     handleSubmit: function() { /* ... */ },
-     handleValidation: function() { /* ... */ },
-   };
-   ```
+3. **Shared Utilities**  
+   - Move generic helpers into a central utilities module:
+     ```js
+     // utils/format.js
+     export function formatNumber(num) { /* … */ }
 
-3. **Utility Functions**: Move generic utility functions to a shared utilities file.
-   ```javascript
-   // utils.js
-   const Utils = {
-     formatNumber: function() { /* ... */ },
-     validateInput: function() { /* ... */ },
-     // other utilities
-   };
-   ```
+     // utils/validate.js
+     export function validateInput(value) { /* … */ }
+     ```
 
-### CSS Files
+### 2.2 CSS/SCSS
 
-1. **Component-Based**: Split CSS by component or UI section.
-   ```css
-   /* Before: one large CSS file */
-   
-   /* After: split into multiple files */
-   /* buttons.css */
-   .btn { /* ... */ }
-   .btn-primary { /* ... */ }
-   
-   /* forms.css */
-   .form-group { /* ... */ }
-   .input { /* ... */ }
-   ```
+1. **Component-Based Split**  
+   - Put each component’s styles in its own file:
+     ```
+     /scss/
+       ├─ base.scss            ← global resets, typography
+       ├─ buttons.scss
+       ├─ forms.scss
+       └─ layout.scss
+     ```
 
-2. **Base vs. Specific**: Separate base styles from specific implementations.
-   ```css
-   /* base.css */
-   body, html { /* ... */ }
-   h1, h2, h3 { /* ... */ }
-   
-   /* specific-components.css */
-   .header-nav { /* ... */ }
-   .sidebar { /* ... */ }
-   ```
+2. **Abstract vs. Specific**  
+   - **Abstract (base):** variables, mixins, global settings.  
+   - **Specific:** layout or component styles.
 
-## Examples from Our Codebase
+---
 
-### Socket.js Files
+## 3. Example: Student Socket Handlers
 
-Our socket handler files are often lengthy due to the many event handlers. Consider splitting them as follows:
+Suppose `client/modules/student/socket.js` has grown too large:
 
-1. Break `client/modules/instructor/socket.js` into:
-   - `connectionHandlers.js`: Connection-related events
-   - `gameHandlers.js`: Game state events
-   - `playerHandlers.js`: Player-related events
-   - `roundHandlers.js`: Round-related events
-   - `socket.js`: Main socket initialization (imports and uses the above)
+**Refactored Structure**  
+```
+client/modules/student/
+├─ socket.js               ← initializes socket and imports handlers
+├─ connectionHandlers.js   ← onConnect, onDisconnect
+├─ gameStateHandlers.js    ← onGameStart, onGameOver
+├─ roundHandlers.js        ← onRoundStart, onRoundEnd
+└─ investmentHandlers.js   ← onSubmitInvestment, onValidate
+```
 
-### CSS Files
+Each file exports only the functions it needs; `socket.js` combines them into one cohesive API.
 
-For CSS files like `client/css/student.css`, consider:
+---
 
-1. Breaking into component files:
-   - `student-layout.css`: Layout-specific styles
-   - `student-forms.css`: Form-related styles
-   - `student-components.css`: UI component styles
+## 4. Benefits of Smaller Files
 
-## Benefits of Smaller Files
+- **Readability:** Focused scope makes code easier to understand.  
+- **Maintainability:** Changes affect fewer lines and fewer conflicts.  
+- **Testability:** You can write unit tests for each module in isolation.  
+- **Collaboration:** Multiple developers can work in parallel with less overlap.  
+- **Performance:** Smaller modules can be cached and loaded more efficiently.
 
-- **Readability**: Easier to understand and navigate
-- **Maintainability**: Simpler to update specific functionality
-- **Collaboration**: Reduces merge conflicts when multiple developers work on the codebase
-- **Testing**: Easier to test isolated functionality
-- **Performance**: Potentially better for caching and loading in browser environments
+---
 
-## Implementation Strategy
+## 5. Implementation Checklist
 
-When implementing these changes:
+1. **Identify Boundaries**  
+   - Group related code (features, handlers, utilities).  
+2. **Create New Files**  
+   - Follow the directory conventions above.  
+3. **Move Code**  
+   - Copy and adapt functions, keeping tests green.  
+4. **Update Imports**  
+   - Ensure all `import`/`require` paths point to the new locations.  
+5. **Test Everything**  
+   - Run existing tests and add new ones for split modules.  
+6. **Validate File Length**  
+   - Execute `npm run check-file-length` (or `scripts/check-file-length.js`) and fix any violations.
 
-1. Identify logical boundaries in the code
-2. Create new files with focused responsibilities
-3. Move relevant code to the new files
-4. Update imports/references
-5. Test thoroughly to ensure functionality is preserved 
+---
+
+Adhering to these guidelines will keep our codebase modular, testable, and easy to navigate. Thank you for helping maintain high-quality standards!
+
