@@ -1,0 +1,1568 @@
+{
+  "metrics": [
+    "complexity",
+    "dependencies"
+  ],
+  "dependencies": {
+    "summary": {
+      "totalModules": 66,
+      "coreModules": [
+        {
+          "module": "shared/constants.js",
+          "dependencyCount": 15,
+          "description": "Central configuration module with game parameters, UI text, and error messages"
+        },
+        {
+          "module": "server/gameState.js",
+          "dependencyCount": 13,
+          "description": "Primary state management module for game data"
+        },
+        {
+          "module": "path",
+          "dependencyCount": 5,
+          "description": "path module"
+        }
+      ],
+      "mostDependentModules": [
+        {
+          "module": "server/events.js",
+          "dependencies": 12,
+          "description": "Socket.IO event setup and routing"
+        },
+        {
+          "module": "server/index.js",
+          "dependencies": 8,
+          "description": "Main server entrypoint with Express and Socket.IO setup"
+        },
+        {
+          "module": "server/roundManager.js",
+          "dependencies": 7,
+          "description": "Facade module for round-related operations"
+        }
+      ],
+      "largestModules": [
+        {
+          "module": "client/modules/student/dom.js",
+          "lines": 613,
+          "description": "UI DOM manipulation module"
+        },
+        {
+          "module": "client/modules/student/socket.js",
+          "lines": 432,
+          "description": "Socket communication handlers"
+        },
+        {
+          "module": "analyze-dependencies.js",
+          "lines": 382,
+          "description": "analyze-dependencies module"
+        }
+      ],
+      "circularDependencies": [
+        {
+          "modules": [
+            "server/roundUtils/endRound.js",
+            "server/roundUtils/startRound.js"
+          ],
+          "reason": "Circular dependency between server/roundUtils/endRound.js and server/roundUtils/startRound.js"
+        }
+      ]
+    },
+    "architecture": {
+      "layers": [
+        {
+          "name": "Core",
+          "modules": [
+            "gameState.js",
+            "constants.js",
+            "model.js"
+          ]
+        },
+        {
+          "name": "Lifecycle Management",
+          "modules": [
+            "gameLifecycle.js",
+            "gameLifecycleUtils/*"
+          ]
+        },
+        {
+          "name": "Round Management",
+          "modules": [
+            "roundManager.js",
+            "roundUtils/*"
+          ]
+        },
+        {
+          "name": "Socket Handling",
+          "modules": [
+            "events.js",
+            "socketHandlers/*"
+          ]
+        },
+        {
+          "name": "User Interface",
+          "modules": [
+            "client/modules/*"
+          ]
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Facade Pattern",
+          "examples": [
+            "gameLifecycle.js",
+            "roundManager.js"
+          ],
+          "description": "Simplifies access to underlying implementation modules"
+        },
+        {
+          "name": "Dependency Injection",
+          "examples": [
+            "socketHandlers/*"
+          ],
+          "description": "Socket handlers receive dependencies via function parameters"
+        },
+        {
+          "name": "Lazy Loading",
+          "examples": [
+            "roundUtils/endRound.js"
+          ],
+          "description": "Used to handle circular dependencies via dynamic imports"
+        }
+      ]
+    }
+  },
+  "complexity": {
+    "summary": {
+      "totalFiles": 66,
+      "totalFunctions": 207,
+      "totalComplexityPoints": 624,
+      "averageFileComplexity": "9.45",
+      "averageFunctionComplexity": "2.48"
+    },
+    "mostComplexModules": [
+      {
+        "module": "client/modules/student/dom.js",
+        "totalComplexity": 64,
+        "averageComplexityPerFunction": 5.82,
+        "functionCount": 11,
+        "description": "UI DOM manipulation module"
+      },
+      {
+        "module": "analyze-dependencies.js",
+        "totalComplexity": 57,
+        "averageComplexityPerFunction": 2.11,
+        "functionCount": 27,
+        "description": "analyze-dependencies module"
+      },
+      {
+        "module": "client/modules/student/socket.js",
+        "totalComplexity": 55,
+        "averageComplexityPerFunction": 6.11,
+        "functionCount": 9,
+        "description": "Socket communication handlers"
+      },
+      {
+        "module": "client/modules/student/teamHandlers.js",
+        "totalComplexity": 34,
+        "averageComplexityPerFunction": 8.5,
+        "functionCount": 4,
+        "description": "teamHandlers module"
+      },
+      {
+        "module": "client/modules/screen/socket/screenSocketHandlers.js",
+        "totalComplexity": 30,
+        "averageComplexityPerFunction": 0,
+        "functionCount": 0,
+        "description": "screenSocketHandlers module"
+      }
+    ],
+    "detailedMetrics": [
+      {
+        "module": "client/modules/student/dom.js",
+        "metrics": {
+          "totalComplexity": 64,
+          "functionCount": 11,
+          "decisionPoints": {
+            "if": 40,
+            "elseIf": 1,
+            "else": 3,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 7,
+            "logicalOperators": 16,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 5.82
+        }
+      },
+      {
+        "module": "analyze-dependencies.js",
+        "metrics": {
+          "totalComplexity": 57,
+          "functionCount": 27,
+          "decisionPoints": {
+            "if": 17,
+            "elseIf": 9,
+            "else": 2,
+            "switch": 0,
+            "case": 0,
+            "for": 3,
+            "while": 2,
+            "do": 0,
+            "ternary": 2,
+            "logicalOperators": 21,
+            "tryCatch": 6
+          },
+          "averageComplexityPerFunction": 2.11
+        }
+      },
+      {
+        "module": "client/modules/student/socket.js",
+        "metrics": {
+          "totalComplexity": 55,
+          "functionCount": 9,
+          "decisionPoints": {
+            "if": 32,
+            "elseIf": 0,
+            "else": 2,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 1,
+            "logicalOperators": 21,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 6.11
+        }
+      },
+      {
+        "module": "client/modules/student/teamHandlers.js",
+        "metrics": {
+          "totalComplexity": 34,
+          "functionCount": 4,
+          "decisionPoints": {
+            "if": 22,
+            "elseIf": 1,
+            "else": 5,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 10,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 8.5
+        }
+      },
+      {
+        "module": "client/modules/screen/socket/screenSocketHandlers.js",
+        "metrics": {
+          "totalComplexity": 30,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 20,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 2,
+            "logicalOperators": 8,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/student/main.js",
+        "metrics": {
+          "totalComplexity": 23,
+          "functionCount": 10,
+          "decisionPoints": {
+            "if": 17,
+            "elseIf": 2,
+            "else": 8,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 4,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2.3
+        }
+      },
+      {
+        "module": "scripts/check-file-length.js",
+        "metrics": {
+          "totalComplexity": 23,
+          "functionCount": 8,
+          "decisionPoints": {
+            "if": 15,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 3,
+            "while": 0,
+            "do": 0,
+            "ternary": 1,
+            "logicalOperators": 1,
+            "tryCatch": 6
+          },
+          "averageComplexityPerFunction": 2.88
+        }
+      },
+      {
+        "module": "client/modules/student/roundHandlers.js",
+        "metrics": {
+          "totalComplexity": 21,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 15,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 6,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/shared/socket-utils.js",
+        "metrics": {
+          "totalComplexity": 18,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 11,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 5,
+            "tryCatch": 4
+          },
+          "averageComplexityPerFunction": 9
+        }
+      },
+      {
+        "module": "server/socketHandlers/playerHandlers/handleSubmitInvestment.js",
+        "metrics": {
+          "totalComplexity": 15,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 6,
+            "elseIf": 1,
+            "else": 2,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 1,
+            "logicalOperators": 4,
+            "tryCatch": 6
+          },
+          "averageComplexityPerFunction": 7.5
+        }
+      },
+      {
+        "module": "client/modules/instructor/gameManagementHandlers.js",
+        "metrics": {
+          "totalComplexity": 14,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 12,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 2,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/instructor/roundHandlers.js",
+        "metrics": {
+          "totalComplexity": 14,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 11,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 14
+        }
+      },
+      {
+        "module": "server/teamManager.js",
+        "metrics": {
+          "totalComplexity": 14,
+          "functionCount": 16,
+          "decisionPoints": {
+            "if": 8,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 2,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 0.88
+        }
+      },
+      {
+        "module": "client/modules/student/utilityHandlers.js",
+        "metrics": {
+          "totalComplexity": 13,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 7,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 6,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/socketHandlers/teamHandlers/handleGetStudentList.js",
+        "metrics": {
+          "totalComplexity": 13,
+          "functionCount": 4,
+          "decisionPoints": {
+            "if": 5,
+            "elseIf": 0,
+            "else": 3,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 6,
+            "tryCatch": 4
+          },
+          "averageComplexityPerFunction": 3.25
+        }
+      },
+      {
+        "module": "client/modules/student/gameStateHandlers.js",
+        "metrics": {
+          "totalComplexity": 12,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 7,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 5,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 12
+        }
+      },
+      {
+        "module": "server/socketHandlers/connectionHandler.js",
+        "metrics": {
+          "totalComplexity": 11,
+          "functionCount": 4,
+          "decisionPoints": {
+            "if": 5,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 5,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 2.75
+        }
+      },
+      {
+        "module": "server/socketHandlers/instructorHandler.js",
+        "metrics": {
+          "totalComplexity": 11,
+          "functionCount": 7,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 2,
+            "logicalOperators": 2,
+            "tryCatch": 6
+          },
+          "averageComplexityPerFunction": 1.57
+        }
+      },
+      {
+        "module": "server/roundUtils/endRound.js",
+        "metrics": {
+          "totalComplexity": 10,
+          "functionCount": 5,
+          "decisionPoints": {
+            "if": 8,
+            "elseIf": 0,
+            "else": 2,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 2,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2
+        }
+      },
+      {
+        "module": "server/roundUtils/startRound.js",
+        "metrics": {
+          "totalComplexity": 10,
+          "functionCount": 5,
+          "decisionPoints": {
+            "if": 6,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 2
+        }
+      },
+      {
+        "module": "client/modules/instructor/investmentHandlers.js",
+        "metrics": {
+          "totalComplexity": 9,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 6,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 4.5
+        }
+      },
+      {
+        "module": "client/modules/instructor/resultHandlers.js",
+        "metrics": {
+          "totalComplexity": 9,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 6,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 9
+        }
+      },
+      {
+        "module": "server/gameLifecycleUtils/endGameUtils.js",
+        "metrics": {
+          "totalComplexity": 9,
+          "functionCount": 5,
+          "decisionPoints": {
+            "if": 6,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 1.8
+        }
+      },
+      {
+        "module": "server/gameLifecycleUtils/startGameUtils.js",
+        "metrics": {
+          "totalComplexity": 9,
+          "functionCount": 4,
+          "decisionPoints": {
+            "if": 5,
+            "elseIf": 0,
+            "else": 3,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 4,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2.25
+        }
+      },
+      {
+        "module": "client/modules/instructor/socket.js",
+        "metrics": {
+          "totalComplexity": 8,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 8,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/student/game.js",
+        "metrics": {
+          "totalComplexity": 8,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 7,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 4
+        }
+      },
+      {
+        "module": "server/socketHandlers/teamHandlers/handleRegisterTeam.js",
+        "metrics": {
+          "totalComplexity": 8,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 2,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 2.67
+        }
+      },
+      {
+        "module": "scripts/kill-port.js",
+        "metrics": {
+          "totalComplexity": 7,
+          "functionCount": 4,
+          "decisionPoints": {
+            "if": 3,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 3
+          },
+          "averageComplexityPerFunction": 1.75
+        }
+      },
+      {
+        "module": "server/playerManager.js",
+        "metrics": {
+          "totalComplexity": 7,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 5,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 1,
+            "while": 0,
+            "do": 0,
+            "ternary": 1,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2.33
+        }
+      },
+      {
+        "module": "server/roundUtils/investmentProcessor.js",
+        "metrics": {
+          "totalComplexity": 7,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 5,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 2,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2.33
+        }
+      },
+      {
+        "module": "server/socketHandlers/playerHandlers/handleReconnectGame.js",
+        "metrics": {
+          "totalComplexity": 7,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 3,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 7
+        }
+      },
+      {
+        "module": "client/modules/instructor/game.js",
+        "metrics": {
+          "totalComplexity": 6,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 1,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 2,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/instructor/playerHandlers.js",
+        "metrics": {
+          "totalComplexity": 6,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 1,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/screen/dom.js",
+        "metrics": {
+          "totalComplexity": 6,
+          "functionCount": 5,
+          "decisionPoints": {
+            "if": 6,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 1.2
+        }
+      },
+      {
+        "module": "client/modules/student/resultHandlers.js",
+        "metrics": {
+          "totalComplexity": 6,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 2,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 6
+        }
+      },
+      {
+        "module": "scripts/optimize-css.js",
+        "metrics": {
+          "totalComplexity": 6,
+          "functionCount": 7,
+          "decisionPoints": {
+            "if": 2,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 2,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 5
+          },
+          "averageComplexityPerFunction": 0.86
+        }
+      },
+      {
+        "module": "client/modules/instructor/dom.js",
+        "metrics": {
+          "totalComplexity": 5,
+          "functionCount": 9,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 1,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0.56
+        }
+      },
+      {
+        "module": "client/modules/instructor/notificationHandlers.js",
+        "metrics": {
+          "totalComplexity": 5,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 2,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 3,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/instructor/roundResultsHandlers.js",
+        "metrics": {
+          "totalComplexity": 5,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 3,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 2,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2.5
+        }
+      },
+      {
+        "module": "client/modules/screen/game.js",
+        "metrics": {
+          "totalComplexity": 5,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 4,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 5
+        }
+      },
+      {
+        "module": "server/socketHandlers/screenHandler.js",
+        "metrics": {
+          "totalComplexity": 4,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 2,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 1.33
+        }
+      },
+      {
+        "module": "shared/selectors.js",
+        "metrics": {
+          "totalComplexity": 4,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 2,
+            "elseIf": 1,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/instructor/main.js",
+        "metrics": {
+          "totalComplexity": 3,
+          "functionCount": 5,
+          "decisionPoints": {
+            "if": 3,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0.6
+        }
+      },
+      {
+        "module": "server/model.js",
+        "metrics": {
+          "totalComplexity": 3,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 2,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 1
+        }
+      },
+      {
+        "module": "server/roundUtils/timerManager.js",
+        "metrics": {
+          "totalComplexity": 3,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 2,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 2
+          },
+          "averageComplexityPerFunction": 3
+        }
+      },
+      {
+        "module": "client/modules/screen/main.js",
+        "metrics": {
+          "totalComplexity": 2,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 1,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 2
+        }
+      },
+      {
+        "module": "shared/constants.js",
+        "metrics": {
+          "totalComplexity": 2,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 1,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/screen/socket/screenSocket.js",
+        "metrics": {
+          "totalComplexity": 1,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 1,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/events.js",
+        "metrics": {
+          "totalComplexity": 1,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 1,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0.5
+        }
+      },
+      {
+        "module": "server/index.js",
+        "metrics": {
+          "totalComplexity": 1,
+          "functionCount": 13,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 1,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0.08
+        }
+      },
+      {
+        "module": "client/instructor.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/instructor/connectionHandlers.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/screen/index.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/modules/student/connectionHandlers.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/screen.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "client/student.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "eslint.config.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/gameLifecycle.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/gameLifecycleUtils/gameControl.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/gameLifecycleUtils/gameInitialization.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 2,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/gameLogic.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/gameState.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/gameUtils.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 1,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/roundManager.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 0,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/socketHandlers/playerHandler.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      },
+      {
+        "module": "server/socketHandlers/teamHandler.js",
+        "metrics": {
+          "totalComplexity": 0,
+          "functionCount": 3,
+          "decisionPoints": {
+            "if": 0,
+            "elseIf": 0,
+            "else": 0,
+            "switch": 0,
+            "case": 0,
+            "for": 0,
+            "while": 0,
+            "do": 0,
+            "ternary": 0,
+            "logicalOperators": 0,
+            "tryCatch": 0
+          },
+          "averageComplexityPerFunction": 0
+        }
+      }
+    ]
+  }
+}

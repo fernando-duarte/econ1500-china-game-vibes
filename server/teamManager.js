@@ -24,6 +24,12 @@ function loadStudentList(
       .map((name) => name.trim())
       .filter((name) => name.length > 0);
     console.log(`Loaded ${studentList.length} students from file`);
+    // Log first few students to verify content
+    if (studentList.length > 0) {
+      console.log(
+        `First 5 students loaded: ${studentList.slice(0, 5).join(', ')}`
+      );
+    }
     return studentList;
   } catch (error) {
     console.error('Error loading student list:', error);
@@ -127,7 +133,7 @@ function getTeams() {
  */
 function getStudentList() {
   console.log(
-    `getStudentList called, returning ${studentList.length} students`
+    `getStudentList called. Current studentList length: ${studentList.length}`
   );
   if (studentList.length === 0) {
     console.warn('Student list is empty! Attempting to reload from file...');

@@ -2,7 +2,10 @@ const { game } = require('../gameState');
 const CONSTANTS = require('../../shared/constants');
 const { getPlayerRoom } = require('../gameUtils');
 const { clearRoundTimers } = require('./timerManager');
-const { endRound } = require('./endRound'); // Import endRound for timer callbacks
+// Remove direct import of endRound
+// const { endRound } = require('./endRound');
+// Import round events instead
+const { roundEvents, EVENTS } = require('./roundEvents');
 
 /**
  * Start a new round
@@ -47,7 +50,8 @@ function startRound(io) {
       // Safety check within interval to end round if time runs out
       if (game.timeRemaining <= 0 && !game.pendingEndRound) {
         console.log('Round timer interval reached zero, ending round.');
-        endRound(io); // Use imported endRound
+        // Emit an event instead of calling endRound directly
+        roundEvents.emit(EVENTS.ROUND_END, io);
       }
     }, CONSTANTS.MILLISECONDS_PER_SECOND);
 
@@ -57,7 +61,8 @@ function startRound(io) {
         // Only end round via backup if it hasn't already started ending
         if (game.state === CONSTANTS.GAME_STATES.ACTIVE) {
           console.log('Round backup timer expired, ending round.');
-          endRound(game.currentIo || io); // Use imported endRound
+          // Emit an event instead of calling endRound directly
+          roundEvents.emit(EVENTS.ROUND_END, game.currentIo || io);
         }
       },
       CONSTANTS.ROUND_DURATION_SECONDS * CONSTANTS.MILLISECONDS_PER_SECOND + 500 // Add buffer

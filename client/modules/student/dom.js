@@ -4,54 +4,117 @@
 
   // Define StudentDom module
   const StudentDom = {
-    // DOM Elements
-    elements: {
-      // Team registration elements
-      teamRegistrationForm: document.getElementById('teamRegistrationForm'),
-      teamName: document.getElementById('teamName'),
-      studentSearch: document.getElementById('studentSearch'),
-      studentSelectionContainer: document.getElementById(
-        'studentSelectionContainer'
-      ),
-      registerTeamButton: document.getElementById('registerTeamButton'),
-      teamRegistrationError: document.getElementById('teamRegistrationError'),
+    // DOM Elements - will be properly initialized in initElements method
+    elements: null,
 
-      // Game UI elements
-      gameUI: document.getElementById('gameUI'),
-      displayName: document.getElementById('displayName'),
-      roundNumber: document.getElementById('roundNumber'),
-      totalRounds: document.getElementById('totalRounds'),
-      roundStatus: document.getElementById('roundStatus'),
-      capital: document.getElementById('capital'),
-      output: document.getElementById('output'),
+    /**
+     * Initialize all DOM element references
+     * This ensures we have the most up-to-date references
+     */
+    initElements: function () {
+      console.log('StudentDom: Initializing DOM elements');
 
-      // Investment UI elements
-      investmentUI: document.getElementById('investmentUI'),
-      timer: document.getElementById('timer'),
-      investmentSlider: document.getElementById('investmentSlider'),
-      investmentValue: document.getElementById('investmentValue'),
-      maxOutput: document.getElementById('maxOutput'),
-      submitInvestment: document.getElementById('submitInvestment'),
-      investmentStatus: document.getElementById('investmentStatus'),
+      this.elements = {
+        // Team registration elements
+        teamRegistrationForm: document.getElementById('teamRegistrationForm'),
+        teamName: document.getElementById('teamName'),
+        studentSearch: document.getElementById('studentSearch'),
+        studentSelectionContainer: document.getElementById(
+          'studentSelectionContainer'
+        ),
+        registerTeamButton: document.getElementById('registerTeamButton'),
+        teamRegistrationError: document.getElementById('teamRegistrationError'),
 
-      // Results UI elements
-      roundResults: document.getElementById('roundResults'),
-      investmentResult: document.getElementById('investmentResult'),
-      newCapital: document.getElementById('newCapital'),
-      newOutput: document.getElementById('newOutput'),
-      waitingNextRound: document.getElementById('waitingNextRound'),
+        // Game UI elements
+        gameUI: document.getElementById('gameUI'),
+        displayName: document.getElementById('displayName'),
+        roundNumber: document.getElementById('roundNumber'),
+        totalRounds: document.getElementById('totalRounds'),
+        roundStatus: document.getElementById('roundStatus'),
+        capital: document.getElementById('capital'),
+        output: document.getElementById('output'),
 
-      // Game over UI elements
-      gameOverUI: document.getElementById('gameOverUI'),
-      finalOutput: document.getElementById('finalOutput'),
-      winner: document.getElementById('winner'),
-      finalRankings: document.getElementById('finalRankings'),
+        // Investment UI elements
+        investmentUI: document.getElementById('investmentUI'),
+        timer: document.getElementById('timer'),
+        investmentSlider: document.getElementById('investmentSlider'),
+        investmentValue: document.getElementById('investmentValue'),
+        maxOutput: document.getElementById('maxOutput'),
+        submitInvestment: document.getElementById('submitInvestment'),
+        investmentStatus: document.getElementById('investmentStatus'),
+
+        // Results UI elements
+        roundResults: document.getElementById('roundResults'),
+        investmentResult: document.getElementById('investmentResult'),
+        newCapital: document.getElementById('newCapital'),
+        newOutput: document.getElementById('newOutput'),
+        waitingNextRound: document.getElementById('waitingNextRound'),
+
+        // Game over UI elements
+        gameOverUI: document.getElementById('gameOverUI'),
+        finalOutput: document.getElementById('finalOutput'),
+        winner: document.getElementById('winner'),
+        finalRankings: document.getElementById('finalRankings'),
+      };
+
+      // Log the critical elements
+      console.log('Critical DOM elements after initialization:', {
+        studentSelectionContainer: !!this.elements.studentSelectionContainer,
+        teamRegistrationForm: !!this.elements.teamRegistrationForm,
+        studentSearch: !!this.elements.studentSearch,
+      });
+
+      // Fix any missing critical elements
+      if (!this.elements.studentSelectionContainer) {
+        console.error(
+          'ERROR: studentSelectionContainer element not found during initialization'
+        );
+        this.elements.studentSelectionContainer = document.getElementById(
+          'studentSelectionContainer'
+        );
+        console.log(
+          'Re-attempted to find studentSelectionContainer:',
+          !!this.elements.studentSelectionContainer
+        );
+
+        // If still not found, try to delay the initialization
+        if (!this.elements.studentSelectionContainer) {
+          console.log(
+            'Scheduling another attempt to find studentSelectionContainer'
+          );
+          setTimeout(() => {
+            console.log('Re-initializing DOM elements after delay');
+            this.initElements();
+          }, 500);
+        }
+      }
     },
 
     /**
      * Initialize the UI elements
      */
     initializeUI: function () {
+      // Ensure elements are properly initialized first
+      if (!this.elements) {
+        this.initElements();
+      }
+
+      // Re-check studentSelectionContainer specifically
+      if (!this.elements.studentSelectionContainer) {
+        console.error(
+          'studentSelectionContainer is still missing after initialization'
+        );
+        this.elements.studentSelectionContainer = document.getElementById(
+          'studentSelectionContainer'
+        );
+        if (!this.elements.studentSelectionContainer) {
+          console.error(
+            'CRITICAL ERROR: Cannot initialize UI without studentSelectionContainer'
+          );
+          return;
+        }
+      }
+
       const elements = this.elements;
 
       // Set up rounds info
@@ -76,15 +139,26 @@
       }
 
       // Initialize input placeholders
-      elements.teamName.placeholder = CONSTANTS.UI_TEXT.TEAM_NAME_PLACEHOLDER;
-      elements.studentSelectionContainer.innerHTML =
-        CONSTANTS.UI_TEXT.LOADING_STUDENT_LIST;
+      if (elements.teamName) {
+        elements.teamName.placeholder = CONSTANTS.UI_TEXT.TEAM_NAME_PLACEHOLDER;
+      }
+
+      if (elements.studentSelectionContainer) {
+        elements.studentSelectionContainer.innerHTML =
+          CONSTANTS.UI_TEXT.LOADING_STUDENT_LIST;
+      } else {
+        console.error(
+          'CRITICAL: studentSelectionContainer is null during initialization'
+        );
+      }
 
       // Prevent cross-client team name updates by isolating the team name input
       // This prevents the value from being synchronized across clients
-      const teamNameInput = elements.teamName;
-      teamNameInput.setAttribute('autocomplete', 'off');
-      teamNameInput.setAttribute('data-private', 'true');
+      if (elements.teamName) {
+        const teamNameInput = elements.teamName;
+        teamNameInput.setAttribute('autocomplete', 'off');
+        teamNameInput.setAttribute('data-private', 'true');
+      }
     },
 
     // Store student data for filtering
@@ -94,6 +168,14 @@
       teamInfo: {},
       unavailableCount: 0,
       selectedStudents: new Set(), // Track selected students
+    },
+
+    /**
+     * Generate a safe DOM id for a student (no spaces / duplicate safety)
+     * @param {string} name Student full name
+     */
+    generateStudentId: function (name) {
+      return `student-${name.replace(/\s+/g, '_')}`;
     },
 
     /**
@@ -121,11 +203,44 @@
       this.studentData.teamInfo = teamInfo || {};
       this.studentData.unavailableCount = unavailableCount || 0;
 
+      // Directly check if the dom element exists before proceeding
+      const container = this.elements.studentSelectionContainer;
+      if (!container) {
+        console.error(
+          'ERROR: studentSelectionContainer element not found in populateStudentList!'
+        );
+
+        // Try to find it directly as fallback
+        const containerFallback = document.getElementById(
+          'studentSelectionContainer'
+        );
+        if (containerFallback) {
+          console.log(
+            'Found container with direct DOM query, updating elements reference'
+          );
+          this.elements.studentSelectionContainer = containerFallback;
+        } else {
+          console.error(
+            'CRITICAL: studentSelectionContainer not found even with direct DOM query!'
+          );
+          return;
+        }
+      }
+
       // Initialize search functionality if not already done
       this.initializeStudentSearch();
 
       // Render the student list with the current filter
       this.renderStudentList();
+
+      // Diagnostic function to directly check student list DOM
+      this.diagnoseStudentList('populateStudentList');
+
+      // Force another render after a delay as a backup
+      setTimeout(() => {
+        console.log('Forcing re-render of student list after delay');
+        this.renderStudentList();
+      }, 300);
     },
 
     /**
@@ -152,7 +267,33 @@
     renderStudentList: function (searchQuery = '') {
       console.log('renderStudentList called with searchQuery:', searchQuery);
       const container = this.elements.studentSelectionContainer;
-      console.log('studentSelectionContainer element:', container);
+      console.log(
+        'renderStudentList: Found studentSelectionContainer element:',
+        container
+      );
+
+      // First, ensure the container exists
+      if (!container) {
+        console.error(
+          'renderStudentList: studentSelectionContainer element not found!'
+        );
+
+        // Try direct DOM query as fallback
+        const containerFallback = document.getElementById(
+          'studentSelectionContainer'
+        );
+        if (containerFallback) {
+          console.log(
+            'Found container with direct DOM query in renderStudentList'
+          );
+          this.elements.studentSelectionContainer = containerFallback;
+          // Update our reference and continue
+          return this.renderStudentList(searchQuery);
+        }
+        return;
+      }
+
+      // Ensure we have student data to display
       const {
         allStudents,
         studentsInTeams,
@@ -160,17 +301,26 @@
         unavailableCount,
         selectedStudents,
       } = this.studentData;
+
       console.log('Student data for rendering:', {
         allStudentsCount: allStudents.length,
         studentsInTeamsCount: studentsInTeams.length,
         unavailableCount: unavailableCount,
       });
 
+      console.log(
+        'renderStudentList: Rendering with allStudents:',
+        allStudents
+      );
+
+      // Clear existing content
       container.innerHTML = '';
 
+      // If no student data, show a message
       if (!allStudents || allStudents.length === 0) {
         console.log('No students available to render');
-        container.innerHTML = '<p>No students available</p>';
+        container.innerHTML =
+          '<p>No students available. Please refresh the page.</p>';
         return;
       }
 
@@ -178,7 +328,9 @@
       if (unavailableCount > 0) {
         const infoDiv = document.createElement('div');
         infoDiv.className = 'student-info';
-        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${unavailableCount > 1 ? 's' : ''} already in teams.</p>`;
+        infoDiv.innerHTML = `<p class="student-unavailable-info">${unavailableCount} student${
+          unavailableCount > 1 ? 's' : ''
+        } already in teams.</p>`;
         container.appendChild(infoDiv);
       }
 
@@ -206,6 +358,10 @@
         return;
       }
 
+      // Create a wrapper for better styling and handling
+      const listWrapper = document.createElement('div');
+      listWrapper.className = 'student-list-wrapper';
+
       console.log('Creating checkboxes for filtered students...');
       filteredStudents.forEach((student, index) => {
         if (index < 5) console.log(`Creating checkbox for student: ${student}`);
@@ -226,9 +382,13 @@
         const isSelected = !isInTeam && selectedStudents.has(student);
 
         // Create the checkbox HTML
+        const checkboxId = this.generateStudentId(student);
+
         let checkboxHtml = `
-          <input type="checkbox" id="student-${student}" name="student" value="${student}"${isInTeam ? ' disabled' : ''}${isSelected ? ' checked' : ''}>
-          <label for="student-${student}">${student}</label>
+          <input type="checkbox" id="${checkboxId}" name="student" value="${student}"${
+            isInTeam ? ' disabled' : ''
+          }${isSelected ? ' checked' : ''}>
+          <label for="${checkboxId}">${student}</label>
         `;
 
         // Add team info if student is in a team
@@ -237,20 +397,64 @@
         }
 
         checkbox.innerHTML = checkboxHtml;
-        container.appendChild(checkbox);
+        listWrapper.appendChild(checkbox);
 
-        // Add event listener to track checkbox changes
-        const checkboxInput = checkbox.querySelector('input[type="checkbox"]');
-        if (checkboxInput && !isInTeam) {
-          checkboxInput.addEventListener('change', (e) => {
-            if (e.target.checked) {
-              this.studentData.selectedStudents.add(student);
-            } else {
-              this.studentData.selectedStudents.delete(student);
-            }
-          });
+        // Only set up event listeners for students not in teams
+        if (!isInTeam) {
+          const input = checkbox.querySelector('input[type="checkbox"]');
+          if (input) {
+            input.addEventListener('change', (e) => {
+              if (e.target.checked) {
+                selectedStudents.add(student);
+              } else {
+                selectedStudents.delete(student);
+              }
+            });
+          }
         }
       });
+
+      // Add the wrapper to the container
+      container.appendChild(listWrapper);
+
+      // Log a diagnostic message about what was added
+      console.log(
+        `Added ${filteredStudents.length} student checkboxes to the container`
+      );
+
+      // Diagnostic call to verify the DOM was updated
+      this.diagnoseStudentList('renderStudentList');
+    },
+
+    /**
+     * Diagnostic function to directly check student list DOM
+     * @param {string} caller - Name of function calling this diagnostic
+     */
+    diagnoseStudentList: function (caller = 'unknown') {
+      const container = this.elements.studentSelectionContainer;
+      console.log(`DIAGNOSIS (called from ${caller}):`);
+
+      if (!container) {
+        console.error('DIAGNOSIS: studentSelectionContainer element is NULL');
+        return;
+      }
+
+      console.log(
+        `DIAGNOSIS: Container HTML: "${container.innerHTML.substring(0, 100)}..."`
+      );
+      console.log(`DIAGNOSIS: Student data:`, {
+        studentsLoaded: this.studentData.allStudents.length,
+        selectedCount: this.studentData.selectedStudents.size,
+      });
+
+      // Try to force a repaint
+      if (
+        this.studentData.allStudents.length > 0 &&
+        container.innerHTML.includes('Loading')
+      ) {
+        console.log('DIAGNOSIS: Forcing rerender of student list');
+        this.renderStudentList();
+      }
     },
 
     /**
@@ -360,7 +564,9 @@
       // Update UI for each student checkbox
       this.studentData.allStudents.forEach((student) => {
         const isInTeam = studentsInTeamsSet.has(student);
-        const checkbox = document.getElementById(`student-${student}`);
+        const checkbox = document.getElementById(
+          this.generateStudentId(student)
+        );
 
         if (checkbox) {
           // If student is now in a team, disable their checkbox

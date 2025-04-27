@@ -13,7 +13,18 @@ function registerTeamEventHandlers(
   CONSTANTS, // Required by both handlers
   game // Required by handleRegisterTeam
 ) {
-  socket.on(CONSTANTS.SOCKET.EVENT_REGISTER_TEAM, (data) =>
+  console.log(`Registering team event handlers for socket ${socket.id}`);
+
+  // Log the constants being used to verify they match client-side
+  console.log(
+    `Using EVENT_REGISTER_TEAM constant: ${CONSTANTS.SOCKET.EVENT_REGISTER_TEAM}`
+  );
+
+  socket.on(CONSTANTS.SOCKET.EVENT_REGISTER_TEAM, (data) => {
+    console.log(
+      `Received ${CONSTANTS.SOCKET.EVENT_REGISTER_TEAM} event from client:`,
+      data
+    );
     handleRegisterTeam(
       io,
       socket,
@@ -24,12 +35,15 @@ function registerTeamEventHandlers(
       CONSTANTS,
       game,
       data
-    )
-  );
+    );
+  });
 
-  socket.on(CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST, () =>
-    handleGetStudentList(socket, teamManager, CONSTANTS)
-  );
+  socket.on(CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST, () => {
+    console.log(
+      `Received ${CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST} event from client`
+    );
+    handleGetStudentList(socket, teamManager, CONSTANTS);
+  });
 
   // Add other team-specific event listeners here if needed
 }

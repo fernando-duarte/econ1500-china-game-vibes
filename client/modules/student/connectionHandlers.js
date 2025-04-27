@@ -19,7 +19,7 @@
       // Request student list immediately after connection
       console.log('Connected to server, requesting student list...');
       setTimeout(() => {
-        this.getStudentList();
+        window.TeamHandlers.getStudentList();
       }, 500);
     },
 
@@ -34,4 +34,6 @@
 
   // Expose the module to window
   window.StudentConnectionHandlers = ConnectionHandlers;
+  // Alias so other modules referencing window.ConnectionHandlers continue to work
+  window.ConnectionHandlers = ConnectionHandlers;
 })(window);

@@ -40,13 +40,20 @@ declare global {
 
   // Instructor modules
   interface InstructorDomInterface {
-    elements: Record<string, HTMLElement & {
-      checked?: boolean;
-      disabled?: boolean;
-      value?: string;
-      placeholder?: string;
-    }>;
-    updatePlayerList(players: string[], submittedPlayers: string[], autoSubmittedPlayers: string[]): void;
+    elements: Record<
+      string,
+      HTMLElement & {
+        checked?: boolean;
+        disabled?: boolean;
+        value?: string;
+        placeholder?: string;
+      }
+    >;
+    updatePlayerList(
+      players: string[],
+      submittedPlayers: string[],
+      autoSubmittedPlayers: string[]
+    ): void;
     updateCurrentInvestmentsTable(investments: any[]): void;
     displayStatusMessage(message: string): void;
     [key: string]: any;
@@ -63,7 +70,11 @@ declare global {
     };
     addPlayer(playerName: string): void;
     resetRoundState(): void;
-    recordInvestment(playerName: string, investment: number, isAutoSubmit: boolean): void;
+    recordInvestment(
+      playerName: string,
+      investment: number,
+      isAutoSubmit: boolean
+    ): void;
     areAllPlayersSubmitted(): boolean;
     [key: string]: any;
   }
@@ -89,13 +100,16 @@ declare global {
 
   // Student modules
   interface StudentDomInterface {
-    elements: Record<string, HTMLElement & {
-      checked?: boolean;
-      disabled?: boolean;
-      value?: string;
-      placeholder?: string;
-      classList?: DOMTokenList;
-    }>;
+    elements: Record<
+      string,
+      HTMLElement & {
+        checked?: boolean;
+        disabled?: boolean;
+        value?: string;
+        placeholder?: string;
+        classList?: DOMTokenList;
+      }
+    >;
     [key: string]: any;
   }
   var StudentDom: StudentDomInterface;
@@ -148,4 +162,4 @@ declare global {
   interface ParentNode {
     classList?: DOMTokenList;
   }
-} 
+}

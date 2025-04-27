@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Student List</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #log {
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        white-space: pre-wrap;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test Student List</h1>
+    <div>
+      <button id="testBtn">Test Get Student List</button>
+    </div>
+    <h2>Log</h2>
+    <div id="log"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/constants.js"></script>
+    <script>
+      // Initialize log
+      const logElement = document.getElementById('log');
+
+      function log(message, isError = false) {
+        const line = document.createElement('div');
+        line.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+        if (isError) line.classList.add('error');
+        else line.classList.add('success');
+        logElement.appendChild(line);
+        console.log(message);
+      }
+
+      // Initialize socket
+      let socket;
+      try {
+        socket = io();
+        log('Socket initialized');
+      } catch (err) {
+        log(`Error initializing socket: ${err.message}`, true);
+      }
+
+      // Set up socket events
+      if (socket) {
+        socket.on('connect', () => {
+          log(`Socket connected with ID: ${socket.id}`);
+        });
+
+        socket.on('disconnect', () => {
+          log('Socket disconnected', true);
+        });
+
+        socket.on(CONSTANTS.SOCKET.EVENT_STUDENT_LIST, (data) => {
+          log(
+            `Received student list with ${data.allStudents?.length || 0} students`
+          );
+          log(`Students in teams: ${data.studentsInTeams?.length || 0}`);
+
+          // Display the first few students
+          if (data.allStudents && data.allStudents.length > 0) {
+            log(`First 5 students: ${data.allStudents.slice(0, 5).join(', ')}`);
+          } else {
+            log('No students in list', true);
+          }
+        });
+
+        socket.on(CONSTANTS.SOCKET.EVENT_ERROR, (error) => {
+          log(`Error received: ${error.message}`, true);
+        });
+
+        socket.on('test_event', (data) => {
+          log(`Received test event: ${JSON.stringify(data)}`);
+        });
+      }
+
+      // Set up button event
+      document.getElementById('testBtn').addEventListener('click', () => {
+        log('Requesting student list...');
+        if (socket && socket.connected) {
+          socket.emit(CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST);
+          log(
+            `Sent ${CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST} event to server`
+          );
+        } else {
+          log('Socket not connected, cannot request student list', true);
+        }
+      });
+    </script>
+  </body>
+</html>

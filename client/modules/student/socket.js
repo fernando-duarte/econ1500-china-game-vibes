@@ -1,38 +1,14 @@
 // client/modules/student/socket.js
 /**
  * Student Socket Module
- * Manages all socket communication for student game interface
- *
- * Note: This module requires the following modules to be loaded first:
- * - connectionHandlers.js
- * - teamHandlers.js
- * - gameStateHandlers.js
- * - roundHandlers.js
- * - resultHandlers.js
- * - utilityHandlers.js
+ * Central module for all student socket.io communication
+ * Aggregates all event handlers from separate modules
  */
 (function (window) {
   'use strict';
 
-  // Ensure required modules are loaded
-  if (!window.ConnectionHandlers) {
-    console.error('ConnectionHandlers module not loaded');
-  }
-  if (!window.TeamHandlers) {
-    console.error('TeamHandlers module not loaded');
-  }
-  if (!window.GameStateHandlers) {
-    console.error('GameStateHandlers module not loaded');
-  }
-  if (!window.RoundHandlers) {
-    console.error('RoundHandlers module not loaded');
-  }
-  if (!window.ResultHandlers) {
-    console.error('ResultHandlers module not loaded');
-  }
-  if (!window.UtilityHandlers) {
-    console.error('UtilityHandlers module not loaded');
-  }
+  // Shorthand for constants
+  const CONSTANTS = window.CONSTANTS;
 
   /**
    * Student Socket module - handles all socket communication for student client
@@ -40,13 +16,121 @@
    */
   const StudentSocket = {
     /** Socket instance */
-    socket: io(),
+    socket: null,
+
+    /** Track socket initialization state */
+    initialized: false,
+
+    /**
+     * Create and initialize socket connection
+     */
+    createSocket: function () {
+      try {
+        console.log('Creating socket.io connection...');
+
+        // First check if we already have a socket instance
+        if (this.socket && this.socket.connected) {
+          console.log(
+            'Socket already exists and is connected:',
+            this.socket.id
+          );
+          window.socket = this.socket; // Make sure it's globally available
+          return this.socket;
+        }
+
+        // Check if there's a window.socket already
+        if (window.socket) {
+          console.log('Using existing window.socket:', window.socket.id);
+          this.socket = window.socket;
+          return this.socket;
+        }
+
+        // Create a new socket with more reliable options
+        this.socket = io({
+          reconnectionAttempts: 10,
+          timeout: 20000,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          forceNew: false, // Don't force a new connection if one exists
+          autoConnect: true, // Auto connect
+        });
+        console.log('Socket.io connection created');
+
+        // Make socket available globally
+        window.socket = this.socket;
+
+        // Basic error listener – keep minimal listeners here. Detailed
+        // event handling (including `connect` and `student_list`) is now
+        // centralized in `initializeSocketEvents` to avoid duplicate event
+        // processing and redundant student list requests.
+
+        this.socket.on('error', (error) => {
+          console.error('Socket error:', error);
+        });
+
+        return this.socket;
+      } catch (error) {
+        console.error('Error creating socket connection:', error);
+        return null;
+      }
+    },
 
     /**
      * Initialize all socket event listeners
      * Main entry point for socket communication
      */
     initializeSocketEvents: function () {
+      // Create socket if not already done
+      if (!this.socket) {
+        this.createSocket();
+      }
+
+      if (!this.socket) {
+        console.error(
+          'Failed to initialize socket - cannot attach event handlers'
+        );
+        return;
+      }
+
+      // Track and log connection status changes
+      this.socket.on('connect', () => {
+        console.log(`Socket connected with ID: ${this.socket.id}`);
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
+      });
+
+      this.socket.on('reconnect_attempt', (attemptNumber) => {
+        console.log(`Socket reconnection attempt #${attemptNumber}`);
+      });
+
+      this.socket.on('reconnect', (attemptNumber) => {
+        console.log(`Socket reconnected after ${attemptNumber} attempts`);
+        // Request student list after reconnection
+        setTimeout(() => this.getStudentList(), 500);
+      });
+
+      // Make socket available globally and in handler modules
+      window.socket = this.socket;
+
+      // Set socket reference in all handler modules
+      if (window.TeamHandlers) {
+        window.TeamHandlers.socket = this.socket;
+      }
+      if (window.GameStateHandlers) {
+        window.GameStateHandlers.socket = this.socket;
+      }
+      if (window.RoundHandlers) {
+        window.RoundHandlers.socket = this.socket;
+      }
+      if (window.ResultHandlers) {
+        window.ResultHandlers.socket = this.socket;
+      }
+      if (window.UtilityHandlers) {
+        window.UtilityHandlers.socket = this.socket;
+      }
+
       // Group: Connection events - from connectionHandlers.js
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_CONNECT,
@@ -65,6 +149,9 @@
       });
 
       // Group: Team registration events - from teamHandlers.js
+      console.log(
+        `Attaching listener for ${CONSTANTS.SOCKET.EVENT_STUDENT_LIST}`
+      );
       this.socket.on(
         CONSTANTS.SOCKET.EVENT_STUDENT_LIST,
         this.handleStudentList.bind(this)
@@ -127,45 +214,216 @@
         'admin_notification',
         this.handleAdminNotification.bind(this)
       );
+
+      this.initialized = true;
+      console.log('Socket event handlers initialized');
     },
 
     // Import handlers from ConnectionHandlers module
-    handleConnect: window.ConnectionHandlers.handleConnect,
-    handleDisconnect: window.ConnectionHandlers.handleDisconnect,
+    handleConnect: function () {
+      console.log(
+        `Socket connected, ID: ${this.socket.id}, time: ${new Date().toISOString()}`
+      );
+
+      // Initial student list request now handled by StudentConnectionHandlers
+
+      if (
+        window.ConnectionHandlers &&
+        window.ConnectionHandlers.handleConnect
+      ) {
+        return window.ConnectionHandlers.handleConnect.apply(this, arguments);
+      }
+    },
+
+    handleDisconnect: function () {
+      console.log(`Socket disconnected at ${new Date().toISOString()}`);
+
+      if (
+        window.ConnectionHandlers &&
+        window.ConnectionHandlers.handleDisconnect
+      ) {
+        return window.ConnectionHandlers.handleDisconnect.apply(
+          this,
+          arguments
+        );
+      }
+    },
 
     // Import handlers from TeamHandlers module
-    handleStudentList: window.TeamHandlers.handleStudentList,
-    handleStudentListUpdated: window.TeamHandlers.handleStudentListUpdated,
-    handleTeamRegistered: window.TeamHandlers.handleTeamRegistered,
-    handleTeamRegistrationError:
-      window.TeamHandlers.handleTeamRegistrationError,
-    getStudentList: window.TeamHandlers.getStudentList,
-    registerTeam: window.TeamHandlers.registerTeam,
+    handleStudentList: function (data) {
+      console.log(
+        `Student list received at ${new Date().toISOString()}:`,
+        data
+          ? `${data.allStudents ? data.allStudents.length : 0} students`
+          : 'no data'
+      );
+
+      if (window.TeamHandlers && window.TeamHandlers.handleStudentList) {
+        return window.TeamHandlers.handleStudentList(data);
+      }
+    },
+
+    handleStudentListUpdated: function (data) {
+      console.log(
+        `Student list updated received at ${new Date().toISOString()}`
+      );
+
+      if (window.TeamHandlers && window.TeamHandlers.handleStudentListUpdated) {
+        return window.TeamHandlers.handleStudentListUpdated(data);
+      }
+    },
+
+    handleTeamRegistered: function (data) {
+      if (window.TeamHandlers && window.TeamHandlers.handleTeamRegistered) {
+        return window.TeamHandlers.handleTeamRegistered(data);
+      }
+    },
+
+    handleTeamRegistrationError: function (data) {
+      if (
+        window.TeamHandlers &&
+        window.TeamHandlers.handleTeamRegistrationError
+      ) {
+        return window.TeamHandlers.handleTeamRegistrationError(data);
+      }
+    },
+
+    getStudentList: function () {
+      console.log(
+        `StudentSocket.getStudentList called at ${new Date().toISOString()}`
+      );
+
+      if (!this.socket) {
+        console.error('Socket not initialized in StudentSocket.getStudentList');
+        this.createSocket(); // Try to create socket
+      }
+
+      if (!this.socket) {
+        console.error('Failed to create socket in getStudentList');
+        return;
+      }
+
+      if (!this.socket.connected) {
+        console.warn('Socket not connected when trying to get student list');
+
+        // Schedule retry after connection
+        this.socket.once('connect', () => {
+          console.log('Socket reconnected, retrying getStudentList');
+          setTimeout(() => this.getStudentList(), 500);
+        });
+
+        return;
+      }
+
+      if (window.TeamHandlers && window.TeamHandlers.getStudentList) {
+        console.log('Delegating to TeamHandlers.getStudentList');
+        return window.TeamHandlers.getStudentList();
+      } else {
+        console.error('TeamHandlers.getStudentList is not available');
+        // Fallback implementation
+        console.log('Using fallback to request student list from server...');
+        const socket = window.socket || this.socket;
+        if (socket) {
+          const eventName = CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST;
+          console.log(`Sending event: ${eventName}`);
+          socket.emit(eventName);
+          console.log(`Sent ${eventName} event to server`);
+        } else {
+          console.error('Socket not available to request student list');
+        }
+      }
+    },
+
+    registerTeam: function (teamName, students) {
+      if (window.TeamHandlers && window.TeamHandlers.registerTeam) {
+        return window.TeamHandlers.registerTeam(teamName, students);
+      }
+    },
 
     // Import handlers from GameStateHandlers module
-    handleGameJoined: window.GameStateHandlers.handleGameJoined,
-    handleGameStarted: window.GameStateHandlers.handleGameStarted,
-    updatePlayerInfo: window.GameStateHandlers.updatePlayerInfo,
-    ensureCapitalOutputDisplayed:
-      window.GameStateHandlers.ensureCapitalOutputDisplayed,
+    handleGameJoined: function (data) {
+      if (
+        window.GameStateHandlers &&
+        window.GameStateHandlers.handleGameJoined
+      ) {
+        return window.GameStateHandlers.handleGameJoined(data);
+      }
+    },
+
+    handleGameStarted: function (data) {
+      if (
+        window.GameStateHandlers &&
+        window.GameStateHandlers.handleGameStarted
+      ) {
+        return window.GameStateHandlers.handleGameStarted(data);
+      }
+    },
 
     // Import handlers from RoundHandlers module
-    handleRoundStart: window.RoundHandlers.handleRoundStart,
-    handleInvestmentReceived: window.RoundHandlers.handleInvestmentReceived,
-    handleAllSubmitted: window.RoundHandlers.handleAllSubmitted,
-    handleRoundEnd: window.RoundHandlers.handleRoundResults,
-    updateCapitalOutput: window.RoundHandlers.updateCapitalOutput,
-    configureInvestmentUI: window.RoundHandlers.configureInvestmentUI,
+    handleRoundStart: function (data) {
+      if (window.RoundHandlers && window.RoundHandlers.handleRoundStart) {
+        return window.RoundHandlers.handleRoundStart(data);
+      }
+    },
+
+    handleInvestmentReceived: function (data) {
+      if (
+        window.RoundHandlers &&
+        window.RoundHandlers.handleInvestmentReceived
+      ) {
+        return window.RoundHandlers.handleInvestmentReceived(data);
+      }
+    },
+
+    handleAllSubmitted: function (data) {
+      if (window.RoundHandlers && window.RoundHandlers.handleAllSubmitted) {
+        return window.RoundHandlers.handleAllSubmitted(data);
+      }
+    },
+
+    handleRoundEnd: function (data) {
+      if (window.RoundHandlers && window.RoundHandlers.handleRoundEnd) {
+        return window.RoundHandlers.handleRoundEnd(data);
+      }
+    },
 
     // Import handlers from ResultHandlers module
-    handleGameOver: window.ResultHandlers.handleGameOver,
-    updateGameOverResults: window.ResultHandlers.updateGameOverResults,
+    handleGameOver: function (data) {
+      if (window.ResultHandlers && window.ResultHandlers.handleGameOver) {
+        return window.ResultHandlers.handleGameOver(data);
+      }
+    },
 
     // Import handlers from UtilityHandlers module
-    handleStateSnapshot: window.UtilityHandlers.handleStateSnapshot,
-    handleTimerUpdate: window.GameStateHandlers.handleTimerUpdate,
-    handleError: window.UtilityHandlers.handleError,
-    handleAdminNotification: window.UtilityHandlers.handleAdminNotification,
+    handleStateSnapshot: function (data) {
+      if (
+        window.UtilityHandlers &&
+        window.UtilityHandlers.handleStateSnapshot
+      ) {
+        return window.UtilityHandlers.handleStateSnapshot(data);
+      }
+    },
+
+    handleTimerUpdate: function (data) {
+      if (window.UtilityHandlers && window.UtilityHandlers.handleTimerUpdate) {
+        return window.UtilityHandlers.handleTimerUpdate(data);
+      }
+    },
+
+    handleError: function (data) {
+      if (window.UtilityHandlers && window.UtilityHandlers.handleError) {
+        return window.UtilityHandlers.handleError(data);
+      }
+    },
+
+    handleAdminNotification: function (data) {
+      if (
+        window.UtilityHandlers &&
+        window.UtilityHandlers.handleAdminNotification
+      ) {
+        return window.UtilityHandlers.handleAdminNotification(data);
+      }
+    },
   };
 
   // Expose the module to window

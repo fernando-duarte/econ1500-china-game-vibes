@@ -21,12 +21,9 @@
   },
   "include": [
     "client/**/*.js",
-    "server/**/*.js", 
+    "server/**/*.js",
     "shared/**/*.js",
     "types/**/*.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    ".venv"
-  ]
-} 
+  "exclude": ["node_modules", ".venv"]
+}

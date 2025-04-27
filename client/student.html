@@ -13,7 +13,7 @@
       <h2 class="subtitle">Student View</h2>
 
       <!-- Team Registration Form -->
-      <div id="teamRegistrationForm" class="card">
+      <form id="teamRegistrationForm" class="card">
         <h3>Team Registration</h3>
         <div class="form-group">
           <label for="teamName">Team Name:</label>
@@ -33,9 +33,11 @@
             <p>Loading student list...</p>
           </div>
         </div>
-        <button id="registerTeamButton" class="button">Register Team</button>
+        <button type="submit" id="registerTeamButton" class="button">
+          Register Team
+        </button>
         <p id="teamRegistrationError" class="error"></p>
-      </div>
+      </form>
 
       <!-- Game UI (hidden until joined) -->
       <div id="gameUI" class="hidden">
@@ -135,6 +137,252 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/constants.js"></script>
-    <script src="/student.js"></script>
+
+    <!-- Fallback student list for direct loading -->
+    <script type="text/template">
+      // Hardcoded fallback student list in case the socket request fails
+      window.teamManagerStudentList = [
+        "Aidan Wang", "Alek Karagozyan", "Alexander Ong", "Alexander Vertikov", "Aminata Davis",
+        "Andrew Zhong", "Ashley Ganesh", "Bennett Galin", "Braydon Brewster", "Brennon DeMeritt",
+        "Christopher Ho", "Christopher Nguyen", "Ciaran Henry", "Darian Jones", "David Person",
+        "Derrick Pennix", "Efe Alpay", "Eleonor Zok", "Emily Cha", "Emily Figueroa",
+        "Emily Mueller", "Eric Hu", "Ethan Davis", "Gustavo Trope Mayer", "Halleluiah Girum",
+        "Hannah Partigianoni", "Hans Xu", "Harrison Powe", "Helen Horangic", "Henry Shan",
+        "Ikenna Odimegwu", "Isabella Banyasz", "Jackson Munro", "Jeffrey Liang", "Jeremy Lum",
+        "Jessica Lin", "John Starman", "Jonathan Lee", "Jules de Beauport", "Julian Cronin",
+        "Larissa Flora", "Leah Derenge", "Leanna Le", "Lily Zamora", "Luc Azar-Tanguay",
+        "Luis Gomez", "Maksym Temnosagatyi", "Masha Trifonova", "Michael Renoit", "Miora Andriamahefa",
+        "Mizuki Kai", "Nanami Hasegawa", "Natalie Chen", "Nate Schneider", "Nathaniel Rodden",
+        "Neni Alvarado", "Nicholson Kanefield", "Nicolas Rombaut-Enriquez", "Nina Yuan Zhong",
+        "Oliver Villanueva", "Paula Suarez", "Raquelle Barasa", "Rina Shinozaki", "Samuel Carrillo",
+        "Skye Stewart", "Sophia Healey", "Sophia Li", "Sophia Ordonez", "Sujith Pakala",
+        "Sydney Fritz", "Taher Vahanvaty", "Tanvi Anand", "Tatum Muller", "Theodore Carroll",
+        "Trent Smart", "Tyler Forman", "Wei Yang Chan", "Wenyu Xiong", "William Wang", "Zorian Facey"
+      ];
+
+      // Set up a last-resort fallback timer to populate students if all else fails
+      window.fallbackStudentListTimer = setTimeout(function() {
+        console.log('FALLBACK: Using hardcoded student list as last resort after timeout');
+        if (window.StudentDom &&
+            (!window.StudentDom.studentData.allStudents ||
+             window.StudentDom.studentData.allStudents.length === 0)) {
+
+          // Attempt direct DOM update if StudentDom is available
+          if (window.StudentDom.populateStudentList) {
+            window.StudentDom.populateStudentList(
+              window.teamManagerStudentList,
+              [],
+              {},
+              0
+            );
+          } else {
+            // Very direct fallback if StudentDom methods aren't available
+            const container = document.getElementById('studentSelectionContainer');
+            if (container) {
+              container.innerHTML = '<p>Loading students directly...</p>';
+
+              // Create checkboxes directly
+              const listHtml = window.teamManagerStudentList.map(student =>
+                `<div class="student-checkbox">
+                  <input type="checkbox" id="student-${student}" name="student" value="${student}">
+                  <label for="student-${student}">${student}</label>
+                </div>`
+              ).join('');
+
+              container.innerHTML = listHtml;
+
+              // Set up event listeners for the checkboxes
+              container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                  // Store selected students if StudentDom is available
+                  if (window.StudentDom && window.StudentDom.studentData && window.StudentDom.studentData.selectedStudents) {
+                    const student = this.value;
+                    if (this.checked) {
+                      window.StudentDom.studentData.selectedStudents.add(student);
+                    } else {
+                      window.StudentDom.studentData.selectedStudents.delete(student);
+                    }
+                  }
+                });
+              });
+            }
+          }
+        }
+      }, 5000); // Wait 5 seconds for normal loading before fallback
+    </script>
+
+    <!-- Load shared utilities and DOM first -->
+    <script src="/modules/shared/socket-utils.js"></script>
+    <script src="/modules/student/dom.js"></script>
+    <script src="/modules/student/game.js"></script>
+
+    <!-- Load handlers first -->
+    <script src="/modules/student/connectionHandlers.js"></script>
+    <script src="/modules/student/teamHandlers.js"></script>
+    <script src="/modules/student/gameStateHandlers.js"></script>
+    <script src="/modules/student/roundHandlers.js"></script>
+    <script src="/modules/student/resultHandlers.js"></script>
+    <script src="/modules/student/utilityHandlers.js"></script>
+
+    <!-- Load socket module after handlers -->
+    <script src="/modules/student/socket.js"></script>
+
+    <!-- Load main last -->
+    <script src="/modules/student/main.js"></script>
+
+    <!-- Direct initialization script to ensure proper loading -->
+    <script type="text/template">
+      // This script ensures proper initialization sequence
+      (function() {
+        console.log('DIRECT: Running direct initialization script');
+
+        // Ensure StudentDom is properly initialized
+        if (window.StudentDom) {
+          if (!window.StudentDom.elements) {
+            console.log('DIRECT: Initializing StudentDom elements');
+            window.StudentDom.initElements();
+          }
+          if (window.StudentDom.elements && window.StudentDom.elements.studentSelectionContainer) {
+            console.log('DIRECT: StudentDom elements initialized successfully');
+          } else {
+            console.error('DIRECT: StudentDom elements initialization failed');
+          }
+        } else {
+          console.error('DIRECT: StudentDom module not available');
+        }
+
+        // Ensure socket connection is established
+        if (!window.socket) {
+          console.log('DIRECT: Creating socket connection');
+          try {
+            window.socket = io();
+            console.log('DIRECT: Socket connection created');
+          } catch (e) {
+            console.error('DIRECT: Failed to create socket connection', e);
+          }
+        }
+
+        // Schedule direct student list request
+        const tryRequestStudentList = function() {
+          console.log('DIRECT: Attempting to request student list');
+
+          // Try all possible request methods
+          if (window.TeamHandlers && window.TeamHandlers.getStudentList) {
+            console.log('DIRECT: Using TeamHandlers.getStudentList');
+            window.TeamHandlers.getStudentList();
+            return true;
+          } else if (window.StudentSocket && window.StudentSocket.getStudentList) {
+            console.log('DIRECT: Using StudentSocket.getStudentList');
+            window.StudentSocket.getStudentList();
+            return true;
+          } else if (window.socket) {
+            console.log('DIRECT: Using direct socket.emit');
+            // Try both event name formats
+            if (window.CONSTANTS && window.CONSTANTS.SOCKET && window.CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST) {
+              window.socket.emit(window.CONSTANTS.SOCKET.EVENT_GET_STUDENT_LIST);
+            }
+            window.socket.emit('get_student_list');
+            return true;
+          }
+
+          return false;
+        };
+
+        // Make multiple student list requests with increasing delays
+        const requestTimes = [500, 1500, 3000, 5000];
+        requestTimes.forEach((delay) => {
+          setTimeout(() => {
+            console.log(`DIRECT: Requesting student list after ${delay}ms delay`);
+            tryRequestStudentList();
+          }, delay);
+        });
+      })();
+    </script>
+
+    <!-- Emergency debug script to force student list to appear -->
+    <script type="text/template">
+      (function() {
+        console.log('EMERGENCY: Running direct student list debug script');
+
+        // Force the student list to appear after a short delay
+        setTimeout(function() {
+          console.log('EMERGENCY: Checking student list state');
+
+          // Get the container directly
+          const container = document.getElementById('studentSelectionContainer');
+          if (!container) {
+            console.error('EMERGENCY: Cannot find studentSelectionContainer element!');
+            return;
+          }
+
+          // Check if the list is already populated
+          if (container.querySelectorAll('input[type="checkbox"]').length > 0) {
+            console.log('EMERGENCY: Student list appears to be already populated');
+            return;
+          }
+
+          // Force the list to appear
+          console.log('EMERGENCY: Forcing student list to appear');
+
+          // First clear any existing content
+          container.innerHTML = '<p>Loading student list directly...</p>';
+
+          // Create a simple container
+          const listContainer = document.createElement('div');
+          listContainer.className = 'student-list-wrapper emergency-list';
+
+          // Use the hardcoded student list from earlier in the page
+          const students = window.teamManagerStudentList || [
+            "Aidan Wang", "Alek Karagozyan", "Alexander Ong", "Alexander Vertikov", "Aminata Davis",
+            "Andrew Zhong", "Ashley Ganesh", "Bennett Galin", "Braydon Brewster", "Brennon DeMeritt",
+            "Christopher Ho", "Christopher Nguyen", "Ciaran Henry", "Darian Jones", "David Person",
+            // ... add more students if needed
+          ];
+
+          // Create checkbox elements
+          students.forEach(student => {
+            const checkbox = document.createElement('div');
+            checkbox.className = 'student-checkbox';
+            checkbox.innerHTML = `
+              <input type="checkbox" id="student-${student}" name="student" value="${student}">
+              <label for="student-${student}">${student}</label>
+            `;
+
+            // Add the checkbox to the list container
+            listContainer.appendChild(checkbox);
+
+            // Set up event listener
+            const input = checkbox.querySelector('input[type="checkbox"]');
+            if (input) {
+              input.addEventListener('change', function() {
+                if (window.StudentDom && window.StudentDom.studentData && window.StudentDom.studentData.selectedStudents) {
+                  if (this.checked) {
+                    window.StudentDom.studentData.selectedStudents.add(student);
+                    console.log(`EMERGENCY: Selected student: ${student}`);
+                  } else {
+                    window.StudentDom.studentData.selectedStudents.delete(student);
+                    console.log(`EMERGENCY: Deselected student: ${student}`);
+                  }
+                } else {
+                  console.warn('EMERGENCY: Cannot store selection state - StudentDom not available');
+                }
+              });
+            }
+          });
+
+          // Add the list container to the page
+          container.innerHTML = '';
+          container.appendChild(listContainer);
+
+          console.log('EMERGENCY: Forced student list display complete');
+
+          // Update the StudentDom module's internal data if it exists
+          if (window.StudentDom && window.StudentDom.studentData) {
+            window.StudentDom.studentData.allStudents = students;
+            console.log('EMERGENCY: Updated StudentDom.studentData.allStudents');
+          }
+        }, 2000); // Wait for other scripts to initialize
+      })();
+    </script>
   </body>
 </html>

@@ -6,7 +6,7 @@ These guidelines help keep our codebase clean, modular, and easy to maintain. Ad
 
 ## 1. File Length Limit
 
-- **Max length:** 200 lines of actual code (comments and blank lines excluded).  
+- **Max length:** 200 lines of actual code (comments and blank lines excluded).
 - **Enforcement:** The `scripts/check-file-length.js` pre-commit hook will reject any file exceeding this limit.
 
 ---
@@ -17,9 +17,10 @@ When a file grows beyond 200 lines, split it along logical boundaries. Here are 
 
 ### 2.1 JavaScript
 
-1. **By Feature/Module**  
-   - **Before:** One large file with many unrelated functions.  
-   - **After:**  
+1. **By Feature/Module**
+
+   - **Before:** One large file with many unrelated functions.
+   - **After:**
      ```
      /features/
        ├─ feature-A/
@@ -30,7 +31,8 @@ When a file grows beyond 200 lines, split it along logical boundaries. Here are 
            └─ implementation.js
      ```
 
-2. **By Event Handlers**  
+2. **By Event Handlers**
+
    - Group handlers by domain:
      ```
      /events/
@@ -41,19 +43,26 @@ When a file grows beyond 200 lines, split it along logical boundaries. Here are 
      /socket.js               ← imports & wires up handlers
      ```
 
-3. **Shared Utilities**  
+3. **Shared Utilities**
+
    - Move generic helpers into a central utilities module:
+
      ```js
      // utils/format.js
-     export function formatNumber(num) { /* … */ }
+     export function formatNumber(num) {
+       /* … */
+     }
 
      // utils/validate.js
-     export function validateInput(value) { /* … */ }
+     export function validateInput(value) {
+       /* … */
+     }
      ```
 
 ### 2.2 CSS/SCSS
 
-1. **Component-Based Split**  
+1. **Component-Based Split**
+
    - Put each component’s styles in its own file:
      ```
      /scss/
@@ -63,8 +72,8 @@ When a file grows beyond 200 lines, split it along logical boundaries. Here are 
        └─ layout.scss
      ```
 
-2. **Abstract vs. Specific**  
-   - **Abstract (base):** variables, mixins, global settings.  
+2. **Abstract vs. Specific**
+   - **Abstract (base):** variables, mixins, global settings.
    - **Specific:** layout or component styles.
 
 ---
@@ -73,7 +82,8 @@ When a file grows beyond 200 lines, split it along logical boundaries. Here are 
 
 Suppose `client/modules/student/socket.js` has grown too large:
 
-**Refactored Structure**  
+**Refactored Structure**
+
 ```
 client/modules/student/
 ├─ socket.js               ← initializes socket and imports handlers
@@ -89,30 +99,29 @@ Each file exports only the functions it needs; `socket.js` combines them into on
 
 ## 4. Benefits of Smaller Files
 
-- **Readability:** Focused scope makes code easier to understand.  
-- **Maintainability:** Changes affect fewer lines and fewer conflicts.  
-- **Testability:** You can write unit tests for each module in isolation.  
-- **Collaboration:** Multiple developers can work in parallel with less overlap.  
+- **Readability:** Focused scope makes code easier to understand.
+- **Maintainability:** Changes affect fewer lines and fewer conflicts.
+- **Testability:** You can write unit tests for each module in isolation.
+- **Collaboration:** Multiple developers can work in parallel with less overlap.
 - **Performance:** Smaller modules can be cached and loaded more efficiently.
 
 ---
 
 ## 5. Implementation Checklist
 
-1. **Identify Boundaries**  
-   - Group related code (features, handlers, utilities).  
-2. **Create New Files**  
-   - Follow the directory conventions above.  
-3. **Move Code**  
-   - Copy and adapt functions, keeping tests green.  
-4. **Update Imports**  
-   - Ensure all `import`/`require` paths point to the new locations.  
-5. **Test Everything**  
-   - Run existing tests and add new ones for split modules.  
-6. **Validate File Length**  
+1. **Identify Boundaries**
+   - Group related code (features, handlers, utilities).
+2. **Create New Files**
+   - Follow the directory conventions above.
+3. **Move Code**
+   - Copy and adapt functions, keeping tests green.
+4. **Update Imports**
+   - Ensure all `import`/`require` paths point to the new locations.
+5. **Test Everything**
+   - Run existing tests and add new ones for split modules.
+6. **Validate File Length**
    - Execute `npm run check-file-length` (or `scripts/check-file-length.js`) and fix any violations.
 
 ---
 
 Adhering to these guidelines will keep our codebase modular, testable, and easy to navigate. Thank you for helping maintain high-quality standards!
-

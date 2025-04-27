@@ -3,6 +3,8 @@ const CONSTANTS = require('../../shared/constants');
 const { calculateOutput, calculateNewCapital } = require('../model');
 const { getPlayerRoom } = require('../gameUtils');
 const { clearRoundTimers } = require('./timerManager');
+// Import round events
+const { roundEvents, EVENTS } = require('./roundEvents');
 
 // Lazy load gameLifecycle to handle circular dependency with endGame
 let gameLifecycle;
@@ -112,10 +114,12 @@ function endRound(io) {
     `Round ${game.round - 1} completed. Preparing to start round ${game.round}`
   );
   if (io) {
-    // LAZY LOAD startRound here
-    const { startRound } = require('./startRound');
-    // Start the next round automatically using the imported function
-    startRound(io);
+    // Remove direct import and call to startRound
+    // const { startRound } = require('./startRound');
+    // startRound(io);
+
+    // Instead, emit an event to start the next round
+    roundEvents.emit(EVENTS.ROUND_START, io);
   } else {
     console.error(CONSTANTS.DEBUG_MESSAGES.CANNOT_START_NEXT_ROUND);
   }
