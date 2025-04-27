@@ -1,4 +1,6 @@
 // /modules/screen/main.js
+// @ts-check
+/// <reference path="./types.d.ts" />
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {

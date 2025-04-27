@@ -1,4 +1,6 @@
 // client/modules/screen/socket/screenSocketHandlers.js
+// @ts-check
+/// <reference path="../types.d.ts" />
 
 // NOTE: This file expects the following globals to be available on window:
 //   - screenDOM

@@ -1,4 +1,6 @@
 // client/modules/screen/socket/screenSocket.js
+// @ts-check
+/// <reference path="../types.d.ts" />
 
 import screenSocketHandlers from './screenSocketHandlers.js';
 

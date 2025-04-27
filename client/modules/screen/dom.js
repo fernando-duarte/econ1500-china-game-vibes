@@ -1,4 +1,6 @@
 // /modules/screen/dom.js
+// @ts-check
+/// <reference path="./types.d.ts" />
 
 // Expose functions and elements through window object
 window.screenDOM = {};

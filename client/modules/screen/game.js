@@ -1,4 +1,6 @@
 // /modules/screen/game.js
+// @ts-check
+/// <reference path="./types.d.ts" />
 
 // Expose game functionality through window object
 window.screenGame = {};
