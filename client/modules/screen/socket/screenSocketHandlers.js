@@ -11,16 +11,16 @@ const screenSocketHandlers = {
   onConnect: function () {
     SocketUtils.logEvent('Connect', { socketId: this.socket.id });
     this.socket.emit('screen_connect');
-    screenDOM.addEvent('connect', 'Connected to server');
+    window.screenDOM.addEvent('connect', 'Connected to server');
   },
 
   onDisconnect: function () {
     SocketUtils.logEvent('Disconnect');
-    const statusElement = screenDOM.elements.gameStatus;
+    const statusElement = window.screenDOM.elements.gameStatus;
     if (statusElement) {
       statusElement.textContent = 'Disconnected';
     }
-    screenDOM.addEvent('disconnect', 'Disconnected from server', true);
+    window.screenDOM.addEvent('disconnect', 'Disconnected from server', true);
   },
 
   onPlayerJoined: function (data) {
@@ -29,18 +29,18 @@ const screenSocketHandlers = {
       console.error('Invalid player joined data:', data);
       return;
     }
-    screenGame.addPlayer(data.playerName);
-    screenDOM.updatePlayerList();
+    window.screenGame.addPlayer(data.playerName);
+    window.screenDOM.updatePlayerList();
     const eventType = data.isReconnect ? 'player_reconnected' : 'player_joined';
     const message = data.isReconnect
       ? `Player ${data.playerName} reconnected`
       : `Player ${data.playerName} joined`;
-    screenDOM.addEvent(eventType, message);
+    window.screenDOM.addEvent(eventType, message);
   },
 
   onPlayerDisconnected: function (data) {
     SocketUtils.logEvent('Player disconnected', data);
-    screenDOM.addEvent(
+    window.screenDOM.addEvent(
       'player_disconnected',
       `Player ${data.playerName} disconnected`,
       true
@@ -49,36 +49,36 @@ const screenSocketHandlers = {
 
   onGameCreated: function () {
     SocketUtils.logEvent('Game created');
-    const statusElement = screenDOM.elements.gameStatus;
+    const statusElement = window.screenDOM.elements.gameStatus;
     if (statusElement) {
       statusElement.textContent = CONSTANTS.UI_TEXT.STATUS_WAITING_FOR_PLAYERS;
     }
-    screenGame.updateGameState(CONSTANTS.GAME_STATES.WAITING);
-    screenGame.resetForNewGame();
-    screenDOM.updatePlayerList();
-    screenDOM.updateAverages();
-    screenDOM.addEvent('game_created', 'Game has been created', true);
+    window.screenGame.updateGameState(CONSTANTS.GAME_STATES.WAITING);
+    window.screenGame.resetForNewGame();
+    window.screenDOM.updatePlayerList();
+    window.screenDOM.updateAverages();
+    window.screenDOM.addEvent('game_created', 'Game has been created', true);
   },
 
   onGameStarted: function () {
     SocketUtils.logEvent('Game started');
-    const statusElement = screenDOM.elements.gameStatus;
+    const statusElement = window.screenDOM.elements.gameStatus;
     if (statusElement) {
       statusElement.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_STARTING;
     }
-    screenGame.updateGameState(CONSTANTS.GAME_STATES.ACTIVE);
-    screenGame.resetForNewRound();
-    const roundElement = screenDOM.elements.roundNumber;
+    window.screenGame.updateGameState(CONSTANTS.GAME_STATES.ACTIVE);
+    window.screenGame.resetForNewRound();
+    const roundElement = window.screenDOM.elements.roundNumber;
     if (roundElement) {
       roundElement.textContent = CONSTANTS.FIRST_ROUND_NUMBER;
     }
-    screenDOM.updatePlayerList();
-    screenDOM.addEvent('game_started', 'Game has started', true);
+    window.screenDOM.updatePlayerList();
+    window.screenDOM.addEvent('game_started', 'Game has started', true);
   },
 
   onRoundStart: function (data) {
     SocketUtils.logEvent('Round start', data);
-    const elements = screenDOM.elements;
+    const elements = window.screenDOM.elements;
     if (elements.roundNumber) {
       elements.roundNumber.textContent = data.roundNumber;
     }
@@ -86,12 +86,12 @@ const screenSocketHandlers = {
       elements.gameStatus.textContent =
         CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
     }
-    screenGame.resetForNewRound();
+    window.screenGame.resetForNewRound();
     if (elements.timer && data.timeRemaining) {
       elements.timer.textContent = data.timeRemaining;
     }
-    screenDOM.updatePlayerList();
-    screenDOM.addEvent(
+    window.screenDOM.updatePlayerList();
+    window.screenDOM.addEvent(
       'round_start',
       `Round ${data.roundNumber} started`,
       true
@@ -104,14 +104,14 @@ const screenSocketHandlers = {
       console.error('Invalid investment data:', data);
       return;
     }
-    screenGame.recordInvestment(
+    window.screenGame.recordInvestment(
       data.playerName,
       data.investment,
       data.isAutoSubmit
     );
-    screenDOM.updatePlayerList();
+    window.screenDOM.updatePlayerList();
     const autoText = data.isAutoSubmit ? ' (auto-submitted)' : '';
-    screenDOM.addEvent(
+    window.screenDOM.addEvent(
       'investment',
       `${data.playerName} invested ${data.investment}${autoText}`
     );
@@ -119,16 +119,16 @@ const screenSocketHandlers = {
 
   onAllSubmitted: function (data) {
     SocketUtils.logEvent('All submitted', data);
-    const statusElement = screenDOM.elements.gameStatus;
+    const statusElement = window.screenDOM.elements.gameStatus;
     if (statusElement) {
       statusElement.textContent = CONSTANTS.UI_TEXT.STATUS_ALL_SUBMITTED_ENDING;
     }
-    screenDOM.addEvent('all_submitted', data.message, true);
+    window.screenDOM.addEvent('all_submitted', data.message, true);
   },
 
   onRoundSummary: function (data) {
     SocketUtils.logEvent('Round summary', data);
-    const elements = screenDOM.elements;
+    const elements = window.screenDOM.elements;
     const nextRound = Math.min(data.roundNumber + 1, CONSTANTS.ROUNDS);
     if (elements.roundNumber) {
       elements.roundNumber.textContent = nextRound;
@@ -143,9 +143,9 @@ const screenSocketHandlers = {
     if (elements.timer) {
       elements.timer.textContent = CONSTANTS.UI_TEXT.TIMER_PLACEHOLDER;
     }
-    screenGame.updateCapitalAndOutput(data.results);
-    screenDOM.updateAverages();
-    screenDOM.addEvent(
+    window.screenGame.updateCapitalAndOutput(data.results);
+    window.screenDOM.updateAverages();
+    window.screenDOM.addEvent(
       'round_end',
       `Round ${data.roundNumber} completed`,
       true
@@ -154,24 +154,28 @@ const screenSocketHandlers = {
 
   onGameOver: function (data) {
     SocketUtils.logEvent('Game over', data);
-    const elements = screenDOM.elements;
+    const elements = window.screenDOM.elements;
     if (elements.roundNumber) {
       elements.roundNumber.textContent = CONSTANTS.ROUNDS;
     }
     if (elements.gameStatus) {
       elements.gameStatus.textContent = CONSTANTS.UI_TEXT.STATUS_GAME_OVER;
     }
-    screenGame.updateGameState(CONSTANTS.GAME_STATES.COMPLETED);
-    clearInterval(screenGame.getState().timerInterval);
+    window.screenGame.updateGameState(CONSTANTS.GAME_STATES.COMPLETED);
+    clearInterval(window.screenGame.getState().timerInterval);
     if (elements.timer) {
       elements.timer.textContent = CONSTANTS.UI_TEXT.TIMER_PLACEHOLDER;
     }
-    screenDOM.addEvent('game_over', `Game over! Winner: ${data.winner}`, true);
+    window.screenDOM.addEvent(
+      'game_over',
+      `Game over! Winner: ${data.winner}`,
+      true
+    );
   },
 
   onStateSnapshot: function (data) {
     SocketUtils.logEvent('State snapshot', data);
-    const elements = screenDOM.elements;
+    const elements = window.screenDOM.elements;
     if (data.roundNumber && elements.roundNumber) {
       elements.roundNumber.textContent = data.roundNumber;
     }
@@ -181,7 +185,7 @@ const screenSocketHandlers = {
     ) {
       elements.gameStatus.textContent =
         CONSTANTS.UI_TEXT.STATUS_ROUND_IN_PROGRESS;
-      screenGame.updateGameState(CONSTANTS.GAME_STATES.ACTIVE);
+      window.screenGame.updateGameState(CONSTANTS.GAME_STATES.ACTIVE);
     }
     if (data.timeRemaining && elements.timer) {
       elements.timer.textContent = data.timeRemaining;
@@ -189,7 +193,7 @@ const screenSocketHandlers = {
   },
 
   onTimerUpdate: function (data) {
-    const timerElement = screenDOM.elements.timer;
+    const timerElement = window.screenDOM.elements.timer;
     if (timerElement && data && data.timeRemaining !== undefined) {
       timerElement.textContent = data.timeRemaining;
     }
@@ -197,7 +201,7 @@ const screenSocketHandlers = {
 
   onInstructorDisconnected: function () {
     SocketUtils.logEvent('Instructor disconnected');
-    screenDOM.addEvent(
+    window.screenDOM.addEvent(
       'instructor_disconnected',
       'Instructor disconnected from server',
       true
@@ -206,7 +210,7 @@ const screenSocketHandlers = {
 
   onError: function (data) {
     console.error('Socket error:', data.message);
-    screenDOM.addEvent(
+    window.screenDOM.addEvent(
       'error',
       `${CONSTANTS.UI_TEXT.ERROR_PREFIX}${data.message}`,
       true

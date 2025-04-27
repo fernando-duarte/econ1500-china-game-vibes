@@ -1,4 +1,4 @@
 import screenSocket from './socket/screenSocket.js';
 
-// Attach to window object instead of redeclaring
+// Attach to window object for compatibility with existing code
 window.screenSocket = screenSocket;
