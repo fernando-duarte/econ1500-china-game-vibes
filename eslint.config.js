@@ -61,6 +61,15 @@ module.exports = defineConfig(
       // quotes: ['error', 'single'], // Handled by Prettier
       // semi: ['error', 'always'], // Handled by Prettier
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Add max-lines rule to warn when files exceed 200 lines
+      'max-lines': [
+        'warn',
+        {
+          max: 200,
+          skipBlankLines: true,
+          skipComments: true,
+        },
+      ],
       // Add any other non-formatting rules here
     },
   },

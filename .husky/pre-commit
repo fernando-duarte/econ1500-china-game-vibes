@@ -1,1 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged for normal linting
 npx lint-staged
+
+# Check for files that exceed the maximum line count
+node scripts/check-file-length.js
