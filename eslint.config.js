@@ -78,6 +78,14 @@ module.exports = defineConfig(
     files: ['client/**/*.js'],
     languageOptions: {
       sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        CONSTANTS: 'readonly',
+        io: 'readonly',
+        SocketUtils: 'readonly',
+        screenDOM: 'readonly',
+        screenGame: 'readonly',
+      },
     },
   }
 );
